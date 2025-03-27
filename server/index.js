@@ -45,11 +45,11 @@ io.on("connection", (socket) => {
 });
 
 // Middleware
-// app.use(cors({
-//   origin: "https://cibil-server.vercel.app", // ✅ Ensure this matches frontend origin
-//   methods: ["GET", "POST"]
-// }));
-// app.use(express.json());
+app.use(cors({
+  origin: "https://cibil-server.vercel.app", // ✅ Ensure this matches frontend origin
+  methods: ["GET", "POST"]
+}));
+app.use(express.json());
 
 // Database Connection
 mongoose
