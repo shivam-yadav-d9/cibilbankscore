@@ -8,7 +8,7 @@ const DashboardContent = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("https://cibilbankscore-client.vercel.app/dashboard/users");
+        const response = await axios.get("https://cibil-server.vercel.app/dashboard/users");
         setUsers(response.data);
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -17,7 +17,7 @@ const DashboardContent = () => {
 
     const fetchProfiles = async () => {
       try {
-        const response = await axios.get("https://cibilbankscore-client.vercel.app/dashboard/profiles");
+        const response = await axios.get("https://cibil-server.vercel.app/dashboard/profiles");
         setProfiles(response.data);
       } catch (error) {
         console.error("Error fetching profiles:", error);

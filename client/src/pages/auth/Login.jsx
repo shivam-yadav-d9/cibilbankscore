@@ -16,7 +16,7 @@ const Login = ({ updateAuth }) => {
     setLoading(true);
 
     try {
-      const response = await axios.post("https://cibilbankscore-client.vercel.app/user/login", {
+      const response = await axios.post("https://cibil-server.vercel.app/user/login", {
         email,
         password,
       });

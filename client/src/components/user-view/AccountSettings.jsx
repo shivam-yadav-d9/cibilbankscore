@@ -31,7 +31,7 @@ const AccountSettings = ({ user }) => {
     setSuccessMessage("");
 
     try {
-      const res = await axios.post("https://cibilbankscore-client.vercel.app/profile/update", formData);
+      const res = await axios.post("https://cibil-server.vercel.app/profile/update", formData);
       setSuccessMessage(res.data.message || "Profile updated successfully!");
       setTimeout(() => setSuccessMessage(""), 5000);
     } catch (error) {

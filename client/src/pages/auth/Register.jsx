@@ -23,7 +23,7 @@ const Signup = () => {
     };
 
     try {
-      const response = await axios.post("https://cibilbankscore-client.vercel.app/user/signup", userInfo);
+      const response = await axios.post("https://cibil-server.vercel.app/user/signup", userInfo);
       
       if (response.data) {
         // Clear form and show success
