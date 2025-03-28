@@ -5,8 +5,8 @@ import {
   Navigate,
 } from "react-router-dom";
 import { useState } from "react";
-import Layout from "./pages/auth/Layout"; // Import Layout
-import Login from "./pages/auth/Login"; // Could not resolve "./pages/auth/Login" from "src/App.jsx"
+import Layout from "./pages/auth/Layout"; 
+import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import UserInput from "./pages/auth/UserInput";
 import Dashboard from "./components/user-view/Dashboard";
@@ -14,7 +14,15 @@ import AdminPanel from "./components/admin-view/AdminPanel";
 import LoanInformation from "./components/user-view/LoanInformation";
 import AdminLogin from "./components/admin-view/AdminLogin";
 import B2BDashboard from "./components/business-view/B2BDashboard";
-
+import Home from "./pages/auth/Home";
+import AboutUs from "./components/user-view/AboutUs";
+import CareerPage from "./components/user-view/CareerPage";
+import BankingAPIPage from "./pages/auth/BankingAPIPage";
+import B2BBankingSystems from "./pages/auth/B2BBankingSystems";
+import LoanServicesPage from "./pages/auth/LoanServicesPage";
+import CreditBuildingSolutions from "./pages/auth/CreditBuildingSolutions";
+import ATMInstallationPage from "./pages/auth/ATMInstallationPage";
+import InvestmentDashboard from "./pages/auth/InvestmentDashboard";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
@@ -28,53 +36,44 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Routes with Navbar & Footer */}
+        {/* Routes with Layout (Navbar & Footer) */}
         <Route element={<Layout />}>
-          <Route path="/login" element={<Login updateAuth={updateAuth} />} />
-          <Route path="/signup" element={<Register />} />
-          <Route path="/userinput" element={<UserInput />} />
-
-          {/* Other Routes without Navbar & Footer */}
-          <Route path="/" element={<Login updateAuth={updateAuth} />} />
-          <Route path="/loan" element={<LoanInformation />} />
-          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/aboutus" element={<AboutUs />} />
+          <Route path="/careers" element={<CareerPage />} />
+          <Route path="/services/banking-apis" element={<BankingAPIPage />} />
+          <Route path="/services/b2b-systems" element={<B2BBankingSystems />} />
+          <Route path="/services/digital-payments" element={<LoanServicesPage />} />
+          <Route path="/services/credit-building" element={<CreditBuildingSolutions />} />
+          <Route path="/services/atm" element={<ATMInstallationPage />} />
+          <Route path="/services/investment-and-wealth-management" element={<InvestmentDashboard />} />
         </Route>
-        
-        {/* Protected Dashboard Route */}
+
+        {/* Authentication Routes */}
+        <Route path="/login" element={<Login updateAuth={updateAuth} />} />
+        <Route path="/signup" element={<Register />} />
+        <Route path="/userinput" element={<UserInput />} />
+        <Route path="/loan" element={<LoanInformation />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
+
+        {/* Protected Routes */}
         <Route
           path="/dashboard"
-          element={
-            isAuthenticated ? (
-              <Dashboard updateAuth={updateAuth} />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
+          element={isAuthenticated ? <Dashboard updateAuth={updateAuth} /> : <Navigate to="/login" />}
         />
         <Route
           path="/admin"
-          element={
-            isAuthenticated ? <AdminPanel /> : <Navigate to="/admin-login" />
-          }
+          element={isAuthenticated ? <AdminPanel /> : <Navigate to="/admin-login" />}
         />
-
-<Route
+        <Route
           path="/business-dashboard"
-          element={
-            isAuthenticated ? <B2BDashboard /> : <Navigate to="/admin-login" />
-          }
+          element={isAuthenticated ? <B2BDashboard /> : <Navigate to="/admin-login" />}
         />
-
-
 
         {/* 404 Not Found Page */}
         <Route
           path="*"
-          element={
-            <h1 className="text-center text-white mt-10">
-              404 - Page Not Found
-            </h1>
-          }
+          element={<h1 className="text-center text-white mt-10">404 - Page Not Found</h1>}
         />
       </Routes>
     </Router>
