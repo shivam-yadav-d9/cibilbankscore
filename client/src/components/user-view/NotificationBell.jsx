@@ -17,7 +17,7 @@ function NotificationBell() {
     // Fetch notifications from API
     const fetchNotifications = async () => {
       try {
-        const response = await axios.get('https://cibil-server.vercel.app/api/notifications');
+        const response = await axios.get('https://cibilbankscore-server-gamma.vercel.app/api/notifications');
         setNotifications(response.data);
         setUnreadCount(response.data.filter(notif => !notif.read).length);
         setLoading(false);
@@ -63,7 +63,7 @@ function NotificationBell() {
   
   const markAsRead = async (id) => {
     try {
-      await axios.patch(`https://cibil-server.vercel.app/api/notifications/${id}`);
+      await axios.patch(`https://cibilbankscore-server-gamma.vercel.app/api/notifications/${id}`);
       setNotifications(prev => prev.map(notif => 
         notif._id === id ? { ...notif, read: true } : notif
       ));
@@ -78,7 +78,7 @@ function NotificationBell() {
     e.stopPropagation();
     
     try {
-      await axios.delete(`https://cibil-server.vercel.app/api/notifications/${id}`);
+      await axios.delete(`https://cibilbankscore-server-gamma.vercel.app/api/notifications/${id}`);
       // Remove the deleted notification from state
       const deletedNotif = notifications.find(notif => notif._id === id);
       setNotifications(prev => prev.filter(notif => notif._id !== id));
@@ -92,7 +92,7 @@ function NotificationBell() {
   
   const markAllAsRead = async () => {
     try {
-      await axios.patch('https://cibil-server.vercel.app/api/notifications/mark-all-read');
+      await axios.patch('https://cibilbankscore-server-gamma.vercel.app/api/notifications/mark-all-read');
       setNotifications(prev => prev.map(notif => ({ ...notif, read: true })));
       setUnreadCount(0);
     } catch (err) {
@@ -102,7 +102,7 @@ function NotificationBell() {
   
   const clearAllNotifications = async () => {
     try {
-      await axios.delete('https://cibil-server.vercel.app/api/notifications');
+      await axios.delete('https://cibilbankscore-server-gamma.vercel.app/api/notifications');
       setNotifications([]);
       setUnreadCount(0);
     } catch (err) {
