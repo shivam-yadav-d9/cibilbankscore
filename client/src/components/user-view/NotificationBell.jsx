@@ -3,7 +3,7 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import { Bell, X, Check } from 'lucide-react';
 
-const socket = io('https://cibil-server.vercel.app');
+const socket = io('https://cibilbankscore-server-gamma.vercel.app');
 
 function NotificationBell() {
   const [notifications, setNotifications] = useState([]);

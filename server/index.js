@@ -22,7 +22,8 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "https://cibilbankscore-client.vercel.app", // ✅ Allow frontend
-    methods: ["GET", "POST"]
+    methods: ["GET", "POST"],
+    credentials: true, // ✅ Allow credentials
   }
 });
 
@@ -47,7 +48,8 @@ io.on("connection", (socket) => {
 // Middleware
 app.use(cors({
   origin: "https://cibilbankscore-client.vercel.app", // ✅ Ensure this matches frontend origin
-  methods: ["GET", "POST"]
+  methods: ["GET", "POST"],
+  credentials: true, // ✅ Allow credentials
 }));
 app.use(express.json());
 
