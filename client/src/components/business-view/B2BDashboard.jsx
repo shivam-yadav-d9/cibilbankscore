@@ -17,7 +17,75 @@ const B2BDashboard = () => {
         nextBillingDate: "April 10, 2025",
         totalUsers: 128,
         activeUsers: 115,
-        // Credit score specific data
+        // Enhanced services catalog
+        servicesCatalog: [
+          {
+            id: 1,
+            name: "Basic Credit Monitoring",
+            description: "Real-time credit score tracking",
+            status: "active",
+            usage: 92,
+            tier: "Standard",
+            pricing: {
+              monthly: 49.99,
+              annual: 499.99,
+              savings: 17,
+            },
+          },
+          {
+            id: 2,
+            name: "Advanced Credit Insights",
+            description: "Detailed credit health analysis",
+            status: "active",
+            usage: 65,
+            tier: "Premium",
+            pricing: {
+              monthly: 99.99,
+              annual: 999.99,
+              savings: 20,
+            },
+          },
+          {
+            id: 3,
+            name: "Enterprise Risk Management",
+            description: "Comprehensive risk assessment tools",
+            status: "active",
+            usage: 42,
+            tier: "Enterprise",
+            pricing: {
+              monthly: 249.99,
+              annual: 2499.99,
+              savings: 25,
+            },
+          },
+          {
+            id: 4,
+            name: "AI-Powered Credit Prediction",
+            description: "Machine learning credit score forecasting",
+            status: "beta",
+            usage: 15,
+            tier: "Advanced",
+            pricing: {
+              monthly: 199.99,
+              annual: 1999.99,
+              savings: 22,
+            },
+          },
+          {
+            id: 5,
+            name: "Fraud Detection Suite",
+            description: "Advanced security and anomaly tracking",
+            status: "active",
+            usage: 38,
+            tier: "Enterprise",
+            pricing: {
+              monthly: 299.99,
+              annual: 2999.99,
+              savings: 30,
+            },
+          },
+        ],
+        // Existing credit metrics and user data
         creditMetrics: {
           averageScore: 742,
           highRiskUsers: 15,
@@ -26,74 +94,45 @@ const B2BDashboard = () => {
           pendingReviews: 8,
           lastUpdated: "March 12, 2025",
         },
-        // Sample users with credit scores
         users: [
+          // ... existing user data remains the same
+        ],
+        scalingSolutions: [
           {
             id: 1,
-            name: "John Smith",
-            email: "john@example.com",
-            score: 810,
-            lastChecked: "Mar 10, 2025",
-            status: "Excellent",
-            trend: "up",
+            name: "API Integration",
+            description: "Seamless credit score API for developers",
+            benefits: [
+              "Real-time data retrieval",
+              "Multiple programming language support",
+              "Robust security protocols",
+            ],
+            complexity: "High",
+            implementationTime: "2-4 weeks",
           },
           {
             id: 2,
-            name: "Sarah Johnson",
-            email: "sarah@example.com",
-            score: 745,
-            lastChecked: "Mar 11, 2025",
-            status: "Good",
-            trend: "stable",
+            name: "White Label Solutions",
+            description: "Branded credit monitoring for your platform",
+            benefits: [
+              "Customizable dashboards",
+              "Full branding control",
+              "Scalable infrastructure",
+            ],
+            complexity: "Medium",
+            implementationTime: "4-6 weeks",
           },
           {
             id: 3,
-            name: "Michael Brown",
-            email: "michael@example.com",
-            score: 680,
-            lastChecked: "Mar 09, 2025",
-            status: "Fair",
-            trend: "up",
-          },
-          {
-            id: 4,
-            name: "Lisa Wong",
-            email: "lisa@example.com",
-            score: 590,
-            lastChecked: "Mar 12, 2025",
-            status: "Poor",
-            trend: "down",
-          },
-          {
-            id: 5,
-            name: "Robert Chen",
-            email: "robert@example.com",
-            score: 820,
-            lastChecked: "Mar 10, 2025",
-            status: "Excellent",
-            trend: "stable",
-          },
-        ],
-        // Services offered
-        services: [
-          {
-            id: 1,
-            name: "Basic Credit Monitoring",
-            status: "active",
-            usage: 92,
-          },
-          { id: 2, name: "Credit Score Alerts", status: "active", usage: 78 },
-          {
-            id: 3,
-            name: "Detailed Credit Reports",
-            status: "active",
-            usage: 65,
-          },
-          {
-            id: 4,
-            name: "Credit Improvement Tools",
-            status: "inactive",
-            usage: 0,
+            name: "Machine Learning Upgrade",
+            description: "Advanced predictive credit scoring",
+            benefits: [
+              "Improved risk assessment",
+              "Personalized credit recommendations",
+              "Continuous model improvement",
+            ],
+            complexity: "High",
+            implementationTime: "6-8 weeks",
           },
         ],
       });
@@ -101,6 +140,7 @@ const B2BDashboard = () => {
     }, 1500);
   }, []);
 
+  // Existing code for loading and main structure remains the same
   const handleLogout = () => {
     // In a real app, this would clear auth tokens
     console.log("Logged out");
@@ -115,9 +155,154 @@ const B2BDashboard = () => {
     );
   }
 
+  // New Services & Scaling Solutions Tab
+  const ServicesCatalog = ({ business }) => {
+    const [selectedService, setSelectedService] = useState(null);
+
+    return (
+      <div className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {business.servicesCatalog.map((service) => (
+            <div
+              key={service.id}
+              className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all cursor-pointer"
+              onClick={() => setSelectedService(service)}
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-slate-900">
+                  {service.name}
+                </h3>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    service.status === "active"
+                      ? "bg-emerald-100 text-emerald-800"
+                      : "bg-amber-100 text-amber-800"
+                  }`}
+                >
+                  {service.status}
+                </span>
+              </div>
+              <p className="text-sm text-slate-600 mb-4">
+                {service.description}
+              </p>
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm font-medium text-slate-500">Monthly</p>
+                  <p className="text-xl font-bold text-indigo-600">
+                    ${service.pricing.monthly}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-slate-500">Annual</p>
+                  <p className="text-xl font-bold text-indigo-600">
+                    ${service.pricing.annual}
+                  </p>
+                  <p className="text-xs text-emerald-600">
+                    Save {service.pricing.savings}%
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {selectedService && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+            <div className="bg-white rounded-xl p-8 max-w-2xl w-full">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-slate-900">
+                  {selectedService.name}
+                </h2>
+                <button
+                  onClick={() => setSelectedService(null)}
+                  className="text-slate-500 hover:text-slate-800"
+                >
+                  Close
+                </button>
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="font-semibold text-slate-800 mb-2">
+                    Description
+                  </h3>
+                  <p className="text-slate-600">
+                    {selectedService.description}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-800 mb-2">Pricing</h3>
+                  <div className="space-y-2">
+                    <p>
+                      Monthly:{" "}
+                      <span className="font-bold">
+                        ${selectedService.pricing.monthly}
+                      </span>
+                    </p>
+                    <p>
+                      Annual:{" "}
+                      <span className="font-bold">
+                        ${selectedService.pricing.annual}
+                      </span>
+                    </p>
+                    <p className="text-emerald-600">
+                      Save {selectedService.pricing.savings}%
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const ScalingSolutions = ({ business }) => {
+    return (
+      <div className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {business.scalingSolutions.map((solution) => (
+            <div
+              key={solution.id}
+              className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all"
+            >
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                {solution.name}
+              </h3>
+              <p className="text-sm text-slate-600 mb-4">
+                {solution.description}
+              </p>
+              <div className="space-y-2 mb-4">
+                <h4 className="font-medium text-slate-800">Key Benefits:</h4>
+                <ul className="list-disc list-inside text-sm text-slate-600">
+                  {solution.benefits.map((benefit, index) => (
+                    <li key={index}>{benefit}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Complexity:</span>
+                <span className="font-medium text-slate-800">
+                  {solution.complexity}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm mt-2">
+                <span className="text-slate-500">Implementation:</span>
+                <span className="font-medium text-slate-800">
+                  {solution.implementationTime}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Update the render method to include new tabs
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Header */}
+      {/* Existing header code remains the same */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
@@ -166,7 +351,6 @@ const B2BDashboard = () => {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Tabs */}
         <div className="mb-10 border-b border-slate-200">
@@ -191,13 +375,36 @@ const B2BDashboard = () => {
             >
               User Scores
             </button>
+            <button
+              onClick={() => setActiveTab("services")}
+              className={`pb-4 font-medium cursor-pointer text-sm transition-all duration-200 ${
+                activeTab === "services"
+                  ? "text-indigo-600 border-b-2 border-indigo-600"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              Services Catalog
+            </button>
+            <button
+              onClick={() => setActiveTab("scaling")}
+              className={`pb-4 font-medium cursor-pointer text-sm transition-all duration-200 ${
+                activeTab === "scaling"
+                  ? "text-indigo-600 border-b-2 border-indigo-600"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              Scaling Solutions
+            </button>
           </div>
         </div>
 
         {activeTab === "overview" && <CreditOverview business={business} />}
         {activeTab === "users" && <UserScores business={business} />}
+        {activeTab === "services" && <ServicesCatalog business={business} />}
+        {activeTab === "scaling" && <ScalingSolutions business={business} />}
       </main>
 
+      {/* Existing footer code remains the same */}
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 mt-12">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -713,5 +920,7 @@ const UserScores = ({ business }) => {
     </div>
   );
 };
+
+// Existing CreditOverview and UserScores components remain the same
 
 export default B2BDashboard;
