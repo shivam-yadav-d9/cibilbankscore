@@ -8,7 +8,9 @@ const DashboardContent = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("https://cibilbankscore-server-gamma.vercel.app/dashboard/users");
+        const response = await axios.get(
+          "https://cibilbankscore-1svq.vercel.app/dashboard/users"
+        );
         setUsers(response.data);
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -17,7 +19,9 @@ const DashboardContent = () => {
 
     const fetchProfiles = async () => {
       try {
-        const response = await axios.get("https://cibilbankscore-server-gamma.vercel.app/dashboard/profiles");
+        const response = await axios.get(
+          "https://cibilbankscore-1svq.vercel.app/dashboard/profiles"
+        );
         setProfiles(response.data);
       } catch (error) {
         console.error("Error fetching profiles:", error);
@@ -31,10 +35,15 @@ const DashboardContent = () => {
   return (
     <div className="p-6">
       {/* Registered Users Section */}
-      <h2 className="text-2xl font-semibold mb-4 text-blue-700">All Registered Users</h2>
+      <h2 className="text-2xl font-semibold mb-4 text-blue-700">
+        All Registered Users
+      </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {users.map((user, index) => (
-          <div key={index} className="bg-white shadow-lg rounded-xl p-4 border border-gray-200">
+          <div
+            key={index}
+            className="bg-white shadow-lg rounded-xl p-4 border border-gray-200"
+          >
             <h3 className="text-lg font-semibold text-gray-900">{user.name}</h3>
             <p className="text-gray-600">📧 {user.email}</p>
           </div>
@@ -42,11 +51,18 @@ const DashboardContent = () => {
       </div>
 
       {/* Profile Users Section */}
-      <h2 className="text-2xl font-semibold mt-10 mb-4 text-green-700">All Profile Users</h2>
+      <h2 className="text-2xl font-semibold mt-10 mb-4 text-green-700">
+        All Profile Users
+      </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {profiles.map((profile, index) => (
-          <div key={index} className="bg-white shadow-lg rounded-xl p-4 border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">{profile.name}</h3>
+          <div
+            key={index}
+            className="bg-white shadow-lg rounded-xl p-4 border border-gray-200"
+          >
+            <h3 className="text-lg font-semibold text-gray-900">
+              {profile.name}
+            </h3>
             <p className="text-gray-600">📧 {profile.email}</p>
             <p className="text-gray-600">📞 {profile.phoneNumber}</p>
             <p className="text-gray-600">🆔 PAN: {profile.pan}</p>
