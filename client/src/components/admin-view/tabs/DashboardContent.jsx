@@ -9,7 +9,7 @@ const DashboardContent = () => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get(
-          "https://cibilbankscore-1svq.vercel.app/dashboard/users"
+          "http://localhost:3001/dashboard/users"
         );
         setUsers(response.data);
       } catch (error) {
@@ -20,7 +20,7 @@ const DashboardContent = () => {
     const fetchProfiles = async () => {
       try {
         const response = await axios.get(
-          "https://cibilbankscore-1svq.vercel.app/dashboard/profiles"
+          "http://localhost:3001/dashboard/profiles"
         );
         setProfiles(response.data);
       } catch (error) {

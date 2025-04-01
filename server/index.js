@@ -21,7 +21,7 @@ const server = http.createServer(app);
 // Initialize Socket.io with correct CORS settings
 const io = new Server(server, {
   cors: {
-    origin: "https://cibilbankscore-client.vercel.app", // ✅ Allow frontend
+    origin: "http://localhost:5173", // ✅ Allow frontend
     methods: ["GET", "POST"],
     credentials: true, // ✅ Allow credentials
   }
@@ -47,7 +47,7 @@ io.on("connection", (socket) => {
 
 // Middleware
 app.use(cors({
-  origin: "https://cibilbankscore-client.vercel.app", // ✅ Ensure this matches frontend origin
+  origin: "http://localhost:5173", // ✅ Ensure this matches frontend origin
   methods: ["GET", "POST"],
   credentials: true, // ✅ Allow credentials
 }));

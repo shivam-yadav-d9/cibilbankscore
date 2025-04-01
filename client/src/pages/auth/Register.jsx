@@ -24,7 +24,7 @@ const Signup = () => {
 
     try {
       const response = await axios.post(
-        "https://cibilbankscore-1svq.vercel.app/user/signup",
+        "http://localhost:3001/user/signup",
         userInfo
       );
 

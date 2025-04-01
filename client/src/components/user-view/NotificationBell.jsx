@@ -3,7 +3,7 @@ import axios from "axios";
 import { io } from "socket.io-client";
 import { Bell, X, Check } from "lucide-react";
 
-const socket = io("https://cibilbankscore-1svq.vercel.app");
+const socket = io("http://localhost:3001");
 
 function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
@@ -18,7 +18,7 @@ function NotificationBell() {
     const fetchNotifications = async () => {
       try {
         const response = await axios.get(
-          "https://cibilbankscore-1svq.vercel.app/api/notifications"
+          "http://localhost:3001/api/notifications"
         );
         setNotifications(response.data);
         setUnreadCount(response.data.filter((notif) => !notif.read).length);
@@ -69,7 +69,7 @@ function NotificationBell() {
   const markAsRead = async (id) => {
     try {
       await axios.patch(
-        `https://cibilbankscore-1svq.vercel.app/api/notifications/${id}`
+        `http://localhost:3001/api/notifications/${id}`
       );
       setNotifications((prev) =>
         prev.map((notif) =>
@@ -88,7 +88,7 @@ function NotificationBell() {
 
     try {
       await axios.delete(
-        `https://cibilbankscore-1svq.vercel.app/api/notifications/${id}`
+        `http://localhost:3001/api/notifications/${id}`
       );
       // Remove the deleted notification from state
       const deletedNotif = notifications.find((notif) => notif._id === id);
@@ -104,7 +104,7 @@ function NotificationBell() {
   const markAllAsRead = async () => {
     try {
       await axios.patch(
-        "https://cibilbankscore-1svq.vercel.app/api/notifications/mark-all-read"
+        "http://localhost:3001/api/notifications/mark-all-read"
       );
       setNotifications((prev) =>
         prev.map((notif) => ({ ...notif, read: true }))
@@ -118,7 +118,7 @@ function NotificationBell() {
   const clearAllNotifications = async () => {
     try {
       await axios.delete(
-        "https://cibilbankscore-1svq.vercel.app/api/notifications"
+        "http://localhost:3001/api/notifications"
       );
       setNotifications([]);
       setUnreadCount(0);

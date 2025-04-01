@@ -5,7 +5,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { useState } from "react";
-import Layout from "./pages/auth/Layout"; 
+import Layout from "./pages/auth/Layout";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import UserInput from "./pages/auth/UserInput";
@@ -37,7 +37,6 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Routes with Layout (Navbar & Footer) */}
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/aboutus" element={<AboutUs />} />
@@ -48,35 +47,21 @@ function App() {
           <Route path="/services/credit-building" element={<CreditBuildingSolutions />} />
           <Route path="/services/atm" element={<ATMInstallationPage />} />
           <Route path="/services/investment-and-wealth-management" element={<InvestmentDashboard />} />
+
+
+          <Route path="/login" element={<Login updateAuth={updateAuth} />} />
+          <Route path="/signup" element={<Register />} />
+          <Route path="/userinput" element={<UserInput />} />
+          <Route path="/loan" element={<LoanInformation />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/business-login" element={<BusinessLogin updateAuth={updateAuth} />} />
+
+          <Route path="/dashboard" element={isAuthenticated ? <Dashboard updateAuth={updateAuth} /> : <Navigate to="/login" />} />
+          <Route path="/admin" element={isAuthenticated ? <AdminPanel /> : <Navigate to="/admin-login" />} />
+          <Route path="/business-dashboard" element={isAuthenticated ? <B2BDashboard /> : <Navigate to="/business-login" />} />
+
+          <Route path="*" element={<h1 className="text-center text-white mt-10">404 - Page Not Found</h1>} />
         </Route>
-
-        {/* Authentication Routes */}
-        <Route path="/login" element={<Login updateAuth={updateAuth} />} />
-        <Route path="/signup" element={<Register />} />
-        <Route path="/userinput" element={<UserInput />} />
-        <Route path="/loan" element={<LoanInformation />} />
-        <Route path="/admin-login" element={<AdminLogin />} />
-        <Route path="/business-login" element={<BusinessLogin />} />
-
-        {/* Protected Routes */}
-        <Route
-          path="/dashboard"
-          element={isAuthenticated ? <Dashboard updateAuth={updateAuth} /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/admin"
-          element={isAuthenticated ? <AdminPanel /> : <Navigate to="/admin-login" />}
-        />
-        <Route
-          path="/business-dashboard"
-          element={isAuthenticated ? <B2BDashboard /> : <Navigate to="/business-login" />}
-        />
-
-        {/* 404 Not Found Page */}
-        <Route
-          path="*"
-          element={<h1 className="text-center text-white mt-10">404 - Page Not Found</h1>}
-        />
       </Routes>
     </Router>
   );

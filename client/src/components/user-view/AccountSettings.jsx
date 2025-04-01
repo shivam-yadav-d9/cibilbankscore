@@ -32,7 +32,7 @@ const AccountSettings = ({ user }) => {
 
     try {
       const res = await axios.post(
-        "https://cibilbankscore-1svq.vercel.app/profile/update",
+        "http://localhost:3001/profile/update",
         formData
       );
       setSuccessMessage(res.data.message || "Profile updated successfully!");

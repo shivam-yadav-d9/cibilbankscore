@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 
-// const socket = io('https://cibilbankscore-1svq.vercel.app//');
+// const socket = io('http://localhost:3001//');
 
 // Connect to socket server
-const socket = io("https://cibilbankscore-1svq.vercel.app", {
+const socket = io("http://localhost:3001", {
   transports: ["websocket", "polling"], // ✅ Ensure transport compatibility
   withCredentials: true, // ✅ Fix potential CORS issues
 });
@@ -25,7 +25,7 @@ function NotificationsContent() {
 
     try {
       // Send to API
-      await axios.post("https://cibilbankscore-1svq.vercel.app/api/messages", {
+      await axios.post("http://localhost:3001/api/messages", {
         content: message,
         sender,
       });

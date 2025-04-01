@@ -16455,7 +16455,7 @@ const {
         _.preventDefault(), m(null), y(!0);
         try {
           const H = await xe.post(
-            "https://cibilbankscore-1svq.vercel.app//user/login",
+            "http://localhost:3001//user/login",
             { email: l, password: c }
           );
           H.data.token
@@ -16665,7 +16665,7 @@ const {
         try {
           (
             await xe.post(
-              "https://cibilbankscore-1svq.vercel.app//user/signup",
+              "http://localhost:3001//user/signup",
               O
             )
           ).data && (l(""), c(""), f(""), R("/userinput"));
@@ -19801,7 +19801,7 @@ Object.assign(fi, { Manager: $c, Socket: Um, io: fi, connect: fi });
     ],
   ],
   h2 = Te("Zap", f2),
-  U0 = fi("https://cibilbankscore-1svq.vercel.app//");
+  U0 = fi("http://localhost:3001//");
 function m2() {
   const [i, l] = E.useState([]),
     [s, c] = E.useState(0),
@@ -19813,7 +19813,7 @@ function m2() {
     (async () => {
       try {
         const H = await xe.get(
-          "https://cibilbankscore-1svq.vercel.app//api/notifications"
+          "http://localhost:3001//api/notifications"
         );
         l(H.data), c(H.data.filter((F) => !F.read).length), g(!1);
       } catch {
@@ -19845,7 +19845,7 @@ function m2() {
     R = async (M) => {
       try {
         await xe.patch(
-          `https://cibilbankscore-1svq.vercel.app//api/notifications/${M}`
+          `http://localhost:3001//api/notifications/${M}`
         ),
           l((Y) => Y.map((H) => (H._id === M ? { ...H, read: !0 } : H))),
           c((Y) => Y - 1);
@@ -19857,7 +19857,7 @@ function m2() {
       Y.stopPropagation();
       try {
         await xe.delete(
-          `https://cibilbankscore-1svq.vercel.app//api/notifications/${M}`
+          `http://localhost:3001//api/notifications/${M}`
         );
         const H = i.find((F) => F._id === M);
         l((F) => F.filter((X) => X._id !== M)), H && !H.read && c((F) => F - 1);
@@ -19868,7 +19868,7 @@ function m2() {
     _ = async () => {
       try {
         await xe.patch(
-          "https://cibilbankscore-1svq.vercel.app//api/notifications/mark-all-read"
+          "http://localhost:3001//api/notifications/mark-all-read"
         ),
           l((M) => M.map((Y) => ({ ...Y, read: !0 }))),
           c(0);
@@ -19879,7 +19879,7 @@ function m2() {
     U = async () => {
       try {
         await xe.delete(
-          "https://cibilbankscore-1svq.vercel.app//api/notifications"
+          "http://localhost:3001//api/notifications"
         ),
           l([]),
           c(0);
@@ -20200,7 +20200,7 @@ const p2 = ({ user: i, handleLogout: l }) =>
         p.preventDefault(), d(!0), m("");
         try {
           const b = await xe.post(
-            "https://cibilbankscore-1svq.vercel.app//profile/update",
+            "http://localhost:3001//profile/update",
             l
           );
           m(b.data.message || "Profile updated successfully!"),
@@ -22166,7 +22166,7 @@ const p2 = ({ user: i, handleLogout: l }) =>
         const d = async () => {
             try {
               const m = await xe.get(
-                "https://cibilbankscore-1svq.vercel.app//dashboard/users"
+                "http://localhost:3001//dashboard/users"
               );
               l(m.data);
             } catch (m) {
@@ -22176,7 +22176,7 @@ const p2 = ({ user: i, handleLogout: l }) =>
           f = async () => {
             try {
               const m = await xe.get(
-                "https://cibilbankscore-1svq.vercel.app//dashboard/profiles"
+                "http://localhost:3001//dashboard/profiles"
               );
               c(m.data);
             } catch (m) {
@@ -22574,7 +22574,7 @@ const p2 = ({ user: i, handleLogout: l }) =>
         }),
       ],
     }),
-  S2 = fi("https://cibilbankscore-1svq.vercel.app//", {
+  S2 = fi("http://localhost:3001//", {
     transports: ["websocket", "polling"],
     withCredentials: !0,
   });
@@ -22589,7 +22589,7 @@ function E2() {
         return;
       }
       try {
-        await xe.post("https://cibilbankscore-1svq.vercel.app//api/messages", {
+        await xe.post("http://localhost:3001//api/messages", {
           content: i,
           sender: s,
         }),
