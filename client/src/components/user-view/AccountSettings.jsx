@@ -13,7 +13,7 @@ const AccountSettings = ({ user }) => {
     address: user?.address || "",
     city: user?.city || "",
     pincode: user?.pincode || "",
-    creditScore: user?.creditScore || 0
+    creditScore: user?.creditScore || 0,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,7 +31,10 @@ const AccountSettings = ({ user }) => {
     setSuccessMessage("");
 
     try {
-      const res = await axios.post("https://cibilbankscore-server-gamma.vercel.app/profile/update", formData);
+      const res = await axios.post(
+        "https://cibilbankscore-1svq.vercel.app/profile/update",
+        formData
+      );
       setSuccessMessage(res.data.message || "Profile updated successfully!");
       setTimeout(() => setSuccessMessage(""), 5000);
     } catch (error) {
@@ -42,13 +45,10 @@ const AccountSettings = ({ user }) => {
     }
   };
 
-
   return (
     <div className="space-y-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold  mb-2">
-          Profile Settings
-        </h1>
+        <h1 className="text-3xl font-bold  mb-2">Profile Settings</h1>
         <p className="text-slate-600 text-lg">
           Update your personal information and account details.
         </p>
@@ -57,9 +57,7 @@ const AccountSettings = ({ user }) => {
       {/* Personal Information */}
       <div className="bg-slate-900/50 rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
         <div className="p-8">
-          <h2 className="text-2xl font-semibold mb-6">
-            Personal Information
-          </h2>
+          <h2 className="text-2xl font-semibold mb-6">Personal Information</h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -86,7 +84,7 @@ const AccountSettings = ({ user }) => {
                   type="email"
                   name="email"
                   value={formData.email}
-                  onChange={handleChange}  // Allow editing
+                  onChange={handleChange} // Allow editing
                   className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 "
                 />
               </div>
@@ -132,8 +130,6 @@ const AccountSettings = ({ user }) => {
                 />
               </div>
             </div>
-
-
           </form>
         </div>
       </div>
@@ -194,9 +190,7 @@ const AccountSettings = ({ user }) => {
       {/* Address Information */}
       <div className="bg-slate-900/50 rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
         <div className="p-8">
-          <h2 className="text-2xl font-semibold  mb-6">
-            Address Information
-          </h2>
+          <h2 className="text-2xl font-semibold  mb-6">Address Information</h2>
 
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
@@ -243,8 +237,6 @@ const AccountSettings = ({ user }) => {
                   />
                 </div>
 
-
-
                 {/* PIN Code */}
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -258,7 +250,6 @@ const AccountSettings = ({ user }) => {
                     className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-900"
                   />
                 </div>
-
 
                 {/* Success message */}
                 {successMessage && (
