@@ -6,22 +6,25 @@ import {
   MessageCircle,
   Check,
   TrendingUp,
-  Shield
+  Shield,
 } from "lucide-react";
 
 const Home = () => {
   const images = [
     {
-      src: "https://vakrangee.in/images/banner/banner_1.jpg",
+      src: "https://finvestor.co.in/wp-content/uploads/2024/03/bank.png",
       alt: "First slide",
+      caption: "Digital Banking Solutions",
     },
     {
-      src: "https://vakrangee.in/images/banner/banner_3.jpg",
+      src: "https://navi.com/blog/wp-content/uploads/2022/06/Credit-Score-vs-CIBIL-Score.jpg",
       alt: "Second slide",
+      caption: "Credit Management",
     },
     {
       src: "https://vakrangee.in/images/banner/Technology-Banner.jpg",
       alt: "Third slide",
+      caption: "Advanced Technology Infrastructure",
     },
   ];
 
@@ -49,7 +52,7 @@ const Home = () => {
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Hero Section with Carousel */}
-      <div className="relative">
+      <div className="relative w-full">
         <Carousel
           images={images}
           autoPlayInterval={4000}
@@ -58,74 +61,74 @@ const Home = () => {
         />
       </div>
 
-      <section className="container mx-auto px-6 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">
+      <section className="container mx-auto px-4 sm:px-6 py-8 sm:py-16">
+        <div className="text-center mb-8 sm:mb-12">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-3 sm:mb-4">
             Our Strategic Advantages
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className="text-gray-600 max-w-2xl mx-auto text-sm sm:text-base">
             DBNPE is committed to redefining financial services through
             technological excellence and customer-centric approach.
           </p>
         </div>
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-8">
           {keyFeatures.map((feature, index) => (
             <div
               key={index}
-              className="bg-white border border-gray-100 rounded-xl p-8 text-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+              className="bg-white border border-gray-100 rounded-xl p-6 sm:p-8 text-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
             >
               <feature.icon
-                className="mx-auto mb-6 text-blue-600"
-                size={60}
+                className="mx-auto mb-4 sm:mb-6 text-blue-600"
+                size={40}
                 strokeWidth={1.5}
               />
-              <h3 className="text-2xl font-semibold mb-4 text-gray-800">
+              <h3 className="text-xl sm:text-2xl font-semibold mb-2 sm:mb-4 text-gray-800">
                 {feature.title}
               </h3>
-              <p className="text-gray-600">{feature.description}</p>
+              <p className="text-gray-600 text-sm sm:text-base">{feature.description}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* About DBNPE Section */}
-      <section className="bg-blue-50 py-16">
-        <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+      <section className="bg-blue-50 py-8 sm:py-16">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 items-center">
             <div>
-              <h2 className="text-4xl font-bold text-gray-800 mb-6">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-4 sm:mb-6">
                 What is DBNPE?
               </h2>
-              <p className="text-gray-700 text-lg mb-6 leading-relaxed">
+              <p className="text-gray-700 text-base sm:text-lg mb-4 sm:mb-6 leading-relaxed">
                 DBNPE represents a revolutionary approach to digital banking and
                 financial services, leveraging advanced technologies to create
                 an inclusive, efficient, and transparent financial ecosystem.
               </p>
-              <ul className="space-y-4 text-gray-600">
+              <ul className="space-y-3 sm:space-y-4 text-gray-600 text-sm sm:text-base">
                 <li className="flex items-center">
-                  <Check className="mr-3 text-blue-600" />
-                  Advanced Digital Banking Solutions
+                  <Check className="mr-2 sm:mr-3 text-blue-600 flex-shrink-0" size={20} />
+                  <span>Advanced Digital Banking Solutions</span>
                 </li>
                 <li className="flex items-center">
-                  <Check className="mr-3 text-blue-600" />
-                  Comprehensive Financial Inclusion
+                  <Check className="mr-2 sm:mr-3 text-blue-600 flex-shrink-0" size={20} />
+                  <span>Comprehensive Financial Inclusion</span>
                 </li>
                 <li className="flex items-center">
-                  <Check className="mr-3 text-blue-600" />
-                  Secure and Transparent Transactions
+                  <Check className="mr-2 sm:mr-3 text-blue-600 flex-shrink-0" size={20} />
+                  <span>Secure and Transparent Transactions</span>
                 </li>
               </ul>
             </div>
-            <div className="bg-white p-8 rounded-xl shadow-lg">
+            <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
               <Award
-                className="mx-auto text-blue-600 mb-6"
-                size={70}
+                className="mx-auto text-blue-600 mb-4 sm:mb-6"
+                size={50}
                 strokeWidth={1.5}
               />
-              <h3 className="text-2xl font-semibold text-center mb-4 text-gray-800">
+              <h3 className="text-xl sm:text-2xl font-semibold text-center mb-3 sm:mb-4 text-gray-800">
                 Our Vision
               </h3>
-              <p className="text-gray-600 text-center">
+              <p className="text-gray-600 text-center text-sm sm:text-base">
                 To be the most trusted and innovative digital banking platform,
                 driving financial empowerment and technological advancement
                 across India.
@@ -136,23 +139,23 @@ const Home = () => {
       </section>
 
       {/* Leadership Message */}
-      <section className="bg-blue-800 text-white py-16">
-        <div className="container mx-auto px-6">
+      <section className="bg-blue-800 text-white py-8 sm:py-16">
+        <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-4xl mx-auto text-center">
             <MessageCircle
-              className="mx-auto mb-8 text-white"
-              size={70}
+              className="mx-auto mb-4 sm:mb-8 text-white"
+              size={40}
               strokeWidth={1.5}
             />
-            <h2 className="text-4xl font-bold mb-6">Leadership Perspective</h2>
-            <blockquote className="italic text-2xl mb-8 leading-relaxed">
+            <h2 className="text-2xl sm:text-4xl font-bold mb-4 sm:mb-6">Leadership Perspective</h2>
+            <blockquote className="italic text-lg sm:text-2xl mb-6 sm:mb-8 leading-relaxed">
               "Our commitment goes beyond technology. We are building a
               financial ecosystem that empowers every individual, transforms
               digital experiences, and creates meaningful economic opportunities
               across India."
             </blockquote>
-            <p className="font-semibold text-xl text-blue-100">
-              - Dr. Dinesh Nayar, Chairman Emeritus
+            <p className="font-semibold text-base sm:text-xl text-blue-100">
+              - Pravin More.
             </p>
           </div>
         </div>

@@ -38,13 +38,48 @@ const Carousel = ({
     }
   }, [isPaused, autoPlayInterval]);
 
+  // Handle touch events for swipe
+  const touchStartX = useRef(null);
+  const touchEndX = useRef(null);
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    
+    const difference = touchStartX.current - touchEndX.current;
+    const threshold = 50; // Minimum swipe distance
+    
+    if (difference > threshold) {
+      // Swiped left, go to next slide
+      nextSlide();
+    } else if (difference < -threshold) {
+      // Swiped right, go to previous slide
+      prevSlide();
+    }
+    
+    // Reset values
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
+
   return (
     <div 
-      className="w-full h-screen relative group mb-2"
+      className="w-full relative group mb-2"
+      style={{ height: "min(100vh, 600px)" }} // Responsive height
     >
       {/* Main Image Container */}
       <div 
         className="absolute inset-0 overflow-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         {/* Slide Wrapper */}
         <div 
@@ -69,9 +104,9 @@ const Carousel = ({
               {/* Optional Slide Caption */}
               {image.caption && (
                 <div className="absolute bottom-0 left-0 right-0 
-                                bg-black/50 text-white p-4 
-                                text-center font-medium 
-                                opacity-0 group-hover:opacity-100 
+                                bg-black/50 text-white p-2 sm:p-4 
+                                text-center text-sm sm:text-base font-medium 
+                                opacity-100 sm:opacity-0 sm:group-hover:opacity-100 
                                 transition-opacity duration-300">
                   {image.caption}
                 </div>
@@ -80,63 +115,80 @@ const Carousel = ({
           ))}
         </div>
 
-        {/* Navigation Controls */}
+        {/* Navigation Controls - Responsive sizes and hidden on small screens unless hovered */}
         {showControls && (
           <>
             <button 
               onClick={prevSlide}
-              className="absolute top-1/2 left-4 -translate-y-1/2 
+              className="absolute top-1/2 left-2 sm:left-4 -translate-y-1/2 
                          bg-white/10 hover:bg-white/20 
                          backdrop-blur-sm border border-white/20
-                         text-white rounded-full p-2 
+                         text-white rounded-full p-1 sm:p-2 
                          transition-all duration-300 
                          hover:scale-110 
+                         opacity-50 sm:opacity-0 group-hover:opacity-100
                          z-20"
+              aria-label="Previous slide"
             >
-              <ChevronLeft size={24} />
+              <ChevronLeft size={16} className="sm:hidden" />
+              <ChevronLeft size={24} className="hidden sm:block" />
             </button>
             <button 
               onClick={nextSlide}
-              className="absolute top-1/2 right-4 -translate-y-1/2 
+              className="absolute top-1/2 right-2 sm:right-4 -translate-y-1/2 
                          bg-white/10 hover:bg-white/20 
                          backdrop-blur-sm border border-white/20
-                         text-white rounded-full p-2 
+                         text-white rounded-full p-1 sm:p-2 
                          transition-all duration-300 
                          hover:scale-110 
+                         opacity-50 sm:opacity-0 group-hover:opacity-100
                          z-20"
+              aria-label="Next slide"
             >
-              <ChevronRight size={24} />
+              <ChevronRight size={16} className="sm:hidden" />
+              <ChevronRight size={24} className="hidden sm:block" />
             </button>
           </>
         )}
 
-        {/* Pause/Play Toggle */}
+        {/* Pause/Play Toggle - Responsive positioning and sizing */}
         <button 
           onClick={() => setIsPaused(!isPaused)}
-          className="absolute bottom-4 right-4 
+          className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4
                      bg-white/10 hover:bg-white/20 
                      backdrop-blur-sm border border-white/20
-                     text-white rounded-full p-2 
+                     text-white rounded-full p-1 sm:p-2 
                      transition-all duration-300 
                      hover:scale-110
                      z-20"
+          aria-label={isPaused ? "Play slideshow" : "Pause slideshow"}
         >
-          {isPaused ? <Play size={20} /> : <Pause size={20} />}
+          {isPaused ? 
+            <>
+              <Play size={16} className="sm:hidden" />
+              <Play size={20} className="hidden sm:block" />
+            </> : 
+            <>
+              <Pause size={16} className="sm:hidden" />
+              <Pause size={20} className="hidden sm:block" />
+            </>
+          }
         </button>
       </div>
 
-      {/* Slide Indicators */}
+      {/* Slide Indicators - Responsive spacing and sizing */}
       {showIndicators && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 
-                        flex space-x-2 z-20">
+        <div className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 
+                        flex space-x-1 sm:space-x-2 z-20">
           {images.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`h-2 transition-all duration-300 cursor-pointer
+              className={`h-1 sm:h-2 transition-all duration-300 cursor-pointer
                          ${currentIndex === index 
-                           ? 'bg-blue-500 w-8 rounded-lg' 
-                           : 'bg-gray-500/30 w-2 rounded-full hover:bg-gray-500/50'}`}
+                           ? 'bg-blue-500 w-4 sm:w-8 rounded-lg' 
+                           : 'bg-gray-500/30 w-1 sm:w-2 rounded-full hover:bg-gray-500/50'}`}
+              aria-label={`Go to slide ${index + 1}`}
             />
           ))}
         </div>
