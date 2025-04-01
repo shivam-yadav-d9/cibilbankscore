@@ -23,6 +23,7 @@ import LoanServicesPage from "./pages/auth/LoanServicesPage";
 import CreditBuildingSolutions from "./pages/auth/CreditBuildingSolutions";
 import ATMInstallationPage from "./pages/auth/ATMInstallationPage";
 import InvestmentDashboard from "./pages/auth/InvestmentDashboard";
+import BusinessLogin from "./components/business-view/auth/BusinessLogin";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
@@ -55,6 +56,7 @@ function App() {
         <Route path="/userinput" element={<UserInput />} />
         <Route path="/loan" element={<LoanInformation />} />
         <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/business-login" element={<BusinessLogin />} />
 
         {/* Protected Routes */}
         <Route
@@ -67,7 +69,7 @@ function App() {
         />
         <Route
           path="/business-dashboard"
-          element={isAuthenticated ? <B2BDashboard /> : <Navigate to="/admin-login" />}
+          element={isAuthenticated ? <B2BDashboard /> : <Navigate to="/business-login" />}
         />
 
         {/* 404 Not Found Page */}
