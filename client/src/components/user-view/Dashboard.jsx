@@ -22,7 +22,7 @@ const Dashboard = ({ updateAuth }) => {
     const userData = JSON.parse(localStorage.getItem("user"));
 
     if (!dashboardData || !userData) {
-      navigate("/loan-information");
+      navigate("/signup");
       return;
     }
 
@@ -424,7 +424,7 @@ const Overview = ({ user }) => {
             </svg>
             Quick Actions
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
             <button className="group bg-gradient-to-br from-slate-800/60 to-slate-900/60 p-6 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-indigo-900/20 backdrop-blur-sm border border-slate-700/30 hover:-translate-y-1 flex flex-col items-center justify-center text-center">
               <div className="bg-indigo-900/30 w-12 h-12 rounded-lg flex items-center justify-center mb-4 text-indigo-400 group-hover:bg-indigo-600/40 transition-all duration-300">
                 <svg

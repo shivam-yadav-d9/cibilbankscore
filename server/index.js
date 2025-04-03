@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import authRoutes from "./routes/authroutes.js";
+import apiRoutes from "./routes/apiRoutes.js"
 import profileRoutes from "./routes/profileRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import message from "./routes/messages.js";
@@ -60,7 +61,8 @@ mongoose
   .catch((err) => console.error("MongoDB Connection Error:", err));
 
 // Routes
-app.use("/user", authRoutes);
+app.use("/api/user", authRoutes);
+app.use('/api/credit', apiRoutes);
 app.use("/profile", profileRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/api/messages", message);
