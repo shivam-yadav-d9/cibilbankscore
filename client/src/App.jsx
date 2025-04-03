@@ -10,6 +10,8 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import UserInput from "./pages/auth/UserInput";
 import Dashboard from "./components/user-view/Dashboard";
+import CreditDashboard from "./components/user-view/CreditDashboard";
+
 import AdminPanel from "./components/admin-view/AdminPanel";
 import LoanInformation from "./components/user-view/LoanInformation";
 import AdminLogin from "./components/admin-view/AdminLogin";
@@ -55,13 +57,15 @@ function App() {
           <Route path="/loan" element={<LoanInformation />} />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/business-login" element={<BusinessLogin updateAuth={updateAuth} />} />
-
+          
           <Route path="/dashboard" element={isAuthenticated ? <Dashboard updateAuth={updateAuth} /> : <Navigate to="/login" />} />
           <Route path="/admin" element={isAuthenticated ? <AdminPanel /> : <Navigate to="/admin-login" />} />
           <Route path="/business-dashboard" element={isAuthenticated ? <B2BDashboard /> : <Navigate to="/business-login" />} />
 
           <Route path="*" element={<h1 className="text-center text-white mt-10">404 - Page Not Found</h1>} />
         </Route>
+        <Route path="/CreditDashboard" element={<CreditDashboard />} />
+
       </Routes>
     </Router>
   );

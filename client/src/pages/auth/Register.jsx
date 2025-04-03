@@ -34,7 +34,7 @@ const Signup = () => {
         setEmail("");
         setPassword("");
         // Navigate to login page after successful signup
-        navigate("/userinput");
+        navigate("/dashboard");
       }
     } catch (error) {
       console.error("Error:", error.response?.data?.message || error.message);
