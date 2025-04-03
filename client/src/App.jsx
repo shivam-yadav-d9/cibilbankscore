@@ -12,6 +12,7 @@ import BusinessLogin from "./components/business-view/auth/BusinessLogin";
 
 // User View Components
 import Dashboard from "./components/user-view/Dashboard";
+import AdminPanel from "./components/admin-view/AdminPanel";
 import LoanInformation from "./components/user-view/LoanInformation";
 import AboutUs from "./components/user-view/AboutUs";
 import CareerPage from "./components/user-view/CareerPage";
@@ -40,72 +41,35 @@ function App() {
   };
 
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          {/* Public Pages */}
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="login" element={<Login onLoginSuccess={updateAuth} />} />
-            <Route path="signup" element={<Signup />} />
-            <Route path="user-input" element={<UserInput />} />
-            <Route path="admin-login" element={<AdminLogin onLoginSuccess={updateAuth} />} />
-            <Route path="business-login" element={<BusinessLogin onLoginSuccess={updateAuth} />} />
-            <Route path="about-us" element={<AboutUs />} />
-            <Route path="careers" element={<CareerPage />} />
-            
-            {/* Service Information Pages */}
-            <Route path="banking-api" element={<BankingAPIPage />} />
-            <Route path="b2b-banking" element={<B2BBankingSystems />} />
-            <Route path="loan-services" element={<LoanServicesPage />} />
-            <Route path="credit-solutions" element={<CreditBuildingSolutions />} />
-            <Route path="atm-installation" element={<ATMInstallationPage />} />
-          </Route>
-          
-          {/* Protected Routes */}
-          <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/credit-check" element={
-            <ProtectedRoute>
-              <CreditCheck />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/loan-information" element={
-            <ProtectedRoute>
-              <LoanInformation />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/investment" element={
-            <ProtectedRoute>
-              <InvestmentDashboard />
-            </ProtectedRoute>
-          } />
-          
-          {/* Admin Routes */}
-          <Route path="/admin" element={
-            <ProtectedRoute adminOnly={true}>
-              <AdminPanel />
-            </ProtectedRoute>
-          } />
-          
-          {/* Business Routes */}
-          <Route path="/b2b-dashboard" element={
-            <ProtectedRoute businessOnly={true}>
-              <B2BDashboard />
-            </ProtectedRoute>
-          } />
-          
-          {/* Fallback Route */}
-          <Route path="*" element={<div>404 - Page Not Found</div>} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+    <Router>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/aboutus" element={<AboutUs />} />
+          <Route path="/careers" element={<CareerPage />} />
+          <Route path="/services/banking-apis" element={<BankingAPIPage />} />
+          <Route path="/services/b2b-systems" element={<B2BBankingSystems />} />
+          <Route path="/services/digital-payments" element={<LoanServicesPage />} />
+          <Route path="/services/credit-building" element={<CreditBuildingSolutions />} />
+          <Route path="/services/atm" element={<ATMInstallationPage />} />
+          <Route path="/services/investment-and-wealth-management" element={<InvestmentDashboard />} />
+
+
+          <Route path="/login" element={<Login updateAuth={updateAuth} />} />
+          <Route path="/signup" element={<Register />} />
+          <Route path="/userinput" element={<UserInput />} />
+          <Route path="/loan" element={<LoanInformation />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/business-login" element={<BusinessLogin updateAuth={updateAuth} />} />
+
+          <Route path="/dashboard" element={isAuthenticated ? <Dashboard updateAuth={updateAuth} /> : <Navigate to="/login" />} />
+          <Route path="/admin" element={isAuthenticated ? <AdminPanel /> : <Navigate to="/admin-login" />} />
+          <Route path="/business-dashboard" element={isAuthenticated ? <B2BDashboard /> : <Navigate to="/business-login" />} />
+
+          <Route path="*" element={<h1 className="text-center text-white mt-10">404 - Page Not Found</h1>} />
+        </Route>
+      </Routes>
+    </Router>
   );
 }
 

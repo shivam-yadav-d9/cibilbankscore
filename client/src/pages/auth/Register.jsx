@@ -23,11 +23,26 @@ const Signup = () => {
     setLoading(true);
 
     try {
+<<<<<<< HEAD
       const result = await signup(name, email, password);
       if (result.success) {
         navigate('/credit-check');
       } else {
         setError(result.message);
+=======
+      const response = await axios.post(
+        "http://localhost:3001/user/signup",
+        userInfo
+      );
+
+      if (response.data) {
+        // Clear form and show success
+        setName("");
+        setEmail("");
+        setPassword("");
+        // Navigate to login page after successful signup
+        navigate("/dashboard");
+>>>>>>> 4776f7837677338cbbeed7700c00c0f90988b5de
       }
     } catch (err) {
       setError('An error occurred during signup');

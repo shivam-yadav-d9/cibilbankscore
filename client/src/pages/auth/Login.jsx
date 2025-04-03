@@ -16,9 +16,16 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const result = await login(email, password);
-      if (result.success) {
-        navigate('/dashboard');
+      const response = await axios.post("http://localhost:3001/user/login", {
+        email,
+        password,
+      });
+
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        updateAuth(); // Update App.jsx state
+        navigate("/userinput");
       } else {
         setError(result.message);
       }

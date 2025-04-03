@@ -26,7 +26,7 @@ const UserInput = () => {
     localStorage.setItem("userInput", JSON.stringify(formData));
 
     // Navigate to loan page
-    navigate("/loan");
+    navigate("/CreditDashboard");
 
     // Notify Dashboard to update
     window.dispatchEvent(new Event("storage"));
