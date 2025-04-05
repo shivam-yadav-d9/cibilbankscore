@@ -27,6 +27,9 @@ import ATMInstallationPage from "./pages/auth/ATMInstallationPage";
 import InvestmentDashboard from "./pages/auth/InvestmentDashboard";
 import BusinessLogin from "./components/business-view/auth/BusinessLogin";
 
+import UserLoanpage from "./pages/auth/UserLoanpage";
+import UserloanInput from "./pages/auth/UserLoanInput";
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
     !!localStorage.getItem("token")
@@ -57,6 +60,9 @@ function App() {
           <Route path="/loan" element={<LoanInformation />} />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/business-login" element={<BusinessLogin updateAuth={updateAuth} />} />
+          
+          <Route path="/UserLoanpage" element={<UserLoanpage/>}/>
+          <Route path="/UserLoanInput" element={<UserloanInput/>}/>
           
           <Route path="/dashboard" element={isAuthenticated ? <Dashboard updateAuth={updateAuth} /> : <Navigate to="/login" />} />
           <Route path="/admin" element={isAuthenticated ? <AdminPanel /> : <Navigate to="/admin-login" />} />
