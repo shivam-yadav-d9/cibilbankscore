@@ -1,13 +1,5 @@
 import axios from "axios";
 
-// const API_BASE_URL = "https://uat-api.evolutosolution.com/v1";
-// const API_KEY =
-//   "47e3b88954003cab3e4f518c597651be73d2d966a41f8aec7f2697b72590d6c5";
-// const API_SECRET =
-//   "BNRq8RMC366ClzU3X5ftP85yKInM/tDEb8gyzwv1/wmfVvpD7GTF5LrIRhSy1PEF97YXu3nsJzC3UhcrUl2TLAQMYrm0QGlQ0damxe2LEPT8sa5GIFGdMVRrC8vODtBSvt+pNjKnuiodXQHwuza1MtqK6E86mRx8K3AcAAO5FykGl4tfze9yeK3fGmgFZJ3z";
-
-
-
 let config = {
   method: 'post',
   maxBodyLength: Infinity,
@@ -132,6 +124,88 @@ export const checkCreditScore = async (req, res) => {
     return res.status(error.response?.status || 500).json({
       success: false,
       message: `Credit check failed: ${error.message}`,
+      error: error.response?.data || {},
+      statusCode: error.response?.status || 500,
+    });
+  }
+};
+
+export const checkEligibility = async (req, res) => {
+  try {
+    const {
+      ref_code = "OUI202590898",
+      loan_type_id,
+      name,
+      email,
+      mobile,
+      income_source,
+      income,
+      pincode,
+      dob,
+      pan_no,
+      aadhaar_no,
+      cibil_score,
+      loan_amount
+    } = req.body;
+    
+    const apiToken = req.headers["x-api-token"];
+
+    if (!apiToken) {
+      return res
+        .status(401)
+        .json({ success: false, message: "API token is required" });
+    }
+
+    console.log("Making eligibility check with data:", {
+      ref_code,
+      loan_type_id,
+      name,
+      email: email.substring(0, 3) + "..." + email.split('@')[1], // Mask email in logs
+      mobile: mobile.substring(0, 3) + "xxxx", // Mask for privacy in logs
+      pan_no: "xxxxx" + pan_no.substring(pan_no.length - 3), // Mask for privacy in logs
+      aadhaar_no: "xxxx" + aadhaar_no.substring(aadhaar_no.length - 4), // Mask for privacy in logs
+      income,
+      pincode,
+      dob,
+      cibil_score,
+      loan_amount
+    });
+
+    const response = await axios.post(
+      `${API_BASE_URL}/loan/checkEligibility`,
+      {
+        ref_code,
+        loan_type_id,
+        name,
+        email,
+        mobile,
+        income_source,
+        income,
+        pincode,
+        dob,
+        pan_no,
+        aadhaar_no,
+        cibil_score,
+        loan_amount
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      }
+    );
+
+    console.log("Eligibility check response received:", response.status);
+    return res.status(200).json(response.data);
+  } catch (error) {
+    console.error("Eligibility check error details:");
+    console.error("- Message:", error.message);
+    console.error("- Response status:", error.response?.status);
+    console.error("- Response data:", error.response?.data);
+
+    return res.status(error.response?.status || 500).json({
+      success: false,
+      message: `Eligibility check failed: ${error.message}`,
       error: error.response?.data || {},
       statusCode: error.response?.status || 500,
     });

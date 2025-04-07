@@ -1,81 +1,7 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Header from "./Header";
-import Footer from "./Footer";
-import AccountSettings from "./AccountSettings";
-import SubscriptionBilling from "./SubscriptionBilling";
-import ServiceCatalogs from "./ServiceCatalogs";
+import React from "react";
+import { Link } from "react-router-dom";
 
-const Dashboard = ({ updateAuth }) => {
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState("overview");
-
-  const fetchUserData = () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
-    const dashboardData = JSON.parse(localStorage.getItem("dashboardData"));
-    const userData = JSON.parse(localStorage.getItem("user"));
-
-    if (!dashboardData || !userData) {
-      navigate("/loan-information");
-      return;
-    }
-
-    setUser({
-      name: userData.name,
-      email: userData.email,
-      creditScore: dashboardData.creditScore,
-      subscribedPlan: "Premium",
-      subscriptionDate: "January 15, 2025",
-      nextBillingDate: "February 15, 2025",
-      phoneNumber: dashboardData.mobile || "+91 9876543210",
-      pan: dashboardData.pan,
-      dob: dashboardData.dob,
-      loanInfo: dashboardData.loanInfo,
-    });
-  };
-
-  useEffect(() => {
-    fetchUserData();
-
-    // Listen for changes in localStorage (for new signup)
-    const handleStorageChange = () => {
-      fetchUserData();
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, []);
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex justify-center items-center">
-        <div className="relative">
-          <div className="h-16 w-16 rounded-full border-t-4 border-b-4 border-indigo-500 animate-spin"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-8 w-8 rounded-full bg-indigo-500 animate-pulse"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");  // Clear user data
-    localStorage.removeItem("dashboardData"); // Clear dashboard data
-    updateAuth();
-    navigate("/login");
-  };
-
-
+const Dashboard = () => {
   return (
     <>
       <div className="max-w-screen-xl mx-auto flex justify-between items-center p-12 gap-5 flex-col-reverse md:flex-row text-center md:text-left mt-16">
@@ -134,7 +60,7 @@ const Dashboard = ({ updateAuth }) => {
                   />
                 </svg>
               </div>
-              <Link to="/userinput"> <h3 className="font-medium text-sm md:text-base xl:text-lg text-black mb-1 md:mb-2 xl:mb-3 group-hover:text-indigo-400 transition-colors duration-300">
+              <Link to="/credit-check"> <h3 className="font-medium text-sm md:text-base xl:text-lg text-black mb-1 md:mb-2 xl:mb-3 group-hover:text-indigo-400 transition-colors duration-300">
                 Check Credit Score
               </h3>
               </Link>
@@ -157,111 +83,17 @@ const Dashboard = ({ updateAuth }) => {
                   />
                 </svg>
               </div>
-              <h3 className="font-medium text-sm md:text-base xl:text-lg text-black mb-1 md:mb-2 xl:mb-3 group-hover:text-indigo-400 transition-colors duration-300">
+              <Link to="/UserLoanpage"> <h3 className="font-medium text-sm md:text-base xl:text-lg text-black mb-1 md:mb-2 xl:mb-3 group-hover:text-indigo-400 transition-colors duration-300">
                 Apply For Loan
               </h3>
-              <p className="text-slate-300">
-                Keep your credit utilization below 30% of your available credit
-                limit.
-              </p>
-            </div>
-            <div className="group bg-gradient-to-br from-slate-800/60 to-slate-900/60 p-6 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-indigo-900/20 backdrop-blur-sm border border-slate-700/30 hover:-translate-y-1">
-              <div className="bg-indigo-900/30 w-12 h-12 rounded-lg flex items-center justify-center mb-4 text-indigo-400 group-hover:bg-indigo-600/40 transition-all duration-300">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
-              <h3 className="font-medium text-white mb-2 group-hover:text-indigo-400 transition-colors duration-300">
-                Regular Monitoring
-              </h3>
-              <p className="text-slate-300">
-                Check your credit report regularly for errors and dispute
-                inaccurate information.
-              </p>
-            </div>
-            <div className="group bg-gradient-to-br from-slate-800/60 to-slate-900/60 p-6 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-indigo-900/20 backdrop-blur-sm border border-slate-700/30 hover:-translate-y-1">
-              <div className="bg-indigo-900/30 w-12 h-12 rounded-lg flex items-center justify-center mb-4 text-indigo-400 group-hover:bg-indigo-600/40 transition-all duration-300">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"
-                  />
-                </svg>
-              </div>
-              <h3 className="font-medium text-white mb-2 group-hover:text-indigo-400 transition-colors duration-300">
-                Credit Mix
-              </h3>
-              <p className="text-slate-300">
-                Maintain a diverse mix of credit accounts to demonstrate your
-                ability to manage different types of credit.
-              </p>
-            </div>
-          </div>
-          <div className="mt-8 text-center">
-            <button className="inline-flex items-center px-6 py-3 bg-indigo-900/30 text-indigo-400 font-medium rounded-lg hover:bg-indigo-600/20 transition-all duration-300 border border-indigo-700/30">
-              View All Credit Tips
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 ml-2"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              </Link>
             </button>
-          </div>
-        </div>
-      </div>
 
-      {/* Quick Actions */}
-      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 hover:shadow-indigo-900/20 border border-slate-700/50 backdrop-blur-sm">
-        <div className="p-8">
-          <h2 className="text-2xl font-semibold text-white mb-6 flex items-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 mr-3 text-indigo-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-              />
-            </svg>
-            Quick Actions
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <button className="group bg-gradient-to-br from-slate-800/60 to-slate-900/60 p-6 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-indigo-900/20 backdrop-blur-sm border border-slate-700/30 hover:-translate-y-1 flex flex-col items-center justify-center text-center">
-              <div className="bg-indigo-900/30 w-12 h-12 rounded-lg flex items-center justify-center mb-4 text-indigo-400 group-hover:bg-indigo-600/40 transition-all duration-300">
+            <button className="group bg-white p-4 md:p-6 xl:p-8 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-indigo-900/20 backdrop-blur-sm border border-slate-700/30 hover:-translate-y-1 flex flex-col items-center justify-center text-center">
+              <div className="bg-indigo-900/30 w-8 h-8 md:w-12 md:h-12 xl:w-14 xl:h-14 rounded-lg flex items-center justify-center mb-2 md:mb-4 xl:mb-6 text-indigo-400 group-hover:bg-indigo-600/40 transition-all duration-300">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
+                  className="h-4 w-4 md:h-6 md:w-6 xl:h-8 xl:w-8"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -270,19 +102,20 @@ const Dashboard = ({ updateAuth }) => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    d="M9 2h6a2 2 0 012 2v16a2 2 0 01-2 2H9a2 2 0 01-2-2V4a2 2 0 012-2zm0 4h6m-6 4h6m-6 4h4"
                   />
                 </svg>
               </div>
-              <h3 className="font-medium text-white mb-2 group-hover:text-indigo-400 transition-colors duration-300">
-                Check Credit Score
+              <h3 className="font-medium text-sm md:text-base xl:text-lg text-black mb-1 md:mb-2 xl:mb-3 group-hover:text-indigo-400 transition-colors duration-300">
+                Bill Payment
               </h3>
             </button>
-            <button className="group bg-gradient-to-br from-slate-800/60 to-slate-900/60 p-6 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-indigo-900/20 backdrop-blur-sm border border-slate-700/30 hover:-translate-y-1 flex flex-col items-center justify-center text-center">
-              <div className="bg-indigo-900/30 w-12 h-12 rounded-lg flex items-center justify-center mb-4 text-indigo-400 group-hover:bg-indigo-600/40 transition-all duration-300">
+
+            <button className="group bg-white p-4 md:p-6 xl:p-8 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-indigo-900/20 backdrop-blur-sm border border-slate-700/30 hover:-translate-y-1 flex flex-col items-center justify-center text-center">
+              <div className="bg-indigo-900/30 w-8 h-8 md:w-12 md:h-12 xl:w-14 xl:h-14 rounded-lg flex items-center justify-center mb-2 md:mb-4 xl:mb-6 text-indigo-400 group-hover:bg-indigo-600/40 transition-all duration-300">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
+                  className="h-4 w-4 md:h-6 md:w-6 xl:h-8 xl:w-8"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -291,19 +124,20 @@ const Dashboard = ({ updateAuth }) => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    d="M12 3v2m0 16v2m-6-6h12m-7-7H5l2.5 7h9L19 8h-4.5M12 3L8.5 10h7L12 3z"
                   />
                 </svg>
               </div>
-              <h3 className="font-medium text-white mb-2 group-hover:text-indigo-400 transition-colors duration-300">
-                Apply for Loan
+              <h3 className="font-medium text-sm md:text-base xl:text-lg text-black mb-1 md:mb-2 xl:mb-3 group-hover:text-indigo-400 transition-colors duration-300">
+                Legal Advice
               </h3>
             </button>
-            <button className="group bg-gradient-to-br from-slate-800/60 to-slate-900/60 p-6 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-indigo-900/20 backdrop-blur-sm border border-slate-700/30 hover:-translate-y-1 flex flex-col items-center justify-center text-center">
-              <div className="bg-indigo-900/30 w-12 h-12 rounded-lg flex items-center justify-center mb-4 text-indigo-400 group-hover:bg-indigo-600/40 transition-all duration-300">
+
+            <button className="group bg-white p-4 md:p-6 xl:p-8 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-indigo-900/20 backdrop-blur-sm border border-slate-700/30 hover:-translate-y-1 flex flex-col items-center justify-center text-center">
+              <div className="bg-indigo-900/30 w-8 h-8 md:w-12 md:h-12 xl:w-14 xl:h-14 rounded-lg flex items-center justify-center mb-2 md:mb-4 xl:mb-6 text-indigo-400 group-hover:bg-indigo-600/40 transition-all duration-300">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
+                  className="h-4 w-4 md:h-6 md:w-6 xl:h-8 xl:w-8"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -312,16 +146,82 @@ const Dashboard = ({ updateAuth }) => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                    d="M12 8c1.38 0 2.5-1.12 2.5-2.5S13.38 3 12 3 9.5 4.12 9.5 5.5 10.62 8 12 8zm0 0v4m0 4v5m0-5h5m-5 0H7m0 0l3-3m-3 3l3 3"
                   />
                 </svg>
               </div>
-              <h3 className="font-medium text-white mb-2 group-hover:text-indigo-400 transition-colors duration-300">
-                Pay EMI
+              <h3 className="font-medium text-sm md:text-base xl:text-lg text-black mb-1 md:mb-2 xl:mb-3 group-hover:text-indigo-400 transition-colors duration-300">
+                Split EMI
               </h3>
             </button>
-            <button className="group bg-gradient-to-br from-slate-800/60 to-slate-900/60 p-6 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-indigo-900/20 backdrop-blur-sm border border-slate-700/30 hover:-translate-y-1 flex flex-col items-center justify-center text-center">
-              <div className="bg-indigo-900/30 w-12 h-12 rounded-lg flex items-center justify-center mb-4 text-indigo-400 group-hover:bg-indigo-600/40 transition-all duration-300">
+            <button className="group bg-white p-4 md:p-6 xl:p-8 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-indigo-900/20 backdrop-blur-sm border border-slate-700/30 hover:-translate-y-1 flex flex-col items-center justify-center text-center">
+              <div className="bg-indigo-900/30 w-8 h-8 md:w-12 md:h-12 xl:w-14 xl:h-14 rounded-lg flex items-center justify-center mb-2 md:mb-4 xl:mb-6 text-indigo-400 group-hover:bg-indigo-600/40 transition-all duration-300">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 md:h-6 md:w-6 xl:h-8 xl:w-8"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 5l18 18M15 7h.01M6.6 5.4l1.4 1.4M17 17l4 4m-9.4-4.4l1.4 1.4m-9.4 0l-1.4 1.4M15 17h.01M6.6 18.6l1.4-1.4m0-10l-1.4-1.4M18.6 6.6l-1.4 1.4M12 12l-3 3m0-6l3 3m6 6l-3-3m0 6l3-3"
+                  />
+                </svg>
+              </div>
+              <h3 className="font-medium text-sm md:text-base xl:text-lg text-black mb-1 md:mb-2 xl:mb-3 group-hover:text-indigo-400 transition-colors duration-300">
+                Stop Recovery Call
+              </h3>
+            </button>
+
+
+            <button className="group bg-white p-4 md:p-6 xl:p-8 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-indigo-900/20 backdrop-blur-sm border border-slate-700/30 hover:-translate-y-1 flex flex-col items-center justify-center text-center">
+              <div className="bg-indigo-900/30 w-8 h-8 md:w-12 md:h-12 xl:w-14 xl:h-14 rounded-lg flex items-center justify-center mb-2 md:mb-4 xl:mb-6 text-indigo-400 group-hover:bg-indigo-600/40 transition-all duration-300">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 md:h-6 md:w-6 xl:h-8 xl:w-8"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 2a10 10 0 00-10 10h1a9 9 0 0118 0h1a10 10 0 00-10-10zm-4 10a4 4 0 118 0m-8 0a4 4 0 118 0m-4 0v6m0 0h-2m2 0h2"
+                  />
+                </svg>
+              </div>
+              <h3 className="font-medium text-sm md:text-base xl:text-lg text-black mb-1 md:mb-2 xl:mb-3 group-hover:text-indigo-400 transition-colors duration-300">
+                Expect Connect
+              </h3>
+            </button>
+            <button className="group bg-white p-4 md:p-6 xl:p-8 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-indigo-900/20 backdrop-blur-sm border border-slate-700/30 hover:-translate-y-1 flex flex-col items-center justify-center text-center">
+              <div className="bg-indigo-900/30 w-8 h-8 md:w-12 md:h-12 xl:w-14 xl:h-14 rounded-lg flex items-center justify-center mb-2 md:mb-4 xl:mb-6 text-indigo-400 group-hover:bg-indigo-600/40 transition-all duration-300">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 md:h-6 md:w-6 xl:h-8 xl:w-8"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 2C7.58 2 4 4.58 4 7.95V12c0 3.64 2.56 6.69 6.24 7.78a1 1 0 00.52 0C17.44 18.69 20 15.64 20 12V7.95C20 4.58 16.42 2 12 2zM10 12.5l2 2 4-4"
+                  />
+                </svg>
+              </div>
+              <h3 className="font-medium text-sm md:text-base xl:text-lg text-black mb-1 md:mb-2 xl:mb-3 group-hover:text-indigo-400 transition-colors duration-300">
+                Insurance
+              </h3>
+            </button>
+
+            {/* <button className="group bg-white p-4 md:p-6 xl:p-8 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-indigo-900/20 backdrop-blur-sm border border-slate-700/30 hover:-translate-y-1 flex flex-col items-center justify-center text-center">
+              <div className="bg-indigo-900/30 w-8 h-8 md:w-12 md:h-12 xl:w-14 xl:h-14 rounded-lg flex items-center justify-center mb-2 md:mb-4 xl:mb-6 text-indigo-400 group-hover:bg-indigo-600/40 transition-all duration-300">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-4 w-4 md:h-6 md:w-6 xl:h-8 xl:w-8"
@@ -353,5 +253,4 @@ const Dashboard = ({ updateAuth }) => {
 };
 
 export default Dashboard;
-
 

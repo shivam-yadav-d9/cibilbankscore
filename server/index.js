@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import authRoutes from "./routes/authroutes.js";
-import apiRoutes from "./routes/apiRoutes.js"
+import apiRoutes from "./routes/apiRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import message from "./routes/messages.js";
@@ -25,7 +25,7 @@ const io = new Server(server, {
     origin: "http://localhost:5173", // ✅ Allow frontend
     methods: ["GET", "POST"],
     credentials: true, // ✅ Allow credentials
-  }
+  },
 });
 
 // Socket.io connection
@@ -37,7 +37,7 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("notification", {
       message: message.content,
       sender: message.sender,
-      createdAt: new Date()
+      createdAt: new Date(),
     });
   });
 
@@ -47,11 +47,13 @@ io.on("connection", (socket) => {
 });
 
 // Middleware
-app.use(cors({
-  origin: "http://localhost:5173", // ✅ Ensure this matches frontend origin
-  methods: ["GET", "POST"],
-  credentials: true, // ✅ Allow credentials
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173", // ✅ Ensure this matches frontend origin
+    methods: ["GET", "POST"],
+    credentials: true, // ✅ Allow credentials
+  })
+);
 app.use(express.json());
 
 // Database Connection
@@ -62,7 +64,7 @@ mongoose
 
 // Routes
 app.use("/api/user", authRoutes);
-app.use('/api/credit', apiRoutes);
+app.use("/api", apiRoutes);
 app.use("/profile", profileRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/api/messages", message);
@@ -74,4 +76,6 @@ app.get("/", (req, res) => {
 });
 
 // Start Server
-server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+server.listen(PORT, () =>
+  console.log(`Server running on http://localhost:${PORT}`)
+);
