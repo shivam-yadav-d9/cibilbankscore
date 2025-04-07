@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 
 const CreditCheck = () => {
@@ -24,11 +24,7 @@ const CreditCheck = () => {
 
   // Base64 encoding is already done in the Authorization header
 
-  // Fetch token on component mount
-  // useEffect(() => {
-  //   // Automatically fetch token when component loads
-  //   fetchToken();
-  // }, []);
+  
 
   // Function to get API token
   const fetchToken = async () => {

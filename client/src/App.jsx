@@ -38,6 +38,7 @@ import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/SignUp";
 import UserLoanpage from "./pages/auth/UserLoanpage";
 import UserLoanInput from "./pages/auth/UserLoanInput";
+import LoanProcessor from "./components/user-view/LoanProcessor";
 
 function App() {
   const { isAuthenticated, loading, updateAuth } = useAuth();
@@ -91,8 +92,9 @@ function App() {
                 path="/business-login"
                 element={<BusinessLogin updateAuth={updateAuth} />}
               />
-
-              <Route path="/UserLoanpage" element={<UserLoanpage />} />
+{/* 
+              <Route path="/UserLoanpage" element={<UserLoanpage />} /> */}
+              <Route path="/UserLoanpage" element={<LoanProcessor />} />
               <Route path="/UserLoanInput" element={<UserLoanInput />} />
 
               {/* Protected routes */}

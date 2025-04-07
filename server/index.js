@@ -63,7 +63,7 @@ mongoose
   .catch((err) => console.error("MongoDB Connection Error:", err));
 
 // Routes
-app.use("/api/user", authRoutes);
+app.use("/user", authRoutes);
 app.use("/api", apiRoutes);
 app.use("/profile", profileRoutes);
 app.use("/dashboard", dashboardRoutes);

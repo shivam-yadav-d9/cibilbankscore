@@ -24,7 +24,7 @@ const Login = ({ updateAuth }) => {
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.user));
-        updateAuth(); // Update App.jsx state
+        // updateAuth(); // Update App.jsx state
         navigate("/dashboard");
       } else {
         setError("Login failed. Please try again.");
