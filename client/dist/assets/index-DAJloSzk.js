@@ -9843,7 +9843,7 @@ Error generating stack: ` +
             Sa(e, "" + a);
         break;
       case "className":
-        _i(e, "class", a);
+        _i(e, "className", a);
         break;
       case "tabIndex":
         _i(e, "tabindex", a);
@@ -12781,7 +12781,7 @@ function Ig() {
   );
 }
 var ey = E.createElement(Ig, null),
-  ty = class extends E.Component {
+  ty = className extends E.Component {
     constructor(i) {
       super(i),
         (this.state = {
@@ -14855,7 +14855,7 @@ function fm(i, l, s) {
   }
   return i;
 }
-class y0 {
+className y0 {
   constructor() {
     this.handlers = [];
   }
@@ -14892,7 +14892,7 @@ const hm = {
   $b = typeof Blob < "u" ? Blob : null,
   Fb = {
     isBrowser: !0,
-    classes: { URLSearchParams: Kb, FormData: Jb, Blob: $b },
+    classNamees: { URLSearchParams: Kb, FormData: Jb, Blob: $b },
     protocols: ["http", "https", "file", "blob", "url", "data"],
   },
   ru = typeof window < "u" && typeof document < "u",
@@ -14923,7 +14923,7 @@ const hm = {
 function tv(i, l) {
   return lr(
     i,
-    new Ie.classes.URLSearchParams(),
+    new Ie.classNamees.URLSearchParams(),
     Object.assign(
       {
         visitor: function (s, c, d, f) {
@@ -15054,7 +15054,7 @@ const yi = {
   xsrfHeaderName: "X-XSRF-TOKEN",
   maxContentLength: -1,
   maxBodyLength: -1,
-  env: { FormData: Ie.classes.FormData, Blob: Ie.classes.Blob },
+  env: { FormData: Ie.classNamees.FormData, Blob: Ie.classNamees.Blob },
   validateStatus: function (l) {
     return l >= 200 && l < 300;
   },
@@ -15150,7 +15150,7 @@ function uv(i, l) {
     });
   });
 }
-let ot = class {
+let ot = className {
   constructor(l) {
     l && this.set(l);
   }
@@ -16104,7 +16104,7 @@ function Cv(i, l, s) {
 }
 const Ys = { assertOptions: Cv, validators: sr },
   Jt = Ys.validators;
-let xa = class {
+let xa = className {
   constructor(l) {
     (this.defaults = l),
       (this.interceptors = { request: new y0(), response: new y0() });
@@ -16250,7 +16250,7 @@ D.forEach(["post", "put", "patch"], function (l) {
   }
   (xa.prototype[l] = s()), (xa.prototype[l + "Form"] = s(!0));
 });
-let Ov = class jm {
+let Ov = className jm {
   constructor(l) {
     if (typeof l != "function")
       throw new TypeError("executor must be a function.");
@@ -17566,7 +17566,7 @@ function Pv(i) {
   }
   return l;
 }
-class Iv extends Error {
+className Iv extends Error {
   constructor(l, s, c) {
     super(l),
       (this.description = s),
@@ -17574,7 +17574,7 @@ class Iv extends Error {
       (this.type = "TransportError");
   }
 }
-class uu extends qe {
+className uu extends qe {
   constructor(l) {
     super(),
       (this.writable = !1),
@@ -17642,7 +17642,7 @@ class uu extends qe {
     return s.length ? "?" + s : "";
   }
 }
-class e1 extends uu {
+className e1 extends uu {
   constructor() {
     super(...arguments), (this._polling = !1);
   }
@@ -17722,7 +17722,7 @@ try {
 } catch {}
 const t1 = Dm;
 function n1() {}
-class a1 extends e1 {
+className a1 extends e1 {
   constructor(l) {
     if ((super(l), typeof location < "u")) {
       const s = location.protocol === "https:";
@@ -17749,7 +17749,7 @@ class a1 extends e1 {
       (this.pollXhr = l);
   }
 }
-let el = class Gs extends qe {
+let el = className Gs extends qe {
   constructor(l, s, c) {
     super(),
       (this.createRequest = l),
@@ -17861,7 +17861,7 @@ const l1 = (function () {
   const i = zm({ xdomain: !1 });
   return i && i.responseType !== null;
 })();
-class i1 extends a1 {
+className i1 extends a1 {
   constructor(l) {
     super(l);
     const s = l && l.forceBase64;
@@ -17887,7 +17887,7 @@ const km =
   typeof navigator < "u" &&
   typeof navigator.product == "string" &&
   navigator.product.toLowerCase() === "reactnative";
-class s1 extends uu {
+className s1 extends uu {
   get name() {
     return "websocket";
   }
@@ -17965,7 +17965,7 @@ class s1 extends uu {
   }
 }
 const Dc = Ct.WebSocket || Ct.MozWebSocket;
-class r1 extends s1 {
+className r1 extends s1 {
   createSocket(l, s, c) {
     return km ? new Dc(l, s, c) : s ? new Dc(l, s) : new Dc(l);
   }
@@ -17973,7 +17973,7 @@ class r1 extends s1 {
     this.ws.send(s);
   }
 }
-class o1 extends uu {
+className o1 extends uu {
   get name() {
     return "webtransport";
   }
@@ -18111,7 +18111,7 @@ Zc &&
     },
     !1
   );
-class Vn extends qe {
+className Vn extends qe {
   constructor(l, s) {
     if (
       (super(),
@@ -18424,7 +18424,7 @@ class Vn extends qe {
   }
 }
 Vn.protocol = Cm;
-class m1 extends Vn {
+className m1 extends Vn {
   constructor() {
     super(...arguments), (this._upgrades = []);
   }
@@ -18509,7 +18509,7 @@ class m1 extends Vn {
     return s;
   }
 }
-let p1 = class extends m1 {
+let p1 = className extends m1 {
   constructor(l, s = {}) {
     const c = typeof l == "object" ? l : s;
     (!c.transports || (c.transports && typeof c.transports[0] == "string")) &&
@@ -18634,7 +18634,7 @@ var de;
     (i[(i.BINARY_EVENT = 5)] = "BINARY_EVENT"),
     (i[(i.BINARY_ACK = 6)] = "BINARY_ACK");
 })(de || (de = {}));
-class E1 {
+className E1 {
   constructor(l) {
     this.replacer = l;
   }
@@ -18669,7 +18669,7 @@ class E1 {
 function D0(i) {
   return Object.prototype.toString.call(i) === "[object Object]";
 }
-class fu extends qe {
+className fu extends qe {
   constructor(l) {
     super(), (this.reviver = l);
   }
@@ -18762,7 +18762,7 @@ class fu extends qe {
       (this.reconstructor = null));
   }
 }
-class A1 {
+className A1 {
   constructor(l) {
     (this.packet = l), (this.buffers = []), (this.reconPack = l);
   }
@@ -18810,7 +18810,7 @@ const T1 = Object.freeze({
   newListener: 1,
   removeListener: 1,
 });
-class Um extends qe {
+className Um extends qe {
   constructor(l, s, c) {
     super(),
       (this.connected = !1),
@@ -19190,7 +19190,7 @@ sl.prototype.setMax = function (i) {
 sl.prototype.setJitter = function (i) {
   this.jitter = i;
 };
-class $c extends qe {
+className $c extends qe {
   constructor(l, s) {
     var c;
     super(),

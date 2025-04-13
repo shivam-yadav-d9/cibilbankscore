@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const UserLoanpage = () => {
+const UserLoanPage = () => {
     const [loanTypes, setLoanTypes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -57,4 +57,4 @@ const UserLoanpage = () => {
     );
 };
 
-export default UserLoanpage;
+export default UserLoanPage;

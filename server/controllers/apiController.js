@@ -12,15 +12,15 @@ let config = {
   }
 };
 
-console.log(config)
+// console.log(config)
 
-axios.request(config)
-.then((response) => {
-  console.log(JSON.stringify(response.data));
-})
-.catch((error) => {
-  console.log(error);
-});
+// axios.request(config)
+// .then((response) => {
+//   // console.log(JSON.stringify(response.data));
+// })
+// .catch((error) => {
+//   console.log(error);
+// });
 
 
 export const getApiToken = async (req, res) => {

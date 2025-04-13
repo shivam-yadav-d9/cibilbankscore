@@ -1,0 +1,46 @@
+import mongoose from "mongoose";
+
+const userAddressSchema = new mongoose.Schema({
+  ref_code: String,
+  application_id: String,
+  first_name: String,
+  middle_name: String,
+  sur_name: String,
+  gender: String,
+  father_name: String,
+  mother_name: String,
+  marital_status: String,
+  religion: String,
+  qualification: String,
+  current_emp_stability: String,
+  total_emp_stability: String,
+  industry_working: String,
+  employer_name: String,
+  designation: String,
+  net_home_salary: String,
+  salary_bank_account: String,
+  bank_branch: String,
+  account_type: String,
+  salary_account_no: String,
+  dependent: String,
+  emi_towards: String,
+  loan_amount: String,
+  tenure: String,
+  organization_type: String,
+  loan_type: String,
+  driving_licence_no: String,
+  dl_valid_upto_date: String,
+  designation_relation_with_company: String,
+  vehicle_category: String,
+  vehicle_type: String,
+  manufacturer: String,
+  vehicle_model: String,
+  supplier: String,
+  cost_of_vehicle: String,
+  cost_of_insurance: String,
+  cost_of_accessories: String,
+}, { timestamps: true });
+
+const UserAddressModel = mongoose.model("UserAddress", userAddressSchema);
+
+export default UserAddressModel;

@@ -11,6 +11,15 @@ import notification from "./routes/notifications.js";
 import { Server } from "socket.io";
 import http from "http";
 
+// loan journey here
+import loanRoutes from "./routes/loanRoutes.js";
+import UserAddress from "./routes/UserAddress.js";
+import userSecondAddressRoutes from "./routes/userSecondAddress.js";
+import coApplicantRoutes from "./routes/coApplicantRoutes.js";
+import userReferencesRoute from "./routes/userReferences.js";
+import userPreviousLoanRoutes from "./routes/userPreviousLoanRoutes.js";
+
+
 dotenv.config();
 
 const app = express();
@@ -69,6 +78,16 @@ app.use("/profile", profileRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/api/messages", message);
 app.use("/api/notifications", notification);
+
+app.use("/api/loan", loanRoutes); // **CHANGED TO /api/loan**
+app.use("/api/user-address", UserAddress); // ✅ New route to save applicant data
+app.use("/api/user-second-address", userSecondAddressRoutes);
+app.use("/api/user-co-app", coApplicantRoutes);
+app.use("/api/user-references", userReferencesRoute);
+app.use("/api/user-previous-loans", userPreviousLoanRoutes);
+
+
+console.log("TEST_VARIABLE:", process.env.TEST_VARIABLE); 
 
 // Basic route
 app.get("/", (req, res) => {

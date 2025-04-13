@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 
-const  BusinessLogin = ({ updateAuth }) => {
+const  BusinessLogin = ( ) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
@@ -24,7 +24,6 @@ const  BusinessLogin = ({ updateAuth }) => {
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.user));
-        updateAuth(); // Update App.jsx state
         navigate("/business-dashboard");
       } else {
         setError("Login failed. Please try again.");
@@ -59,7 +58,7 @@ const  BusinessLogin = ({ updateAuth }) => {
         <div className="w-full md:w-1/2 p-8">
           {/* Title */}
           <h1 className="text-center mt-6 text-3xl font-extrabold tracking-tight text-white">
-            Welcome to DBNPAY! 👋
+            Welcome to Business 👋
           </h1>
 
           {/* Error Message */}

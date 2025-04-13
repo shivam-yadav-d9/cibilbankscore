@@ -8,7 +8,6 @@ const UserLoanInput = () => {
   const [apiToken, setApiToken] = useState("");
 
   const [formData, setFormData] = useState({
-    ref_code: "OUI202590898",
     loan_type_id: loanTypeId,
     name: "",
     email: "",
@@ -47,7 +46,7 @@ const UserLoanInput = () => {
         });
 
         console.log("Authentication response:", response.data);
-        
+
         if (response.data && response.data.success && response.data.token) {
           setApiToken(response.data.token);
           console.log("Token received successfully:", response.data.token.substring(0, 10) + "...");
@@ -75,16 +74,16 @@ const UserLoanInput = () => {
     e.preventDefault();
     setLoading(true);
     setError("");
-  
+
     if (!apiToken) {
       setError("Authentication token not available. Please refresh the page and try again.");
       setLoading(false);
       return;
     }
-  
+
     try {
       console.log("Sending eligibility request with data:", formData);
-      
+
       const response = await axios({
         method: "post",
         url: "https://uat-api.evolutosolution.com/v1/loan/checkEligibility",
@@ -97,9 +96,9 @@ const UserLoanInput = () => {
         },
         data: formData,
       });
-      
+
       console.log("Eligibility response:", response.data);
-  
+
       if (response.data && response.data.success) {
         setOffers(response.data.data || []);
         if (response.data.data && response.data.data.length === 0) {
@@ -115,35 +114,18 @@ const UserLoanInput = () => {
       setLoading(false);
     }
   };
-
-  // Pre-fill the form with demo data for testing (remove in production)
-  const fillDemoData = () => {
-    setFormData({
-      ...formData,
-      name: "Mahesh Waghmare",
-      email: "maheshwagh23@gmail.com",
-      mobile: "9370643086",
-      income: "150000",
-      pincode: "440034",
-      dob: "1982-06-03",
-      pan_no: "ABSPW8730C",
-      aadhaar_no: "860682688230",
-      loan_amount: "100000"
-    });
-  };
-
   return (
     <div className="max-w-xl mx-auto mt-10 p-6 bg-white rounded-lg shadow">
       <h2 className="text-2xl mb-4 font-semibold text-center">
         Enter Your Details
       </h2>
-      
+
       {tokenLoading && (
         <p className="mb-4 text-center text-blue-500">Initializing application...</p>
       )}
-      
+
       {error && <p className="mb-4 text-center text-red-500">{error}</p>}
-      
+
       {!tokenLoading && apiToken && (
         <p className="mb-4 text-center text-green-500">System ready - Please fill your details</p>
       )}
@@ -172,26 +154,17 @@ const UserLoanInput = () => {
             />
           </div>
         ))}
-        
+
         <div className="flex space-x-2">
           <button
             type="submit"
             disabled={loading || tokenLoading || !apiToken}
-            className={`flex-1 p-2 rounded ${
-              loading || tokenLoading || !apiToken
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700"
-            } text-white`}
+            className={`flex-1 p-2 rounded ${loading || tokenLoading || !apiToken
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
+              } text-white`}
           >
             {loading ? "Checking..." : "Check Eligibility"}
-          </button>
-          
-          <button
-            type="button"
-            onClick={fillDemoData}
-            className="p-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700"
-          >
-            Demo Data
           </button>
         </div>
       </form>
@@ -202,40 +175,41 @@ const UserLoanInput = () => {
           <div className="mt-2 w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
         </div>
       )}
-
+      {/* first change */}
       {offers.length > 0 && (
-        <div className="mt-6">
-          <h3 className="text-xl font-semibold mb-2 text-center">
-            Eligible Loan Offers
-          </h3>
-          <div className="space-y-4">
+        <div className="mt-10">
+          <h3 className="text-2xl font-bold text-center mb-6">Eligible Loan Offers</h3>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {offers.map((offer, index) => (
-              <div key={offer.id || index} className="p-4 border rounded shadow">
-                <div className="flex items-center mb-2">
-                  {offer.bank_logo && (
+              <div
+                key={offer.id || index}
+                className="bg-white shadow-md rounded-2xl p-5 border hover:shadow-lg transition"
+              >
+                <div className="flex items-center mb-4">
+                  {offer.bank_logo ? (
                     <img
                       src={offer.bank_logo}
                       alt={offer.bank || "Bank"}
-                      className="h-8 mr-2"
+                      className="h-10 w-auto mr-3"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = "https://via.placeholder.com/100x50?text=Bank";
                       }}
                     />
+                  ) : (
+                    <div className="h-10 w-16 bg-gray-200 mr-3 rounded" />
                   )}
-                  <h4 className="font-semibold">{offer.bank || "Loan Offer"}</h4>
+                  <h4 className="text-lg font-semibold">{offer.bank || "Loan Offer"}</h4>
                 </div>
-                <p>
-                  <strong>Loan Amount:</strong> ₹{offer.loan_amount?.toLocaleString() || "N/A"}
-                </p>
-                <p>
-                  <strong>Tenure:</strong> {offer.tenure || "N/A"}
-                </p>
-                <p>
-                  <strong>Interest Rate:</strong>{" "}
-                  {offer.bank_interest_rate ? `${offer.bank_interest_rate}%` : "N/A"}
-                </p>
-                <button className="mt-2 bg-green-600 text-white px-4 py-1 rounded text-sm hover:bg-green-700">
+
+                <div className="space-y-1 text-sm text-gray-700">
+                  <p><strong>Loan Amount:</strong> ₹{offer.loan_amount?.toLocaleString() || "N/A"}</p>
+                  <p><strong>Tenure:</strong> {offer.tenure || "N/A"}</p>
+                  <p><strong>Interest Rate:</strong> {offer.bank_interest_rate ? `${offer.bank_interest_rate}%` : "N/A"}</p>
+                </div>
+
+                <button className="mt-4 w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 text-sm font-medium">
                   Apply Now
                 </button>
               </div>
@@ -244,9 +218,11 @@ const UserLoanInput = () => {
         </div>
       )}
 
+
       {!loading && offers.length === 0 && formData.name && (
         <p className="mt-4 text-center text-orange-500">No loan offers available at this time. Please try different criteria.</p>
       )}
+
     </div>
   );
 };
