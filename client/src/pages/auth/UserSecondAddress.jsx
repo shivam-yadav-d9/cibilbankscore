@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const UserSecondAddress = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        application_id: "SLA00779",
+        application_id: "",
         residential_status: "Resident",
         residence_type: "1",
         years_of_residence: "3",
@@ -46,6 +48,44 @@ const UserSecondAddress = () => {
             }
         }
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        let applicationId = "";
+    
+        // First check if it was passed via navigation state
+        if (location.state?.applicationId) {
+          applicationId = location.state.applicationId;
+        }
+        // If not, try to get it from localStorage
+        else {
+          applicationId = localStorage.getItem("applicationId") || "";
+        }
+    
+        setFormData((prev) => ({
+          ...prev,
+          application_id: applicationId,
+        }));
+
+        // If we have an application ID, fetch any existing address data
+        if (applicationId) {
+            fetchExistingData(applicationId);
+        }
+    }, [location]);
+    
+    const fetchExistingData = async (applicationId) => {
+        try {
+            const response = await axios.get(`http://localhost:3001/api/user-second-address/${applicationId}`);
+            if (response.data) {
+                setFormData(response.data);
+            }
+        } catch (error) {
+            // If 404, it's a new application - no need to show error
+            if (error.response && error.response.status !== 404) {
+                console.error("Error fetching existing data:", error);
+            }
+        }
+    };
 
     const handleChange = (e, addressType = null, field = null) => {
         if (addressType) {
@@ -66,13 +106,25 @@ const UserSecondAddress = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (isSubmitting) return;
+        
+        setIsSubmitting(true);
+        
         try {
             const res = await axios.post("http://localhost:3001/api/user-second-address/save", formData);
-            alert("Submitted successfully!");
+            alert("Address information saved successfully!");
             console.log(res.data);
+            
+            // Navigate programmatically after successful submission
+            navigate("/UserCoApplications", { 
+                state: { applicationId: formData.application_id } 
+            });
         } catch (err) {
             console.error("Submit error:", err.message);
-            alert("Error submitting form");
+            alert("Error submitting form: " + (err.response?.data?.error || err.message));
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -80,16 +132,24 @@ const UserSecondAddress = () => {
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto mt-8 p-6 bg-gray-100 rounded-md shadow-md">
             <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">Second Address Form</h2>
 
-            {/* <label htmlFor="application_id" className="block text-gray-700 text-sm font-bold mb-2">Application ID:</label>
-      <input
-        type="text"
-        id="application_id"
-        name="application_id"
-        placeholder="Application ID"
-        value={formData.application_id}
-        onChange={handleChange}
-        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-4"
-      /> */}
+            <div>
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="application_id"
+              >
+                Application ID
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="application_id"
+                name="application_id"
+                type="text"
+                value={formData.application_id}
+                placeholder="Application ID"
+                onChange={handleChange}
+                required
+              />
+            </div>
 
             <h3 className="text-xl font-semibold text-gray-700 mt-6 mb-4">Present Address</h3>
             <label htmlFor="present_address_line1" className="block text-gray-700 text-sm font-bold mb-2">Address Line 1:</label>
@@ -341,10 +401,10 @@ const UserSecondAddress = () => {
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-4"
             />
 
-            <Link to="/UserCoApplications"> <button type="submit" className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+             <button type="submit" className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                 Save and Continue
             </button>
-            </Link>
+            
         </form>
     );
 };

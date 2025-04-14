@@ -1,8 +1,9 @@
-import express from "express";
-import { saveUserPreviousLoans } from "../controllers/userPreviousLoanController.js";
+import express from 'express';
+import { saveUserPreviousLoans, getUserPreviousLoansByApplicationId } from '../controllers/userPreviousLoanController.js';
 
 const router = express.Router();
 
-router.post("/save", saveUserPreviousLoans);
+router.post('/save', saveUserPreviousLoans);
+router.get('/:application_id', getUserPreviousLoansByApplicationId);
 
 export default router;

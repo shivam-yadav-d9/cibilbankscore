@@ -87,6 +87,7 @@ app.use("/api/user-references", userReferencesRoute);
 app.use("/api/user-previous-loans", userPreviousLoanRoutes);
 
 
+
 console.log("TEST_VARIABLE:", process.env.TEST_VARIABLE); 
 
 // Basic route

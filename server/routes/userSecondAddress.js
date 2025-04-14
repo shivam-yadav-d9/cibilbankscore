@@ -4,5 +4,6 @@ import { saveUserSecondAddress } from "../controllers/userSecondAddressControlle
 const router = express.Router();
 
 router.post("/save", saveUserSecondAddress);
+// router.get("/:applicationId", getUserAddressesByApplicationId);
 
 export default router;

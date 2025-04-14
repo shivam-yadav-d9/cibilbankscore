@@ -1,32 +1,110 @@
-import axios from "axios";
 import UserReference from "../models/UserReference.js";
+import axios from "axios";
 import dotenv from "dotenv";
 dotenv.config();
 
+// Function to generate authorization token
 const generateToken = async () => {
-  const response = await axios.post(`${process.env.API_BASE_URL}/authentication`, {
-    api_key: process.env.EVOLUTO_API_KEY,
-    api_secret: process.env.EVOLUTO_API_SECRET
-  });
-  return response.data.data.token;
+  try {
+    const response = await axios.post(
+      `${process.env.API_BASE_URL || "https://uat-api.evolutosolution.com/v1"}/authentication`,
+      {
+        api_key: process.env.EVOLUTO_API_KEY,
+        api_secret: process.env.EVOLUTO_API_SECRET
+      },
+      {
+        headers: {
+          'source': 'web',
+          'package': '10.0.2.215',
+          'outletid': process.env.OUTLET_ID || 'OUI202590898',
+          'Authorization': `Basic ${process.env.EVOLUTO_AUTH_BASIC}`
+        }
+      }
+    );
+    
+    console.log("Authentication successful");
+    return response.data.data.token;
+  } catch (error) {
+    console.error("Authentication error:", error.response?.data || error.message);
+    throw new Error("Failed to authenticate with Evoluto API");
+  }
 };
 
 export const saveUserReferences = async (req, res) => {
   try {
-    const token = await generateToken();
-
-    const evoResponse = await axios.post(
-      `${process.env.API_BASE_URL}/loan/saveRefrences`,
-      req.body,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    // Save to MongoDB
+    // Validate request body
+    const { application_id, ref_code, reference1, reference2 } = req.body;
+    
+    if (!reference1?.name || !reference1?.relationship || !reference1?.email || !reference1?.phone ||
+        !reference2?.name || !reference2?.relationship || !reference2?.email || !reference2?.phone) {
+      return res.status(400).json({ error: "Missing required reference information" });
+    }
+    
+    console.log("Saving user references:", req.body);
+    
+    // First save to MongoDB to ensure we have a local copy
     const savedData = await UserReference.create(req.body);
-
-    res.status(200).json({ message: "Saved successfully", data: savedData });
+    console.log("Data saved to MongoDB:", savedData._id);
+    
+    // Then try to save to external API
+    try {
+      // Generate authentication token
+      const token = await generateToken();
+      
+      // Make request to Evoluto API
+      const evoResponse = await axios.post(
+        `${process.env.API_BASE_URL || "https://uat-api.evolutosolution.com/v1"}/loan/saveRefrences`,
+        req.body,
+        { 
+          headers: { 
+            'token': token,
+            'Content-Type': 'application/json'
+          } 
+        }
+      );
+      
+      console.log("Data saved to Evoluto API:", evoResponse.data);
+      
+      // Return success response with data from both sources
+      return res.status(200).json({ 
+        message: "References saved successfully to database and external API",
+        mongoData: savedData,
+        apiResponse: evoResponse.data
+      });
+    } catch (apiError) {
+      console.error("Error saving to Evoluto API:", apiError.response?.data || apiError.message);
+      
+      // Even if external API fails, we return success since we saved to MongoDB
+      return res.status(200).json({
+        message: "References saved successfully to database, but external API save failed",
+        mongoData: savedData,
+        apiError: apiError.response?.data || apiError.message
+      });
+    }
   } catch (err) {
-    console.error("Save UserReferences Error:", err?.response?.data || err.message);
-    res.status(500).json({ error: "Failed to save user references" });
+    console.error("Error in saveUserReferences:", err.message);
+    return res.status(500).json({ error: "Failed to save user references", details: err.message });
+  }
+};
+
+// Get user references by application_id
+export const getUserReferencesByApplicationId = async (req, res) => {
+  try {
+    const { application_id } = req.params;
+    
+    if (!application_id) {
+      return res.status(400).json({ error: "Application ID is required" });
+    }
+    
+    const userReferences = await UserReference.findOne({ application_id });
+    
+    if (!userReferences) {
+      return res.status(404).json({ error: "No references found for this application ID" });
+    }
+    
+    return res.status(200).json({ data: userReferences });
+  } catch (err) {
+    console.error("Error fetching user references:", err.message);
+    return res.status(500).json({ error: "Failed to fetch user references" });
   }
 };

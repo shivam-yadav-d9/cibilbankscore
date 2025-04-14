@@ -1,29 +1,35 @@
+// models/UserSecondAddress.js
 import mongoose from "mongoose";
 
 const addressSchema = new mongoose.Schema({
-  address_line1: { type: String },
-  address_line2: { type: String },
-  address_line3: { type: String },
-  pincode: { type: String },
-  state: { type: String },
-  city: { type: String },
-  landmark: { type: String },
-  email: { type: String },
-  phone: { type: String }
-}, { _id: false });
+  address_line1: { type: String, default: "" },
+  address_line2: { type: String, default: "" },
+  address_line3: { type: String, default: "" },
+  pincode: { type: String, default: "" },
+  state: { type: String, default: "" },
+  city: { type: String, default: "" },
+  landmark: { type: String, default: "" },
+  email: { type: String, default: "" },
+  phone: { type: String, default: "" }
+});
 
-const userSecondAddressSchema = new mongoose.Schema({
-  application_id: { type: String, required: true },
-  residential_status: { type: String, required: true },
-  residence_type: { type: String, required: true },
-  years_of_residence: { type: String, required: true },
-  monthly_rent: { type: String, required: true },
-  ref_code: { type: String, required: true },
-  addresses: {
-    present_address: { type: addressSchema, required: true },
-    permanent_address: { type: addressSchema, required: true },
-    office_address: { type: addressSchema, required: true }
-  }
-}, { timestamps: true });
+const userSecondAddressSchema = new mongoose.Schema(
+  {
+    application_id: { type: String, required: true },
+    residential_status: { type: String, default: "Resident" },
+    residence_type: { type: String, default: "1" },
+    years_of_residence: { type: String, default: "3" },
+    monthly_rent: { type: String, default: "5000" },
+    ref_code: { type: String, default: "OUI202590898" },
+    addresses: {
+      present_address: addressSchema,
+      permanent_address: addressSchema,
+      office_address: addressSchema
+    }
+  },
+  { timestamps: true }
+);
 
-export default mongoose.model("UserSecondAddress", userSecondAddressSchema);
+const UserSecondAddress = mongoose.model("UserSecondAddress", userSecondAddressSchema);
+
+export default UserSecondAddress;
