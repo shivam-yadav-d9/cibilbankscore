@@ -1,9 +1,9 @@
 import User from "../models/usermodel.js";
+import dotenv from "dotenv";
 dotenv.config();
 
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 
 
 // Signup Controller
@@ -24,14 +24,15 @@ export const signup = async (req, res) => {
         const newUser = new User({
             name,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            userType: 'customer' // ADD THIS LINE
         });
 
         await newUser.save();
 
         // Generate JWT Token after signup
         const token = jwt.sign(
-            { userId: newUser._id },
+            { userId: newUser._id, userType: newUser.userType },  // ADD userType to JWT
             process.env.JWT_SECRET,
             { expiresIn: "7d" }
         );
@@ -42,7 +43,8 @@ export const signup = async (req, res) => {
             user: {
                 _id: newUser._id,
                 name: newUser.name,
-                email: newUser.email
+                email: newUser.email,
+                userType: newUser.userType  // Send back the userType to the client
             }
         });
     } catch (error) {
@@ -71,7 +73,7 @@ export const login = async (req, res) => {
 
         // Generate JWT Token
         const token = jwt.sign(
-            { userId: user._id },
+            { userId: user._id, userType: user.userType },  // ADD userType to JWT
             process.env.JWT_SECRET,
             { expiresIn: "7d" }
         );
@@ -82,7 +84,8 @@ export const login = async (req, res) => {
             user: {
                 _id: user._id,
                 name: user.name,
-                email: user.email
+                email: user.email,
+                userType: user.userType  // Send back the userType to the client
             }
         });
 

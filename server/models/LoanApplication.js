@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 const LoanApplicationSchema = new mongoose.Schema({
+    
     ref_code: { type: String, required: true },
     name: { type: String, required: true, trim: true },
     mobile: { type: String, required: true },

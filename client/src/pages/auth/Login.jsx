@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
+import { jwtDecode } from 'jwt-decode'; // Correct
+
 
 const Login = ({ updateAuth }) => {
   const [email, setEmail] = useState("");
@@ -24,8 +26,22 @@ const Login = ({ updateAuth }) => {
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.user));
-        // updateAuth(); // Update App.jsx state
-        navigate("/dashboard");
+
+        // Decode the JWT to get the userType
+        const decodedToken = jwtDecode(response.data.token);  // Decode JWT
+        const userType = decodedToken.userType;
+
+        // Redirect based on userType
+        if (userType === 'customer') {
+          navigate("/dashboard"); // Customer dashboard
+        } else if (userType === 'agent') {
+          navigate("/agent-dashboard");  // Agent dashboard (create this page!)
+        } else {
+          console.warn("Unknown user type:", userType);
+          navigate("/default-dashboard"); // Fallback route
+        }
+
+
       } else {
         setError("Login failed. Please try again.");
       }
@@ -130,6 +146,8 @@ const Login = ({ updateAuth }) => {
                 Remember me for 30 days
               </label>
             </div>
+            
+
 
             {/* Submit Button */}
             <div>
@@ -144,6 +162,14 @@ const Login = ({ updateAuth }) => {
                 {loading ? "Authenticating..." : "Sign in"}
               </button>
             </div>
+
+            <Link to="/LoginAgent"> <button
+              className=" px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 focus:ring-2 focus:ring-blue-300 focus:outline-none transition duration-200 w-full sm:w-auto"
+            >
+             Go To Agent Login
+            </button>
+            </Link>
+
           </form>
 
           {/* Links */}
@@ -171,9 +197,14 @@ const Login = ({ updateAuth }) => {
                 Go To Business Login 👉
               </Link>
             </p>
+
+
           </div>
         </div>
       </div>
+
+
+
     </div>
   );
 };

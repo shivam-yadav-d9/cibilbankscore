@@ -47,6 +47,9 @@ import UserSecondAddress from "./pages/auth/UserSecondAddress";
 import UserCoApplications from "./pages/auth/UserCoApplications";
 import UserSaveRefrences from "./pages/auth/UserSaveRefrences";
 import UserPreviousData from "./pages/auth/UserPreviousData";
+import TermsAndConditions from "./components/business-view/B2bServicesActivate";
+import B2BSignup from "./pages/auth/B2BSignup";
+import LoginAgent from "./pages/auth/LoginAgent";
 
 
 function App() {
@@ -62,8 +65,12 @@ function App() {
               <Route path="/aboutus" element={<AboutUs />} />
               <Route path="/careers" element={<CareerPage />} />
               <Route path="/login" element={<Login updateAuth={updateAuth} />} />
+              
+              <Route path="/LoginAgent" element={<LoginAgent/>}/>
               <Route path="/signup" element={<Signup />} />
               <Route path="/userinput" element={<UserInput />} />
+
+              <Route path="/B2BSignup" element={<B2BSignup/>}/>
               {/* <Route path="/UserLoanInput" element={<UserLoanInput />} /> */}
 
               {/* Service Pages */}
@@ -98,6 +105,7 @@ function App() {
 
               {/* 🏢 Protected Business Route */}
               <Route path="/business-dashboard" element={<B2BDashboard />} />
+              <Route path="/TermsAndConditions" element={<TermsAndConditions/>}/>
 
               {/* Catch-All Route */}
               <Route path="*" element={<h1 className="text-center text-white mt-10">404 - Page Not Found</h1>} />
