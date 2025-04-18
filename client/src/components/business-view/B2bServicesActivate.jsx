@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
 const TermsAndConditions = () => {
     const [accepted, setAccepted] = useState(false);
@@ -19,17 +20,19 @@ const TermsAndConditions = () => {
                     {/* Stylish Paragraph Section */}
                     <div className="px-8 py-6 bg-gray-100 border-b border-gray-200"> {/* Increased padding, subtle background */}
                         <p className="text-gray-600 leading-relaxed text-lg italic"> {/* Increased font size, added italic style */}
-                        With B2B banking between businesses, you can track, manage and plan all your transaction processes. In this way, you can reach new businesses and expand the reach of your business. You can operate your business with The Kingdom Bank all over the world with no boundaries. Our dedicated team is ready to provide tailored solutions for your business.
+                            With B2B banking between businesses, you can track, manage and plan all your transaction processes. In this way, you can reach new businesses and expand the reach of your business. You can operate your business with The Kingdom Bank all over the world with no boundaries. Our dedicated team is ready to provide tailored solutions for your business.
                         </p>
                     </div>
 
                     {/* Centered Button */}
                     <div className="px-6 py-8 flex justify-center"> {/* Flex container for centering */}
-                        <button
+
+                        <Link to="/dashboard">  <button
                             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-md transition duration-300"
                         >
                             Click Here to Activate
                         </button>
+                        </Link>
                     </div>
 
 

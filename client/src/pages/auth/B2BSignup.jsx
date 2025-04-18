@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const B2BSignup = () => {
   const navigate = useNavigate();
@@ -34,97 +34,127 @@ const B2BSignup = () => {
   };
 
   return (
-    <div className="h-screen bg-blue-400">
-    <form
-      onSubmit={handleSubmit}
-      className="p-8 max-w-md mx-auto bg-blue-300 rounded-xl shadow-lg space-y-6 mt-20"
-    >
-      <h2 className="text-2xl font-semibold text-gray-800 text-center">Create Your Account</h2>
-
-      <div>
-        <label htmlFor="companyName" className="block text-gray-700 text-sm font-bold mb-2">Company Name</label>
-        <input
-          id="companyName"
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500"
-          name="companyName"
-          onChange={handleChange}
-          placeholder="Your Company's Name"
-          required
-        />
-      </div>
-
-      <div>
-        <label htmlFor="businessType" className="block text-gray-700 text-sm font-bold mb-2">Business Type</label>
-        <input
-          id="businessType"
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500"
-          name="businessType"
-          onChange={handleChange}
-          placeholder="e.g., Retail, Tech, Consulting"
-          required
-        />
-      </div>
-
-      <div>
-        <label htmlFor="fullName" className="block text-gray-700 text-sm font-bold mb-2">Full Name</label>
-        <input
-          id="fullName"
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500"
-          name="fullName"
-          onChange={handleChange}
-          placeholder="Your Full Name"
-          required
-        />
-      </div>
-
-      <div>
-        <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">Email</label>
-        <input
-          id="email"
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500"
-          name="email"
-          onChange={handleChange}
-          placeholder="you@example.com"
-          required
-          type="email"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="phone" className="block text-gray-700 text-sm font-bold mb-2">Phone</label>
-        <input
-          id="phone"
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500"
-          name="phone"
-          onChange={handleChange}
-          placeholder="Your Phone Number"
-          required
-        />
-      </div>
-
-      <div>
-        <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">Password</label>
-        <input
-          id="password"
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500"
-          name="password"
-          onChange={handleChange}
-          placeholder="Choose a strong password"
-          type="password"
-          required
-        />
-      </div>
-
-      <button
-        type="submit"
-        className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300"
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-blue-900 to-indigo-900 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6 sm:p-8 space-y-6 mt-10"
       >
-        Sign Up
-      </button>
+        <h2 className="text-3xl font-bold text-white text-center tracking-tight">
+          Create Your Account
+        </h2>
 
-      {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-    </form>
+        {/* Company Name */}
+        <div>
+          <label htmlFor="companyName" className="block text-indigo-100 text-sm font-medium mb-2">
+            Company Name
+          </label>
+          <input
+            id="companyName"
+            name="companyName"
+            onChange={handleChange}
+            placeholder="Your Company's Name"
+            required
+            className="w-full px-4 py-2 bg-white/10 border border-indigo-400/30 rounded-lg text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+          />
+        </div>
+
+        {/* Business Type */}
+        <div>
+          <label htmlFor="businessType" className="block text-indigo-100 text-sm font-medium mb-2">
+            Business Type
+          </label>
+          <input
+            id="businessType"
+            name="businessType"
+            onChange={handleChange}
+            placeholder="e.g., Retail, Tech, Consulting"
+            required
+            className="w-full px-4 py-2 bg-white/10 border border-indigo-400/30 rounded-lg text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+          />
+        </div>
+
+        {/* Full Name */}
+        <div>
+          <label htmlFor="fullName" className="block text-indigo-100 text-sm font-medium mb-2">
+            Full Name
+          </label>
+          <input
+            id="fullName"
+            name="fullName"
+            onChange={handleChange}
+            placeholder="Your Full Name"
+            required
+            className="w-full px-4 py-2 bg-white/10 border border-indigo-400/30 rounded-lg text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+          />
+        </div>
+
+        {/* Email */}
+        <div>
+          <label htmlFor="email" className="block text-indigo-100 text-sm font-medium mb-2">
+            Email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            onChange={handleChange}
+            placeholder="you@example.com"
+            required
+            className="w-full px-4 py-2 bg-white/10 border border-indigo-400/30 rounded-lg text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+          />
+        </div>
+
+        {/* Phone */}
+        <div>
+          <label htmlFor="phone" className="block text-indigo-100 text-sm font-medium mb-2">
+            Phone
+          </label>
+          <input
+            id="phone"
+            name="phone"
+            onChange={handleChange}
+            placeholder="Your Phone Number"
+            required
+            className="w-full px-4 py-2 bg-white/10 border border-indigo-400/30 rounded-lg text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+          />
+        </div>
+
+        {/* Password */}
+        <div>
+          <label htmlFor="password" className="block text-indigo-100 text-sm font-medium mb-2">
+            Password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            onChange={handleChange}
+            placeholder="Choose a strong password"
+            required
+            className="w-full px-4 py-2 bg-white/10 border border-indigo-400/30 rounded-lg text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+          />
+        </div>
+
+        {/* Submit Button */}
+        <button
+          type="submit"
+          className="w-full py-2 px-4 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-sm font-medium rounded-lg shadow-md transition-all hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          Sign Up
+        </button>
+
+        {/* Footer Text */}
+        <p className="text-sm text-indigo-200 text-center">
+          Already have an account?{" "}
+          <Link to="/LoginAgent" className="font-medium text-indigo-400 hover:text-white">
+            Sign in
+          </Link>
+        </p>
+
+        {error && <p className="text-red-300 text-sm text-center">{error}</p>}
+      </form>
     </div>
+
   );
 };
 

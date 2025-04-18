@@ -55,14 +55,7 @@ const Signup = () => {
       <div className="max-w-md w-full space-y-12">
         {/* Brand Header */}
         <div className="text-center">
-          <div className="flex justify-center">
-            <div className="h-16 w-16 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg transform -rotate-6">
-              <span className="text-2xl font-extrabold text-white">DB</span>
-            </div>
-            <div className="h-16 w-16 bg-gradient-to-bl from-indigo-600 to-purple-700 rounded-xl flex items-center justify-center shadow-lg ml-2 transform rotate-6">
-              <span className="text-2xl font-extrabold text-white">NPE</span>
-            </div>
-          </div>
+       
           <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-white">
             {" "}
             Welcome to DBNPAY! 👋
@@ -130,7 +123,7 @@ const Signup = () => {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       className="appearance-none block w-full pl-12 pr-4 py-3 bg-white/10 border border-indigo-400/30 rounded-lg text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
-                      placeholder="John Doe"
+                      placeholder="Your Full Name"
                     />
                   </div>
                 </div>
@@ -340,26 +333,7 @@ const Signup = () => {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="text-center">
-          <p className="text-xs text-indigo-300">
-            &copy; 2025 DBNPE. All rights reserved.
-          </p>
-          <div className="mt-2 flex justify-center space-x-4">
-            <a
-              href="#"
-              className="text-xs text-indigo-300 hover:text-white transition-colors duration-200"
-            >
-              Privacy Policy
-            </a>
-            <a
-              href="#"
-              className="text-xs text-indigo-300 hover:text-white transition-colors duration-200"
-            >
-              Terms of Service
-            </a>
-          </div>
-        </div>
+   
       </div>
     </div>
   );

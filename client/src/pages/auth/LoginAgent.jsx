@@ -60,13 +60,14 @@ const LoginAgent = ({ updateAuth }) => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-gray-900 via-blue-900 to-indigo-900 flex items-center justify-center px-4 sm:px-6 lg:px-8">
-            <div className="flex w-full max-w-4xl bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
-
+        <div className="min-h-screen bg-gradient-to-b from-gray-900 via-blue-900 to-indigo-900 flex items-center justify-center px-0 sm:px-6 lg:px-8 mt-0">
+            <div className="flex flex-col md:flex-row w-full max-w-4xl bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden m-2">
+    
                 {/* Left Side - Image */}
-                <div className="hidden md:flex w-1/2 items-center justify-center">
-                    <img src="/Agentimage.png" alt="hero" className="w-3/4 h-auto" />
+                <div className="flex w-full md:w-1/2 items-center justify-center md:mt-5 md:p-5 p-0 mt-20">
+                    <img src="/Agentimage.png" alt="hero" className="w-full h-auto object-cover" />
                 </div>
+    
 
                 {/* Right Side - Login Form */}
                 <div className="w-full md:w-1/2 p-8">

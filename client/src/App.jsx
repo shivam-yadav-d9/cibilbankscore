@@ -101,7 +101,7 @@ function App() {
               <Route path="/UserPreviousData" element={<UserPreviousData/>}/>
 
               {/* Protected Admin Route */}
-              <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPanel /></ProtectedRoute>} />
+              <Route path="/admin" element={<AdminPanel />} />
 
               {/* 🏢 Protected Business Route */}
               <Route path="/business-dashboard" element={<B2BDashboard />} />
