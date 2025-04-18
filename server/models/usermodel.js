@@ -15,11 +15,13 @@ const userSchema = mongoose.Schema({
         required: true,
         minlength: 6
     },
-    userType: { // ADD THIS FIELD
+    userType: {
         type: String,
-        enum: ['customer'], // Only customer can signup through here
+        enum: ['customer'],
         default: 'customer'
     }
+}, {
+    timestamps: true // Add this to automatically include createdAt and updatedAt
 });
 
 const User = mongoose.model("User", userSchema);

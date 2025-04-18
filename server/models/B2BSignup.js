@@ -12,7 +12,7 @@ const B2BSignupSchema = new mongoose.Schema({
         type: String,
         default: "agent"
     }
-});
+}, { timestamps: true }); // 👈 This adds createdAt and updatedAt fields automatically
 
 const B2BSignup = mongoose.model("B2BSignup", B2BSignupSchema);
 export default B2BSignup;
