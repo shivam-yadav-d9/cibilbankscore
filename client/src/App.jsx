@@ -31,7 +31,6 @@ import Dashboard from "./components/user-view/Dashboard";
 import CreditCheck from "./components/user-view/CreditCheck";
 import LoanInformation from "./components/user-view/LoanInformation";
 import LoanProcessor from "./components/user-view/LoanProcessor";
-import UserLoanInput from "./pages/auth/UserLoanInput";
 import UserLoanpage from "./pages/auth/UserLoanPage";
 
 
@@ -50,6 +49,7 @@ import UserPreviousData from "./pages/auth/UserPreviousData";
 import TermsAndConditions from "./components/business-view/B2bServicesActivate";
 import B2BSignup from "./pages/auth/B2BSignup";
 import LoginAgent from "./pages/auth/LoginAgent";
+import LoanReportDetail from "./pages/auth/LoanReportDetail";
 
 
 function App() {
@@ -71,7 +71,7 @@ function App() {
               <Route path="/userinput" element={<UserInput />} />
 
               <Route path="/B2BSignup" element={<B2BSignup/>}/>
-              {/* <Route path="/UserLoanInput" element={<UserLoanInput />} /> */}
+              
 
               {/* Service Pages */}
               <Route path="/services/banking-apis" element={<BankingAPIPage />} />
@@ -99,9 +99,10 @@ function App() {
               <Route path="/UserCoApplications" element={<UserCoApplications />} />
               <Route path="/UserSaveRefrences" element={<UserSaveRefrences/>} />
               <Route path="/UserPreviousData" element={<UserPreviousData/>}/>
+              <Route path="/LoanReportDetail" element={<LoanReportDetail/>}/>
 
               {/* Protected Admin Route */}
-              <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPanel /></ProtectedRoute>} />
+              <Route path="/admin" element={<AdminPanel />}/>
 
               {/* 🏢 Protected Business Route */}
               <Route path="/business-dashboard" element={<B2BDashboard />} />

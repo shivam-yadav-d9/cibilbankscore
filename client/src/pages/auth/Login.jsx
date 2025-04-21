@@ -1,8 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import { jwtDecode } from 'jwt-decode'; // Correct
-
+import { jwtDecode } from "jwt-decode"; // Correct
 
 const Login = ({ updateAuth }) => {
   const [email, setEmail] = useState("");
@@ -11,6 +10,13 @@ const Login = ({ updateAuth }) => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("lastUsedEmail");
+    if (savedEmail) {
+      setEmail(savedEmail);
+    }
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -24,35 +30,42 @@ const Login = ({ updateAuth }) => {
       });
 
       if (response.data.token) {
+        // Save email for future use
+        localStorage.setItem("lastUsedEmail", email);
+
+        // Store token and user data
         localStorage.setItem("token", response.data.token);
-        localStorage.setItem("user", JSON.stringify(response.data.user));
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            ...response.data.user,
+            email: email, // Ensure email is included in stored user data
+          })
+        );
 
         // Decode the JWT to get the userType
-        const decodedToken = jwtDecode(response.data.token);  // Decode JWT
+        const decodedToken = jwtDecode(response.data.token);
         const userType = decodedToken.userType;
 
-        // Redirect based on userType
-        if (userType === 'customer') {
-          navigate("/dashboard"); // Customer dashboard
-        } else if (userType === 'agent') {
-          navigate("/agent-dashboard");  // Agent dashboard (create this page!)
-        } else {
-          console.warn("Unknown user type:", userType);
-          navigate("/default-dashboard"); // Fallback route
+        if (updateAuth) {
+          updateAuth(true);
         }
 
-
+        // Redirect based on userType
+        if (userType === "customer") {
+          navigate("/dashboard");
+        } else if (userType === "agent") {
+          navigate("/agent-dashboard");
+        } else {
+          console.warn("Unknown user type:", userType);
+          navigate("/default-dashboard");
+        }
       } else {
         setError("Login failed. Please try again.");
       }
     } catch (error) {
-      console.error(
-        "Error:",
-        error.response?.data?.message || error.message
-      );
-      setError(
-        error.response?.data?.message || "Invalid email or password."
-      );
+      console.error("Error:", error.response?.data?.message || error.message);
+      setError(error.response?.data?.message || "Invalid email or password.");
     } finally {
       setLoading(false);
     }
@@ -65,7 +78,6 @@ const Login = ({ updateAuth }) => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-blue-900 to-indigo-900 flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="flex w-full max-w-4xl bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
-
         {/* Left Side - Image */}
         <div className="hidden md:flex w-1/2 items-center justify-center">
           <img src="/hero.webp" alt="hero" className="w-3/4 h-auto" />
@@ -91,7 +103,10 @@ const Login = ({ updateAuth }) => {
           <form onSubmit={handleLogin} className="mt-6 space-y-6">
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-indigo-100 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-indigo-100 mb-2"
+              >
                 Email Address
               </label>
               <input
@@ -109,7 +124,10 @@ const Login = ({ updateAuth }) => {
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-indigo-100 mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-indigo-100 mb-2"
+              >
                 Password
               </label>
               <div className="relative">
@@ -142,12 +160,13 @@ const Login = ({ updateAuth }) => {
                 type="checkbox"
                 className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
               />
-              <label htmlFor="remember-me" className="ml-2 text-sm text-indigo-200">
+              <label
+                htmlFor="remember-me"
+                className="ml-2 text-sm text-indigo-200"
+              >
                 Remember me for 30 days
               </label>
             </div>
-            
-
 
             {/* Submit Button */}
             <div>
@@ -155,27 +174,31 @@ const Login = ({ updateAuth }) => {
                 type="submit"
                 disabled={loading}
                 className={`w-full py-3 rounded-lg text-white font-medium 
-                  ${loading
-                    ? "bg-indigo-600/70 cursor-not-allowed"
-                    : "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-lg transition-transform hover:-translate-y-1"}`}
+                  ${
+                    loading
+                      ? "bg-indigo-600/70 cursor-not-allowed"
+                      : "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-lg transition-transform hover:-translate-y-1"
+                  }`}
               >
                 {loading ? "Authenticating..." : "Sign in"}
               </button>
             </div>
 
-            <Link to="/LoginAgent"> <button
-              className=" px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 focus:ring-2 focus:ring-blue-300 focus:outline-none transition duration-200 w-full sm:w-auto"
-            >
-             Go To Agent Login
-            </button>
+            <Link to="/LoginAgent">
+              {" "}
+              <button className=" px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 focus:ring-2 focus:ring-blue-300 focus:outline-none transition duration-200 w-full sm:w-auto">
+                Go To Agent Login
+              </button>
             </Link>
-
           </form>
 
           {/* Links */}
           <div className="mt-6 text-center">
             <p className="text-sm text-indigo-200">
-              <Link to="/forgot-password" className="text-indigo-400 hover:text-white">
+              <Link
+                to="/forgot-password"
+                className="text-indigo-400 hover:text-white"
+              >
                 Forgot password?
               </Link>
             </p>
@@ -187,24 +210,25 @@ const Login = ({ updateAuth }) => {
             </p>
             <p className="text-sm text-indigo-200 mt-2">
               Are you an Admin?{" "}
-              <Link to="/admin-login" className="text-indigo-400 hover:text-white">
+              <Link
+                to="/admin-login"
+                className="text-indigo-400 hover:text-white"
+              >
                 Go To Admin Login 👉
               </Link>
             </p>
             <p className="text-sm text-indigo-200 mt-2">
               For Business Purposes?{" "}
-              <Link to="/business-login" className="text-indigo-400 hover:text-white">
+              <Link
+                to="/business-login"
+                className="text-indigo-400 hover:text-white"
+              >
                 Go To Business Login 👉
               </Link>
             </p>
-
-
           </div>
         </div>
       </div>
-
-
-
     </div>
   );
 };

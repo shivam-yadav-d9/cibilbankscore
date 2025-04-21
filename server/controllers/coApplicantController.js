@@ -5,13 +5,6 @@ import dotenv from "dotenv";
 // Load environment variables
 dotenv.config();
 
-// Log environment variables for debugging (remove in production)
-console.log("Environment variables check:");
-console.log("EVOLUTO_API_KEY exists:", !!process.env.EVOLUTO_API_KEY);
-console.log("EVOLUTO_API_SECRET exists:", !!process.env.EVOLUTO_API_SECRET);
-console.log("EVOLUTO_REF_CODE exists:", !!process.env.EVOLUTO_REF_CODE);
-console.log("EVOLUTO_API_BASE_URL:", process.env.EVOLUTO_API_BASE_URL);
-
 const API_KEY = process.env.EVOLUTO_API_KEY;
 const API_SECRET = process.env.EVOLUTO_API_SECRET;
 const REF_CODE = process.env.EVOLUTO_REF_CODE;
@@ -34,10 +27,6 @@ const validateEnvVariables = () => {
 const generateToken = async () => {
   try {
     console.log("Generating token for Evoluto API...");
-    console.log("Using API_KEY:", API_KEY ? "Set" : "Not set");
-    console.log("Using API_SECRET:", API_SECRET ? "Set" : "Not set");
-    console.log("Using REF_CODE:", REF_CODE);
-    console.log("Using API_BASE_URL:", API_BASE_URL);
     
     const response = await axios.post(`${API_BASE_URL}/authentication`, {}, {
       headers: {
@@ -47,8 +36,6 @@ const generateToken = async () => {
         'Authorization': `Basic ${Buffer.from(`${API_KEY}:${API_SECRET}`).toString('base64')}`
       }
     });
-    
-    console.log("Authentication response:", response.data);
     
     if (!response.data?.data?.token) {
       throw new Error("Invalid token response from authentication API");
@@ -61,11 +48,6 @@ const generateToken = async () => {
     if (error.response) {
       console.error("Response data:", error.response.data);
       console.error("Response status:", error.response.status);
-      console.error("Response headers:", error.response.headers);
-    } else if (error.request) {
-      console.error("No response received:", error.request);
-    } else {
-      console.error("Error message:", error.message);
     }
     throw new Error(`Authentication failed: ${error.response?.data?.message || error.message}`);
   }
@@ -119,27 +101,38 @@ export const saveCoApplicant = async (req, res) => {
       });
     }
 
-    // First save to MongoDB
-    try {
-      const coApplicant = new CoApplicant({
-        ...req.body,
-        created_at: new Date()
+    // Check if application_id exists in the request
+    if (!req.body.application_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Application ID is required"
       });
+    }
+
+    // First save/update to MongoDB using findOneAndUpdate with upsert option
+    try {
+      // Use application_id as the unique identifier
+      const filter = { application_id: req.body.application_id };
+      const update = {
+        ...req.body,
+        updated_at: new Date()
+      };
       
-      await coApplicant.save();
-      console.log("Co-applicant saved to MongoDB");
+      // Options for findOneAndUpdate - if document doesn't exist, create it
+      const options = { 
+        new: true, 
+        upsert: true,
+        runValidators: true 
+      };
+      
+      const coApplicant = await CoApplicant.findOneAndUpdate(filter, update, options);
+      console.log("Co-applicant saved/updated in MongoDB");
       
       // Try-catch block for Evoluto API interaction
       try {
         // Get authentication token
         const token = await generateToken();
         
-        // Prepare API request
-        const headers = { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        };
-
         // Prepare payload for Evoluto API - ensure ref_code is correct
         const evolutoPayload = {
           ...req.body,
@@ -152,7 +145,13 @@ export const saveCoApplicant = async (req, res) => {
         const evolutoResponse = await axios.post(
           `${API_BASE_URL}/loan/saveCoApplicant`,
           evolutoPayload,
-          { headers }
+          { 
+            headers: { 
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              'token': token  // Add token directly in headers as well (based on error message)
+            }
+          }
         );
 
         console.log("Evoluto API response:", evolutoResponse.data);
@@ -201,15 +200,6 @@ export const saveCoApplicant = async (req, res) => {
       });
     }
 
-    // Check if it's an Evoluto API error
-    if (error.response?.data) {
-      return res.status(error.response.status || 500).json({
-        success: false,
-        message: "Evoluto API error",
-        error: error.response.data
-      });
-    }
-
     // Generic error response
     res.status(500).json({ 
       success: false,
@@ -218,3 +208,42 @@ export const saveCoApplicant = async (req, res) => {
     });
   }
 };
+
+// Add this function to your controller file
+
+export const getCoApplicantByApplicationId = async (req, res) => {
+  try {
+    const { applicationId } = req.params;
+    
+    if (!applicationId) {
+      return res.status(400).json({
+        success: false,
+        message: "Application ID is required"
+      });
+    }
+    
+    const coApplicant = await CoApplicant.findOne({ application_id: applicationId });
+    
+    if (!coApplicant) {
+      return res.status(404).json({
+        success: false,
+        message: "No co-applicant found for this application ID"
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: coApplicant
+    });
+  } catch (error) {
+    console.error("Get Co-Applicant Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve co-applicant information",
+      error: error.message
+    });
+  }
+};
+
+// Then add this route in your routes file:
+// router.get("/api/user-co-app/:applicationId", getCoApplicantByApplicationId);

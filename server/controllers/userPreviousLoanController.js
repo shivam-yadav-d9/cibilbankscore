@@ -47,10 +47,15 @@ export const saveUserPreviousLoans = async (req, res) => {
       }
     }
     
-    console.log("Saving user previous loans:", req.body);
+    console.log("Saving/updating user previous loans:", req.body);
     
-    // First save to MongoDB
-    const savedData = await UserPreviousLoan.create(req.body);
+    // Find and update if exists, or create if it doesn't
+    const savedData = await UserPreviousLoan.findOneAndUpdate(
+      { application_id },
+      req.body,
+      { new: true, upsert: true }
+    );
+    
     console.log("Data saved to MongoDB:", savedData._id);
     
     try {

@@ -42,11 +42,20 @@ export const saveUserReferences = async (req, res) => {
     
     console.log("Saving user references:", req.body);
     
-    // First save to MongoDB to ensure we have a local copy
-    const savedData = await UserReference.create(req.body);
+    // Use findOneAndUpdate with upsert option instead of create
+    const savedData = await UserReference.findOneAndUpdate(
+      { application_id }, // filter criteria
+      req.body, // update data
+      { 
+        new: true, // return the updated document
+        upsert: true, // create if it doesn't exist
+        runValidators: true // run schema validators on update
+      }
+    );
+    
     console.log("Data saved to MongoDB:", savedData._id);
     
-    // Then try to save to external API
+    // Rest of your code remains the same
     try {
       // Generate authentication token
       const token = await generateToken();
@@ -65,7 +74,6 @@ export const saveUserReferences = async (req, res) => {
       
       console.log("Data saved to Evoluto API:", evoResponse.data);
       
-      // Return success response with data from both sources
       return res.status(200).json({ 
         message: "References saved successfully to database and external API",
         mongoData: savedData,
@@ -74,7 +82,6 @@ export const saveUserReferences = async (req, res) => {
     } catch (apiError) {
       console.error("Error saving to Evoluto API:", apiError.response?.data || apiError.message);
       
-      // Even if external API fails, we return success since we saved to MongoDB
       return res.status(200).json({
         message: "References saved successfully to database, but external API save failed",
         mongoData: savedData,
@@ -86,7 +93,6 @@ export const saveUserReferences = async (req, res) => {
     return res.status(500).json({ error: "Failed to save user references", details: err.message });
   }
 };
-
 // Get user references by application_id
 export const getUserReferencesByApplicationId = async (req, res) => {
   try {

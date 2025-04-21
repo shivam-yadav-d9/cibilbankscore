@@ -3,190 +3,247 @@ import axios from "axios";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const UserAddress = () => {
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     ref_code: "OUI202590898",
     application_id: "",
-    first_name: "Mahesh",
-    middle_name: "Narayan",
-    sur_name: "Waghmare",
-    gender: "Male",
-    father_name: "Narayan",
-    mother_name: "Suman",
-    marital_status: "Married",
-    religion: "Hindu",
-    qualification: "Post-Graduate",
-    current_emp_stability: "1",
-    total_emp_stability: "1",
-    industry_working: "Software",
-    employer_name: "Test Company",
-    designation: "Software Developer",
-    net_home_salary: "150000",
-    salary_bank_account: "4",
-    bank_branch: "Noida",
-    account_type: "Savings",
-    salary_account_no: "1234567890",
-    dependent: "5",
-    emi_towards: "No",
-    loan_amount: "100000",
-    tenure: "12",
-    organization_type: "Public Limited",
-    loan_type: "HOME LOAN (SALARIED)",
-    driving_licence_no: "DL-1234-5678",
-    dl_valid_upto_date: "2028-01-01",
-    designation_relation_with_company: "Software Developer",
-    vehicle_category: "LMV",
-    vehicle_type: "Sedan",
-    manufacturer: "Hyundai",
-    vehicle_model: "Verna 2019",
-    supplier: "ABC Motors",
-    cost_of_vehicle: "1000000",
-    cost_of_insurance: "50000",
-    cost_of_accessories: "10000",
+    first_name: "",
+    middle_name: "",
+    sur_name: "",
+    gender: "",
+    father_name: "",
+    mother_name: "",
+    marital_status: "",
+    religion: "",
+    qualification: "",
+    current_emp_stability: "",
+    total_emp_stability: "",
+    industry_working: "",
+    employer_name: "",
+    designation: "",
+    net_home_salary: "",
+    salary_bank_account: "",
+    bank_branch: "",
+    account_type: "",
+    salary_account_no: "",
+    dependent: "",
+    emi_towards: "",
+    loan_amount: "",
+    tenure: "",
+    organization_type: "",
+    loan_type: "",
+    driving_licence_no: "",
+    dl_valid_upto_date: "",
+    designation_relation_with_company: "",
+    vehicle_category: "",
+    vehicle_type: "",
+    manufacturer: "",
+    vehicle_model: "",
+    supplier: "",
+    cost_of_vehicle: "",
+    cost_of_insurance: "",
+    cost_of_accessories: "",
   });
 
+  // Add this to your existing useEffect or create a new one
   useEffect(() => {
+    // First check for application ID (as you already do)
     let applicationId = "";
-
-    // First check if it was passed via navigation state
     if (location.state?.applicationId) {
       applicationId = location.state.applicationId;
-    }
-    // If not, try to get it from localStorage
-    else {
+    } else {
       applicationId = localStorage.getItem("applicationId") || "";
     }
 
-    setFormData((prev) => ({
-      ...prev,
-      application_id: applicationId,
-    }));
+    // Then try to load saved form data from localStorage
+    const savedFormData = localStorage.getItem(`formData_${applicationId}`);
+
+    if (savedFormData) {
+      // Parse the saved data and set it to state
+      const parsedData = JSON.parse(savedFormData);
+      setFormData({
+        ...parsedData,
+        application_id: applicationId, // Ensure application_id is always set correctly
+      });
+    } else {
+      // If no saved data, just set the application_id
+      setFormData((prev) => ({
+        ...prev,
+        application_id: applicationId,
+      }));
+    }
   }, [location]);
 
+  // Modify your handleChange function
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const updatedFormData = { ...formData, [e.target.name]: e.target.value };
+    setFormData(updatedFormData);
+
+    // Save to localStorage whenever form data changes
+    if (updatedFormData.application_id) {
+      localStorage.setItem(
+        `formData_${updatedFormData.application_id}`,
+        JSON.stringify(updatedFormData)
+      );
+    }
   };
 
+  // Modify your handleSubmit function to also save before submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError("");
+    
+    // Save the current state to localStorage before submitting
+    if (formData.application_id) {
+      localStorage.setItem(`formData_${formData.application_id}`, JSON.stringify(formData));
+    }
+    
     try {
       const res = await axios.post(
         "http://localhost:3001/api/user-address/save-user-address",
         formData
       );
-      alert("Submitted successfully");
+      setSuccess("Submitted successfully");
       console.log(res.data);
       // Navigate programmatically after successful submission
-      // If using react-router v6
-      navigate("/UserSecondAddress", { state: { applicationId: formData.application_id } });
+      navigate("/UserSecondAddress", {
+        state: { applicationId: formData.application_id },
+      });
     } catch (err) {
       console.error(err);
-      alert("Error submitting form: " + (err.response?.data?.message || err.message));
+      setError("Error submitting form: " + (err.response?.data?.message || err.message));
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100 mt-20 mb-20">
-      <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-3xl">
-        <h2 className="text-2xl font-bold mb-6 text-gray-700">
+    <div className="p-8 max-w-2xl mx-auto bg-white shadow-xl rounded-2xl mt-16 mb-16 border border-gray-100">
+      {error && (
+        <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg flex items-center">
+          <svg
+            className="h-5 w-5 mr-3 text-red-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+          <p>{error}</p>
+        </div>
+      )}
+
+      {success && (
+        <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-lg flex items-center">
+          <svg
+            className="h-5 w-5 mr-3 text-green-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+          <p>{success}</p>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <h2 className="text-3xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 mb-8">
           Applicant Details
         </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Personal Details */}
-          <h3 className="text-xl font-semibold text-gray-700">
+
+        {/* Personal Details Section */}
+        <div className="space-y-5">
+          <h3 className="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">
             Personal Details
           </h3>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="application_id"
-              >
-                Application ID (for testing)
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
+                Application ID
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="application_id"
                 name="application_id"
                 type="text"
-                value={formData.application_id} // Add this line to bind the value
-                placeholder="Application ID"
+                value={formData.application_id}
                 onChange={handleChange}
+                placeholder="Application ID"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
-            {/* First Name */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="first_name"
-              >
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 First Name
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="first_name"
-                value={formData.first_name}
                 name="first_name"
                 type="text"
-                placeholder="First Name"
+                value={formData.first_name}
                 onChange={handleChange}
+                placeholder="First Name"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
-            {/* Middle Name */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="middle_name"
-              >
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Middle Name
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                value={formData.middle_name}
-                id="middle_name"
                 name="middle_name"
                 type="text"
+                value={formData.middle_name}
+                onChange={handleChange}
                 placeholder="Middle Name"
-                onChange={handleChange}
-              />
-            </div>
-            {/* Surname */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="sur_name"
-              >
-                Surname
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="sur_name"
-                value={formData.sur_name}
-                name="sur_name"
-                type="text"
-                placeholder="Surname"
-                onChange={handleChange}
-                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
               />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            {/* Gender */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="gender"
-              >
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
+                Surname
+              </label>
+              <input
+                name="sur_name"
+                type="text"
+                value={formData.sur_name}
+                onChange={handleChange}
+                placeholder="Surname"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                required
+              />
+            </div>
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Gender
               </label>
               <select
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="gender"
                 name="gender"
+                value={formData.gender}
                 onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               >
                 <option value="">Select</option>
@@ -194,60 +251,64 @@ const UserAddress = () => {
                 <option value="Female">Female</option>
                 <option value="Other">Other</option>
               </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
             </div>
-            {/* Father's Name */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="father_name"
-              >
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Father's Name
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="father_name"
                 name="father_name"
                 type="text"
                 value={formData.father_name}
+                onChange={handleChange}
                 placeholder="Father's Name"
-                onChange={handleChange}
-                required
-              />
-            </div>
-            {/* Mother's Name */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="mother_name"
-              >
-                Mother's Name
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="mother_name"
-                name="mother_name"
-                type="text"
-                value={formData.mother_name}
-                placeholder="Mother's Name"
-                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            {/* Marital Status */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="marital_status"
-              >
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
+                Mother's Name
+              </label>
+              <input
+                name="mother_name"
+                type="text"
+                value={formData.mother_name}
+                onChange={handleChange}
+                placeholder="Mother's Name"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                required
+              />
+            </div>
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Marital Status
               </label>
               <select
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="marital_status"
                 name="marital_status"
+                value={formData.marital_status}
                 onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               >
                 <option value="">Select</option>
@@ -256,608 +317,565 @@ const UserAddress = () => {
                 <option value="Divorced">Divorced</option>
                 <option value="Widowed">Widowed</option>
               </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
             </div>
-            {/* Religion */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="religion"
-              >
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Religion
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="religion"
                 name="religion"
                 type="text"
                 value={formData.religion}
-                placeholder="Religion"
                 onChange={handleChange}
+                placeholder="Religion"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
-            {/* Qualification */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="qualification"
-              >
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Qualification
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="qualification"
                 name="qualification"
                 type="text"
                 value={formData.qualification}
-                placeholder="Qualification"
                 onChange={handleChange}
+                placeholder="Qualification"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
           </div>
+        </div>
 
-          {/* Employment Details */}
-          <h3 className="text-xl font-semibold text-gray-700 mt-6">
+        {/* Employment Details Section */}
+        <div className="space-y-5">
+          <h3 className="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">
             Employment Details
           </h3>
-          <div className="grid grid-cols-3 gap-4">
-            {/* Current Employment Stability */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="current_emp_stability"
-              >
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Current Employment Stability
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="current_emp_stability"
                 name="current_emp_stability"
                 type="text"
                 value={formData.current_emp_stability}
-                placeholder="Current Employment Stability"
                 onChange={handleChange}
+                placeholder="Current Employment Stability"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
-            {/* Total Employment Stability */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="total_emp_stability"
-              >
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Total Employment Stability
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="total_emp_stability"
                 name="total_emp_stability"
                 type="text"
                 value={formData.total_emp_stability}
-                placeholder="Total Employment Stability"
                 onChange={handleChange}
+                placeholder="Total Employment Stability"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
-            {/* Industry Working */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="industry_working"
-              >
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Industry Working
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="industry_working"
                 name="industry_working"
                 type="text"
-                placeholder="Industry Working"
                 value={formData.industry_working}
                 onChange={handleChange}
-                required
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            {/* Employer Name */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="employer_name"
-              >
-                Employer Name
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="employer_name"
-                name="employer_name"
-                type="text"
-                placeholder="Employer Name"
-                value={formData.employer_name}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            {/* Designation */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="designation"
-              >
-                Designation
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="designation"
-                name="designation"
-                type="text"
-                placeholder="Designation"
-                value={formData.designation}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            {/* Net Home Salary */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="net_home_salary"
-              >
-                Net Home Salary
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="net_home_salary"
-                name="net_home_salary"
-                type="text"
-                placeholder="Net Home Salary"
-                onChange={handleChange}
-                value={formData.net_home_salary}
+                placeholder="Industry Working"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
           </div>
 
-          {/* Bank Details */}
-          <h3 className="text-xl font-semibold text-gray-700 mt-6">
-            Bank Details
-          </h3>
-          <div className="grid grid-cols-3 gap-4">
-            {/* Salary Bank Account */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="salary_bank_account"
-              >
-                Salary Bank Account
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
+                Employer Name
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="salary_bank_account"
-                name="salary_bank_account"
+                name="employer_name"
                 type="text"
-                placeholder="Salary Bank Account"
+                value={formData.employer_name}
                 onChange={handleChange}
-                value={formData.salary_bank_account}
+                placeholder="Employer Name"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
-            {/* Bank Branch */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="bank_branch"
-              >
-                Bank Branch
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
+                Designation
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="bank_branch"
-                name="bank_branch"
+                name="designation"
                 type="text"
-                placeholder="Bank Branch"
+                value={formData.designation}
                 onChange={handleChange}
-                value={formData.bank_branch}
+                placeholder="Designation"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
-            {/* Account Type */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="account_type"
-              >
-                Account Type
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
+                Net Home Salary
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="account_type"
-                name="account_type"
+                name="net_home_salary"
                 type="text"
-                placeholder="Account Type"
+                value={formData.net_home_salary}
                 onChange={handleChange}
-                value={formData.account_type}
+                placeholder="Net Home Salary"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            {/* Salary Account No */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="salary_account_no"
-              >
+        </div>
+
+        {/* Bank Details Section */}
+        <div className="space-y-5">
+          <h3 className="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">
+            Bank Details
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
+                Salary Bank Account
+              </label>
+              <input
+                name="salary_bank_account"
+                type="text"
+                value={formData.salary_bank_account}
+                onChange={handleChange}
+                placeholder="Salary Bank Account"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                required
+              />
+            </div>
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
+                Bank Branch
+              </label>
+              <input
+                name="bank_branch"
+                type="text"
+                value={formData.bank_branch}
+                onChange={handleChange}
+                placeholder="Bank Branch"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                required
+              />
+            </div>
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
+                Account Type
+              </label>
+              <input
+                name="account_type"
+                type="text"
+                value={formData.account_type}
+                onChange={handleChange}
+                placeholder="Account Type"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Salary Account No
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="salary_account_no"
                 name="salary_account_no"
                 type="text"
-                placeholder="Salary Account No"
-                onChange={handleChange}
                 value={formData.salary_account_no}
+                onChange={handleChange}
+                placeholder="Salary Account No"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
-            {/* Dependent */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="dependent"
-              >
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Dependent
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="dependent"
                 name="dependent"
                 type="text"
-                placeholder="Dependent"
-                onChange={handleChange}
                 value={formData.dependent}
+                onChange={handleChange}
+                placeholder="Dependent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
-            {/* EMI Towards */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="emi_towards"
-              >
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 EMI Towards
               </label>
               <select
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="emi_towards"
                 name="emi_towards"
+                value={formData.emi_towards}
                 onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               >
                 <option value="">Select</option>
                 <option value="Yes">Yes</option>
                 <option value="No">No</option>
               </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Loan Details */}
-          <h3 className="text-xl font-semibold text-gray-700 mt-6">
+        {/* Loan Details Section */}
+        <div className="space-y-5">
+          <h3 className="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">
             Loan Details
           </h3>
-          <div className="grid grid-cols-3 gap-4">
-            {/* Loan Amount */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="loan_amount"
-              >
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Loan Amount
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="loan_amount"
                 name="loan_amount"
                 type="text"
-                placeholder="Loan Amount"
-                onChange={handleChange}
                 value={formData.loan_amount}
+                onChange={handleChange}
+                placeholder="Loan Amount"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
-            {/* Tenure */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="tenure"
-              >
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Tenure
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="tenure"
                 name="tenure"
                 type="text"
-                placeholder="Tenure"
-                onChange={handleChange}
                 value={formData.tenure}
+                onChange={handleChange}
+                placeholder="Tenure"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
-            {/* Organization Type */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="organization_type"
-              >
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Organization Type
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="organization_type"
                 name="organization_type"
                 type="text"
-                placeholder="Organization Type"
-                onChange={handleChange}
                 value={formData.organization_type}
+                onChange={handleChange}
+                placeholder="Organization Type"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            {/* Loan Type */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="loan_type"
-              >
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Loan Type
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="loan_type"
                 name="loan_type"
                 type="text"
-                placeholder="Loan Type"
-                onChange={handleChange}
                 value={formData.loan_type}
+                onChange={handleChange}
+                placeholder="Loan Type"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
-            {/* Driving Licence No */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="driving_licence_no"
-              >
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Driving Licence No
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="driving_licence_no"
                 name="driving_licence_no"
                 type="text"
                 value={formData.driving_licence_no}
-                placeholder="Driving Licence No"
                 onChange={handleChange}
+                placeholder="Driving Licence No"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
-            {/* DL Valid Upto Date */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="dl_valid_upto_date"
-              >
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 DL Valid Upto Date
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="dl_valid_upto_date"
                 name="dl_valid_upto_date"
                 type="date"
                 value={formData.dl_valid_upto_date}
-                placeholder="DL Valid Upto Date"
                 onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
           </div>
-          {/* Vehicle Details */}
-          <h3 className="text-xl font-semibold text-gray-700 mt-6">
+        </div>
+
+        {/* Vehicle Details Section */}
+        <div className="space-y-5">
+          <h3 className="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">
             Vehicle Details
           </h3>
-          <div className="grid grid-cols-3 gap-4">
-            {/* Designation Relation with Company */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="designation_relation_with_company"
-              >
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Designation Relation With Company
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="designation_relation_with_company"
                 name="designation_relation_with_company"
                 type="text"
-                placeholder="Designation Relation With Company"
-                onChange={handleChange}
                 value={formData.designation_relation_with_company}
+                onChange={handleChange}
+                placeholder="Designation Relation With Company"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
-            {/* Vehicle Category */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="vehicle_category"
-              >
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Vehicle Category
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="vehicle_category"
                 name="vehicle_category"
                 type="text"
-                placeholder="Vehicle Category"
                 value={formData.vehicle_category}
                 onChange={handleChange}
+                placeholder="Vehicle Category"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
-            {/* Vehicle Type */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="vehicle_type"
-              >
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Vehicle Type
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="vehicle_type"
                 name="vehicle_type"
                 type="text"
-                placeholder="Vehicle Type"
                 value={formData.vehicle_type}
                 onChange={handleChange}
+                placeholder="Vehicle Type"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            {/* Manufacturer */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="manufacturer"
-              >
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Manufacturer
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="manufacturer"
                 name="manufacturer"
                 type="text"
                 value={formData.manufacturer}
-                placeholder="Manufacturer"
                 onChange={handleChange}
+                placeholder="Manufacturer"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
-            {/* Vehicle Model */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="vehicle_model"
-              >
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Vehicle Model
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="vehicle_model"
                 name="vehicle_model"
                 type="text"
                 value={formData.vehicle_model}
-                placeholder="Vehicle Model"
                 onChange={handleChange}
+                placeholder="Vehicle Model"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
-            {/* Supplier */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="supplier"
-              >
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Supplier
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="supplier"
                 name="supplier"
                 type="text"
                 value={formData.supplier}
-                placeholder="Supplier"
                 onChange={handleChange}
+                placeholder="Supplier"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            {/* Cost of Vehicle */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="cost_of_vehicle"
-              >
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Cost of Vehicle
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="cost_of_vehicle"
                 name="cost_of_vehicle"
                 type="text"
-                placeholder="Cost of Vehicle"
-                onChange={handleChange}
                 value={formData.cost_of_vehicle}
+                onChange={handleChange}
+                placeholder="Cost of Vehicle"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
-            {/* Cost of Insurance */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="cost_of_insurance"
-              >
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Cost of Insurance
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="cost_of_insurance"
                 name="cost_of_insurance"
                 type="text"
-                placeholder="Cost of Insurance"
-                onChange={handleChange}
                 value={formData.cost_of_insurance}
+                onChange={handleChange}
+                placeholder="Cost of Insurance"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
-            {/* Cost of Accessories */}
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="cost_of_accessories"
-              >
+
+            <div className="relative">
+              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
                 Cost of Accessories
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="cost_of_accessories"
                 name="cost_of_accessories"
                 type="text"
-                placeholder="Cost of Accessories"
-                onChange={handleChange}
                 value={formData.cost_of_accessories}
+                onChange={handleChange}
+                placeholder="Cost of Accessories"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
           </div>
-          {/* Submit Button */}
-         
-            <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              type="submit"
-            >
-              Submit
-            </button>
-          
-        </form>
-      </div>
+        </div>
+
+        {/* Submit Button */}
+        <div className="pt-4">
+          <button
+            type="submit"
+            disabled={isLoading}
+            className={`w-full font-bold py-4 rounded-lg shadow-md transition-all duration-300 ${
+              isLoading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-lg hover:from-blue-600 hover:to-indigo-700"
+            }`}
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Processing...
+              </div>
+            ) : (
+              "Submit Application"
+            )}
+          </button>
+        </div>
+      </form>
     </div>
   );
 };
