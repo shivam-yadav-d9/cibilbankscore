@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode"; // Correct
+import { jwtDecode } from "jwt-decode";
 
 const Login = ({ updateAuth }) => {
   const [email, setEmail] = useState("");
@@ -76,19 +76,12 @@ const Login = ({ updateAuth }) => {
   };
 
   return (
-
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-blue-900 to-indigo-900 flex items-center justify-center px-4 sm:px-6 lg:px-8">
-      <div className="flex w-full max-w-4xl bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
-
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-blue-900 to-indigo-900 flex items-center justify-center px-0 sm:px-6 lg:px-8">
-      <div className="flex flex-col md:flex-row w-full max-w-4xl bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden m-2 mt-20">
-  
-84b476f9e3791183b9278b520bf2c96fa397325a
+      <div className="flex flex-col md:flex-row w-full max-w-4xl bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
         {/* Left Side - Image */}
         <div className="flex w-full md:w-1/2 items-center justify-center p-0 m-0 md:p-6">
           <img src="/hero.webp" alt="hero" className="w-full h-auto object-cover" />
         </div>
-  
 
         {/* Right Side - Login Form */}
         <div className="w-full md:w-1/2 p-8">
@@ -191,19 +184,16 @@ const Login = ({ updateAuth }) => {
               </button>
             </div>
 
-            <Link to="/LoginAgent">
-              {" "}
-              <button className=" px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 focus:ring-2 focus:ring-blue-300 focus:outline-none transition duration-200 w-full sm:w-auto">
+            {/* Agent Login Button */}
+            <Link to="/LoginAgent" className="block mt-4">
+              <button className="w-full px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 focus:ring-2 focus:ring-blue-300 focus:outline-none transition duration-200">
                 Go To Agent Login
               </button>
             </Link>
-
-          
-
           </form>
 
           {/* Links */}
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-2">
             <p className="text-sm text-indigo-200">
               <Link
                 to="/forgot-password"
@@ -212,13 +202,13 @@ const Login = ({ updateAuth }) => {
                 Forgot password?
               </Link>
             </p>
-            <p className="text-sm text-indigo-200 mt-2">
+            <p className="text-sm text-indigo-200">
               Don't have an account?{" "}
               <Link to="/signup" className="text-indigo-400 hover:text-white">
                 Sign up
               </Link>
             </p>
-            <p className="text-sm text-indigo-200 mt-2">
+            <p className="text-sm text-indigo-200">
               Are you an Admin?{" "}
               <Link
                 to="/admin-login"
@@ -227,18 +217,13 @@ const Login = ({ updateAuth }) => {
                 Go To Admin Login 👉
               </Link>
             </p>
-            <p className="text-sm text-indigo-200 mt-2">
+            <p className="text-sm text-indigo-200">
               For Business Purposes?{" "}
-
               <Link
                 to="/business-login"
                 className="text-indigo-400 hover:text-white"
               >
                 Go To Business Login 👉
-
-              <Link to="/LoginAgent" className="text-indigo-400 hover:text-white">
-                Go To Agent Login 👉
- 84b476f9e3791183b9278b520bf2c96fa397325a
               </Link>
             </p>
           </div>
