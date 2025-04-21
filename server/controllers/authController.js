@@ -139,5 +139,50 @@ export const login = async (req, res) => {
 };
 
 
+// Fetch All Users Controller (with optional Date Range Filtering)
+// Example:  controllers/userController.js (assuming Mongoose)
 
+export const getAllUsers = async (req, res) => {
+    try {
+        const { startDate, endDate, page = 1, pageSize = 10 } = req.query;
 
+        const pageNumber = parseInt(page, 10);
+        const pageSizeNumber = parseInt(pageSize, 10);
+
+        if (isNaN(pageNumber) || pageNumber < 1) {
+            pageNumber = 1;
+        }
+        if (isNaN(pageSizeNumber) || pageSizeNumber < 1) {
+            pageSizeNumber = 10;
+        }
+
+        let query = {};
+
+        if (startDate && endDate) {
+            query = {
+                createdAt: {
+                    $gte: new Date(startDate),
+                    $lte: new Date(endDate + 'T23:59:59.999Z'),
+                },
+            };
+        }
+
+        const skip = (pageNumber - 1) * pageSizeNumber;
+
+        const users = await User.find(query)
+            .skip(skip)
+            .limit(pageSizeNumber);
+
+        const totalUsers = await User.countDocuments(query);
+
+        res.status(200).json({
+            message: "Users fetched successfully",
+            users,
+            totalPages: Math.ceil(totalUsers / pageSizeNumber),
+            currentPage: pageNumber,
+        });
+    } catch (error) {
+        console.error("Get All Users Error:", error.message);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
