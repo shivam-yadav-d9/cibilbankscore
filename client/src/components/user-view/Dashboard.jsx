@@ -220,7 +220,7 @@ const Dashboard = () => {
               </h3>
             </button>
 
-            {/* <button className="group bg-white p-4 md:p-6 xl:p-8 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-indigo-900/20 backdrop-blur-sm border border-slate-700/30 hover:-translate-y-1 flex flex-col items-center justify-center text-center">
+             <button className="group bg-white p-4 md:p-6 xl:p-8 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-indigo-900/20 backdrop-blur-sm border border-slate-700/30 hover:-translate-y-1 flex flex-col items-center justify-center text-center">
               <div className="bg-indigo-900/30 w-8 h-8 md:w-12 md:h-12 xl:w-14 xl:h-14 rounded-lg flex items-center justify-center mb-2 md:mb-4 xl:mb-6 text-indigo-400 group-hover:bg-indigo-600/40 transition-all duration-300">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -241,7 +241,7 @@ const Dashboard = () => {
               IMPS (Immediate Payment Service)
 
               </h3>
-            </button> */}
+            </button> *
 
           </div>
         </div>

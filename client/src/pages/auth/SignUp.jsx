@@ -5,6 +5,8 @@ import axios from "axios";
 const Signup = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
+
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -20,7 +22,9 @@ const Signup = () => {
       name,
       email,
       password,
+      mobile,
     };
+
 
     try {
       const response = await axios.post(
@@ -55,7 +59,7 @@ const Signup = () => {
       <div className="max-w-md w-full space-y-12">
         {/* Brand Header */}
         <div className="text-center">
-       
+
           <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-white">
             {" "}
             Welcome to DBNPAY! 👋
@@ -162,6 +166,45 @@ const Signup = () => {
                   </div>
                 </div>
 
+                {/* Mobile Number */}
+                <div>
+                  <label
+                    htmlFor="mobile"
+                    className="block text-sm font-medium text-indigo-100 mb-2"
+                  >
+                    Mobile Number
+                  </label>
+                  <div className="group relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg
+                        className="h-5 w-5 text-indigo-300 group-focus-within:text-white transition-colors duration-200"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 5h2l3 7-1.5 2.5M16 7h4m-2 0v6M5 20h14"
+                        />
+                      </svg>
+                    </div>
+                    <input
+                      id="mobile"
+                      name="mobile"
+                      type="text"
+                      required
+                      value={mobile}
+                      onChange={(e) => setMobile(e.target.value)}
+                      className="appearance-none block w-full pl-12 pr-4 py-3 bg-white/10 border border-indigo-400/30 rounded-lg text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                      placeholder="Enter Mobile Number"
+                    />
+                  </div>
+                </div>
+
+
                 {/* Password */}
                 <div>
                   <label
@@ -266,11 +309,10 @@ const Signup = () => {
                     type="submit"
                     disabled={loading}
                     className={`group relative w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-sm font-medium text-white 
-                    ${
-                      loading
+                    ${loading
                         ? "bg-indigo-600/70 cursor-not-allowed"
                         : "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-lg hover:shadow-indigo-500/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transform transition-all duration-200 hover:-translate-y-1"
-                    }`}
+                      }`}
                   >
                     {loading ? (
                       <span className="flex items-center">
@@ -333,7 +375,7 @@ const Signup = () => {
           </div>
         </div>
 
-   
+
       </div>
     </div>
   );

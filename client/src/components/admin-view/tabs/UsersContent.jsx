@@ -64,6 +64,17 @@ const UsersContent = () => {
     return new Date(dateString).toLocaleDateString();
   };
 
+  const getMobile = (user) => {
+    return (
+      user.mobile ||
+      user.mobileNumber ||
+      user.contactNumber ||
+      user.phone ||
+      user.phoneNumber ||
+      '—'
+    );
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* Button Group */}
@@ -71,17 +82,16 @@ const UsersContent = () => {
         {['our-customer', 'agent-customer', 'today-customer'].map((type) => (
           <button
             key={type}
-            className={`bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded ${
-              activeButton === type ? 'opacity-100' : 'opacity-70'
-            }`}
+            className={`bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded ${activeButton === type ? 'opacity-100' : 'opacity-70'
+              }`}
             onClick={() => handleButtonClick(type)}
             disabled={isLoading}
           >
             {type === 'our-customer'
               ? 'Our Customer'
               : type === 'agent-customer'
-              ? 'Agent Customer'
-              : 'Today Customer'}
+                ? 'Agent Customer'
+                : 'Today Customer'}
           </button>
         ))}
       </div>
@@ -97,21 +107,23 @@ const UsersContent = () => {
             <tr className="bg-gray-100 border-b">
               <th className="px-6 py-3 text-sm font-semibold">Name</th>
               <th className="px-6 py-3 text-sm font-semibold">Email</th>
+              <th className="px-6 py-3 text-sm font-semibold">Mobile</th>
               <th className="px-6 py-3 text-sm font-semibold">Created At</th>
             </tr>
           </thead>
           <tbody>
             {visibleUsers.length === 0 ? (
               <tr>
-                <td colSpan="3" className="text-center px-6 py-4 text-gray-500">
+                <td colSpan="4" className="text-center px-6 py-4 text-gray-500">
                   No users found.
                 </td>
               </tr>
             ) : (
               visibleUsers.map((user, index) => (
                 <tr key={index} className="border-b hover:bg-gray-50">
-                  <td className="px-6 py-4">{user.name || user.fullName}</td>
-                  <td className="px-6 py-4">{user.email}</td>
+                  <td className="px-6 py-4">{user.name || user.fullName || '—'}</td>
+                  <td className="px-6 py-4">{user.email || '—'}</td>
+                  <td className="px-6 py-4">{getMobile(user)}</td>
                   <td className="px-6 py-4">
                     {user.createdAt ? formatDate(user.createdAt) : '—'}
                   </td>
