@@ -1,9 +1,12 @@
 import express from "express";
-import { signupB2BUser, loginAgent } from "../controllers/B2BSignup.js";
+import { signupB2BUser, loginAgent, getAllAgents } from "../controllers/B2BSignup.js";
 
 const router = express.Router();
 
 router.post("/signup", signupB2BUser);
 router.post("/login", loginAgent);
+
+//New route for admin
+router.get("/agents", getAllAgents);
 
 export default router;

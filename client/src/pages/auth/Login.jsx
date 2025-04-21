@@ -76,12 +76,19 @@ const Login = ({ updateAuth }) => {
   };
 
   return (
+
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-blue-900 to-indigo-900 flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="flex w-full max-w-4xl bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
+
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-blue-900 to-indigo-900 flex items-center justify-center px-0 sm:px-6 lg:px-8">
+      <div className="flex flex-col md:flex-row w-full max-w-4xl bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden m-2 mt-20">
+  
+84b476f9e3791183b9278b520bf2c96fa397325a
         {/* Left Side - Image */}
-        <div className="hidden md:flex w-1/2 items-center justify-center">
-          <img src="/hero.webp" alt="hero" className="w-3/4 h-auto" />
+        <div className="flex w-full md:w-1/2 items-center justify-center p-0 m-0 md:p-6">
+          <img src="/hero.webp" alt="hero" className="w-full h-auto object-cover" />
         </div>
+  
 
         {/* Right Side - Login Form */}
         <div className="w-full md:w-1/2 p-8">
@@ -190,6 +197,9 @@ const Login = ({ updateAuth }) => {
                 Go To Agent Login
               </button>
             </Link>
+
+          
+
           </form>
 
           {/* Links */}
@@ -219,11 +229,16 @@ const Login = ({ updateAuth }) => {
             </p>
             <p className="text-sm text-indigo-200 mt-2">
               For Business Purposes?{" "}
+
               <Link
                 to="/business-login"
                 className="text-indigo-400 hover:text-white"
               >
                 Go To Business Login 👉
+
+              <Link to="/LoginAgent" className="text-indigo-400 hover:text-white">
+                Go To Agent Login 👉
+ 84b476f9e3791183b9278b520bf2c96fa397325a
               </Link>
             </p>
           </div>

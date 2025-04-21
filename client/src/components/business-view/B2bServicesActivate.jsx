@@ -1,4 +1,11 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom"; // Import Link from React Router
+import {
+    Banknote, CreditCard, ReceiptText, ShieldCheck, PiggyBank,
+    Coins, Fingerprint, SendHorizontal, Building, Landmark,
+    Gavel, UserPlus, FileText, Truck, HeartPulse, Pill,
+    HandHelping, CalendarCheck2, DollarSign, MonitorSmartphone
+} from "lucide-react";
 
 const TermsAndConditions = () => {
     const [accepted, setAccepted] = useState(false);
@@ -19,18 +26,155 @@ const TermsAndConditions = () => {
                     {/* Stylish Paragraph Section */}
                     <div className="px-8 py-6 bg-gray-100 border-b border-gray-200"> {/* Increased padding, subtle background */}
                         <p className="text-gray-600 leading-relaxed text-lg italic"> {/* Increased font size, added italic style */}
-                        With B2B banking between businesses, you can track, manage and plan all your transaction processes. In this way, you can reach new businesses and expand the reach of your business. You can operate your business with The Kingdom Bank all over the world with no boundaries. Our dedicated team is ready to provide tailored solutions for your business.
+                            With B2B banking between businesses, you can track, manage and plan all your transaction processes. In this way, you can reach new businesses and expand the reach of your business. You can operate your business with The Kingdom Bank all over the world with no boundaries. Our dedicated team is ready to provide tailored solutions for your business.
                         </p>
                     </div>
 
                     {/* Centered Button */}
                     <div className="px-6 py-8 flex justify-center"> {/* Flex container for centering */}
-                        <button
+
+                        <Link to="/dashboard">  <button
                             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-md transition duration-300"
                         >
                             Click Here to Activate
                         </button>
+                        </Link>
                     </div>
+
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-screen-xl mx-auto">
+                        <Link to="/UserLoanpage"><div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <Banknote size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">Loan</span>
+                        </div>
+                        </Link>
+
+                        <Link to="/credit-check">
+                            <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                                <div className="hover:-translate-y-2 transition-transform duration-300">
+                                    <CreditCard size={50} />
+                                </div>
+                                <span className="font-semibold text-lg">Credit Card</span>
+                            </div>
+                        </Link>
+
+                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <ReceiptText size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">Bill Payment</span>
+                        </div>
+                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <ShieldCheck size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">Insurance</span>
+                        </div>
+
+                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <PiggyBank size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">FD (Fixed Deposit)</span>
+                        </div>
+                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <Coins size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">RD (Recurring Deposit)</span>
+                        </div>
+                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <Fingerprint size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">AEPS</span>
+                        </div>
+                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <SendHorizontal size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">DMT</span>
+                        </div>
+
+                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <Building size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">IMPS/RTGS</span>
+                        </div>
+                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <Landmark size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">Govt Service</span>
+                        </div>
+                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <Gavel size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">Legal Services</span>
+                        </div>
+                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <UserPlus size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">Apply Bank BC</span>
+                        </div>
+
+                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <FileText size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">Account Opening</span>
+                        </div>
+                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <Truck size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">Courier Services</span>
+                        </div>
+                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <HeartPulse size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">E-Health</span>
+                        </div>
+                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <Pill size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">Medicine</span>
+                        </div>
+
+                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <HandHelping size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">Affliction Service</span>
+                        </div>
+                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <CalendarCheck2 size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">Booking</span>
+                        </div>
+                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <DollarSign size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">Consumer Finance</span>
+                        </div>
+                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <MonitorSmartphone size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">Matm</span>
+                        </div>
+                    </div>
+
+
 
 
                     <div className="px-6 py-8 space-y-6">
@@ -140,7 +284,7 @@ const TermsAndConditions = () => {
                     </div> */}
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

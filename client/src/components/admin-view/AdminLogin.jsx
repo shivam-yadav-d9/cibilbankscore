@@ -56,7 +56,7 @@ const AdminLogin = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-blue-900 to-indigo-900 flex items-center justify-center px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-12">
+      <div className="max-w-md w-full space-y-12 mt-10">
         {/* Brand Header */}
         <div className="text-center">
           <div className="flex justify-center">
@@ -68,7 +68,6 @@ const AdminLogin = () => {
             </div>
           </div>
           <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-white">DBNPE</h1>
-          <p className="mt-2 text-sm text-indigo-300 font-medium">Admin Portal</p>
         </div>
 
         {/* Main Card */}
@@ -172,27 +171,7 @@ const AdminLogin = () => {
                   </div>
                 </div>
 
-                {/* Security code/2FA - Optional addition for admin security */}
-                {/* <div>
-                  <label htmlFor="securityCode" className="block text-sm font-medium text-indigo-100 mb-2">
-                    Security Code (2FA)
-                  </label>
-                  <div className="group relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <svg className="h-5 w-5 text-indigo-300 group-focus-within:text-white transition-colors duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <input
-                      id="securityCode"
-                      name="securityCode"
-                      type="text"
-                      autoComplete="one-time-code"
-                      className="appearance-none block w-full pl-12 pr-4 py-3 bg-white/10 border border-indigo-400/30 rounded-lg text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
-                      placeholder="6-digit code (if enabled)"
-                    />
-                  </div>
-                </div> */}
+            
 
                 {/* Remember device */}
                 <div className="flex items-center">
@@ -250,16 +229,7 @@ const AdminLogin = () => {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="text-center">
-          <p className="text-xs text-indigo-300">
-            &copy; 2025 DBNPE. All rights reserved.
-          </p>
-          <div className="mt-2 flex justify-center space-x-4">
-            <a href="#" className="text-xs text-indigo-300 hover:text-white transition-colors duration-200">Privacy Policy</a>
-            <a href="#" className="text-xs text-indigo-300 hover:text-white transition-colors duration-200">Terms of Service</a>
-          </div>
-        </div>
+     
       </div>
     </div>
   );

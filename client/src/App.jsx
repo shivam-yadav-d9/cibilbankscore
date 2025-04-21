@@ -102,7 +102,11 @@ function App() {
               <Route path="/LoanReportDetail" element={<LoanReportDetail/>}/>
 
               {/* Protected Admin Route */}
+
               <Route path="/admin" element={<AdminPanel />}/>
+
+              <Route path="/admin" element={<AdminPanel />} />
+ 84b476f9e3791183b9278b520bf2c96fa397325a
 
               {/* 🏢 Protected Business Route */}
               <Route path="/business-dashboard" element={<B2BDashboard />} />
