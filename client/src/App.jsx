@@ -50,6 +50,7 @@ import TermsAndConditions from "./components/business-view/B2bServicesActivate";
 import B2BSignup from "./pages/auth/B2BSignup";
 import LoginAgent from "./pages/auth/LoginAgent";
 import LoanReportDetail from "./pages/auth/LoanReportDetail";
+import ExpertConnect from "./pages/auth/ExpertConnect";
 
 
 function App() {
@@ -100,13 +101,13 @@ function App() {
               <Route path="/UserSaveRefrences" element={<UserSaveRefrences/>} />
               <Route path="/UserPreviousData" element={<UserPreviousData/>}/>
               <Route path="/LoanReportDetail" element={<LoanReportDetail/>}/>
+              <Route path="/expert-connect" element={<ExpertConnect/>}/>
 
               {/* Protected Admin Route */}
 
               <Route path="/admin" element={<AdminPanel />}/>
 
-              <Route path="/admin" element={<AdminPanel />} />
- 84b476f9e3791183b9278b520bf2c96fa397325a
+              
 
               {/* 🏢 Protected Business Route */}
               <Route path="/business-dashboard" element={<B2BDashboard />} />
