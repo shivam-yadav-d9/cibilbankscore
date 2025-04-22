@@ -489,6 +489,9 @@ const LoanProcessor = () => {
       </div>
 
       {/* Eligibility Result Card */}
+      // ... existing code ...
+
+      {/* Eligibility Result Card */}
       {eligibilityResult && (
         <div className="bg-white rounded-xl px-6 pt-5 pb-6 mb-6 shadow-md border border-gray-100">
           <h3 className="text-2xl font-bold mb-4 text-indigo-600">
@@ -518,24 +521,24 @@ const LoanProcessor = () => {
               </div>
             )}
 
-            {eligibilityResult.data && eligibilityResult.success && (  // Render Bank List only if data is present and eligible
+            {eligibilityResult.data && eligibilityResult.success && Array.isArray(eligibilityResult.data) && eligibilityResult.data.length > 0 && (
               <div className="mt-4">
                 <h4 className="font-medium mb-3 text-gray-700">Eligible Banks:</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {eligibilityResult.data.map((bank) => (
+                  {eligibilityResult.data.map((bank, index) => (
                     <div
-                      key={bank.id}
+                      key={bank.id || index}
                       className="bg-gray-50 p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200"
                     >
                       {bank.bank_logo && (
                         <img
-                          src={`/images/${bank.bank_logo}`}  // Assuming logos are in /images folder
+                          src={`/images/${bank.bank_logo}`}
                           alt={`${bank.bank} Logo`}
                           className="h-12 w-auto mx-auto mb-2"
                         />
                       )}
                       <h5 className="font-semibold text-lg text-gray-800 text-center">
-                        {bank.bank}
+                        {bank.bank || 'Bank Name Not Available'}
                       </h5>
                       {bank.bank_description && (
                         <p className="text-sm text-gray-600 mt-2 text-center">
@@ -554,9 +557,12 @@ const LoanProcessor = () => {
                       )}
                       {bank.utm_url && (
                         <div className="mt-3 text-center">
-                          <a href={bank.utm_url}
+                          <a
+                            href={bank.utm_url}
                             className="inline-block bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                            target="_blank" rel="noopener noreferrer">
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             Apply Now
                           </a>
                         </div>
@@ -566,10 +572,20 @@ const LoanProcessor = () => {
                 </div>
               </div>
             )}
+
+            {/* Display when data is not in expected format */}
+            {eligibilityResult.data && eligibilityResult.success && (!Array.isArray(eligibilityResult.data) || eligibilityResult.data.length === 0) && (
+              <div className="mt-4 text-center p-4 bg-yellow-50 rounded-lg">
+                <p className="text-yellow-700">
+                  No bank details are available at the moment. Please try again later.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}
 
+// ... existing code ...
       <Link to="/UserBasicData">
         <button
           onClick={handleNext}

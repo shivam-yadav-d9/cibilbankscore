@@ -56,6 +56,7 @@ import LoanReportDetail from "./pages/auth/LoanReportDetail";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
 import ExpertConnect from "./pages/auth/ExpertConnect";
+import LoanDocumentsPage from "./pages/auth/LoanDocumentsPage";
 
 
 function App() {
@@ -113,6 +114,7 @@ function App() {
               <Route path="/UserPreviousData" element={<UserPreviousData/>}/>
               <Route path="/LoanReportDetail" element={<LoanReportDetail/>}/>
               <Route path="/expert-connect" element={<ExpertConnect/>}/>
+              <Route path="/loan-documents" element={<LoanDocumentsPage/>}/>
 
               {/* Protected Admin Route */}
 

@@ -6,8 +6,23 @@ dotenv.config(); // Load environment variables
 const BASE_URL = process.env.BASE_URL || "https://uat-api.evolutosolution.com/v1";  // Use environment variable or default
 
 // Function to get API token
+// Function to get API token
 export const fetchToken = async (req, res) => {
     try {
+        // Create the Authorization header using your API key and secret from environment variables
+        const apiKey = process.env.EVOLUTO_API_KEY;
+        const apiSecret = process.env.EVOLUTO_API_SECRET;
+        
+        if (!apiKey || !apiSecret) {
+            return res.status(400).json({
+                success: false,
+                message: "API Key and Secret are not configured"
+            });
+        }
+
+        // Use the pre-encoded basic auth string from your env
+        const basicAuth = process.env.EVOLUTO_AUTH_BASIC;
+        
         const response = await axios({
             method: "post",
             maxBodyLength: Infinity,
@@ -15,8 +30,8 @@ export const fetchToken = async (req, res) => {
             headers: {
                 source: "web",
                 package: "10.0.2.215",
-                outletid: "OUI202590898",
-                Authorization: process.env.API_AUTHORIZATION, // Use environment variable
+                outletid: process.env.EVOLUTO_REF_CODE || "OUI202590898",
+                "Authorization": `Basic ${basicAuth}`
             },
         });
 
@@ -27,7 +42,10 @@ export const fetchToken = async (req, res) => {
         }
     } catch (err) {
         console.error("Token fetch error:", err);
-        res.status(500).json({ success: false, message: `Authentication failed: ${err.response?.data?.message || err.message}` });
+        res.status(500).json({ 
+            success: false, 
+            message: `Authentication failed: ${err.response?.data?.message || err.message}`
+        });
     }
 };
 
