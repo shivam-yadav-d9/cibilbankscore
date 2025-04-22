@@ -22,6 +22,10 @@ import userPreviousLoanRoutes from "./routes/userPreviousLoanRoutes.js";
 import SignupRoutes from './routes/AgentRoute.js';
 import AgentRoutes from "./routes/AgentRoute.js"; // Import agent routes
 
+
+import forgetpassword from "./routes/forgotPassword.js";  // Import the auth routes
+
+
 dotenv.config();
 
 const app = express();
@@ -92,7 +96,8 @@ app.use('/api/SignupRoutes', SignupRoutes);
 app.use("/agent", AgentRoutes); // Mount agent routes
 
 
-
+// Add the forgot password and reset password routes
+app.use("/api/auth", forgetpassword);
 
 console.log("TEST_VARIABLE:", process.env.TEST_VARIABLE);
 
