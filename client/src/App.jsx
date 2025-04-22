@@ -50,6 +50,8 @@ import TermsAndConditions from "./components/business-view/B2bServicesActivate";
 import B2BSignup from "./pages/auth/B2BSignup";
 import LoginAgent from "./pages/auth/LoginAgent";
 import LoanReportDetail from "./pages/auth/LoanReportDetail";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 
 
 function App() {
@@ -85,6 +87,12 @@ function App() {
               <Route path="/admin-login" element={<AdminLogin />} />
               <Route path="/business-login" element={<BusinessLogin updateAuth={updateAuth} />} />
 
+              {/* forgetpassword  */}
+
+              <Route path="/forgot-password" element={<ForgotPassword/>} />
+              <Route path="/reset-password" element={<ResetPassword/>} />
+
+
 
               {/* 🔒 Protected User Routes */}
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard updateAuth={updateAuth} /></ProtectedRoute>} />
@@ -104,9 +112,7 @@ function App() {
               {/* Protected Admin Route */}
 
               <Route path="/admin" element={<AdminPanel />}/>
-
               <Route path="/admin" element={<AdminPanel />} />
- 84b476f9e3791183b9278b520bf2c96fa397325a
 
               {/* 🏢 Protected Business Route */}
               <Route path="/business-dashboard" element={<B2BDashboard />} />

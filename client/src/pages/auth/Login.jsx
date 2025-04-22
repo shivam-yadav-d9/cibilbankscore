@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
@@ -10,13 +10,6 @@ const Login = ({ updateAuth }) => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const savedEmail = localStorage.getItem("lastUsedEmail");
-    if (savedEmail) {
-      setEmail(savedEmail);
-    }
-  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -30,16 +23,13 @@ const Login = ({ updateAuth }) => {
       });
 
       if (response.data.token) {
-        // Save email for future use
-        localStorage.setItem("lastUsedEmail", email);
-
         // Store token and user data
         localStorage.setItem("token", response.data.token);
         localStorage.setItem(
           "user",
           JSON.stringify({
             ...response.data.user,
-            email: email, // Ensure email is included in stored user data
+            email: email,
           })
         );
 
@@ -74,6 +64,7 @@ const Login = ({ updateAuth }) => {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-blue-900 to-indigo-900 flex items-center justify-center px-4 sm:px-6 lg:px-8">
@@ -174,10 +165,9 @@ const Login = ({ updateAuth }) => {
                 type="submit"
                 disabled={loading}
                 className={`w-full py-3 rounded-lg text-white font-medium 
-                  ${
-                    loading
-                      ? "bg-indigo-600/70 cursor-not-allowed"
-                      : "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-lg transition-transform hover:-translate-y-1"
+                  ${loading
+                    ? "bg-indigo-600/70 cursor-not-allowed"
+                    : "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-lg transition-transform hover:-translate-y-1"
                   }`}
               >
                 {loading ? "Authenticating..." : "Sign in"}

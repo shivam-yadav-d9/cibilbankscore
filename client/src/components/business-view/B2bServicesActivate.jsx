@@ -33,12 +33,11 @@ const TermsAndConditions = () => {
                     {/* Centered Button */}
                     <div className="px-6 py-8 flex justify-center"> {/* Flex container for centering */}
 
-                        <Link to="/dashboard">  <button
+                      <button
                             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-md transition duration-300"
                         >
-                            Click Here to Activate
+                            Now you can start your journey with us
                         </button>
-                        </Link>
                     </div>
 
 
