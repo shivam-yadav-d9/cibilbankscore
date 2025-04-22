@@ -15,6 +15,10 @@ import http from "http";
 import loanRoutes from "./routes/loanRoutes.js";
 import UserAddress from "./routes/UserAddress.js";
 import userSecondAddressRoutes from "./routes/userSecondAddress.js";
+
+import LoanProcessorRoutes from './routes/LoanProcessorRoutes.js'; // Import loan processor routes
+
+
 import coApplicantRoutes from "./routes/coApplicantRoutes.js";
 import userReferencesRoute from "./routes/userReferences.js";
 import userPreviousLoanRoutes from "./routes/userPreviousLoanRoutes.js";
@@ -94,6 +98,7 @@ app.use("/api/user-previous-loans", userPreviousLoanRoutes);
 
 app.use('/api/SignupRoutes', SignupRoutes);
 app.use("/agent", AgentRoutes); // Mount agent routes
+app.use('/api/loanProcessor', LoanProcessorRoutes); // Mount loan processor routes
 
 
 // Add the forgot password and reset password routes
