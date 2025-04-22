@@ -18,7 +18,7 @@ import userSecondAddressRoutes from "./routes/userSecondAddress.js";
 import coApplicantRoutes from "./routes/coApplicantRoutes.js";
 import userReferencesRoute from "./routes/userReferences.js";
 import userPreviousLoanRoutes from "./routes/userPreviousLoanRoutes.js";
-
+import complaintRoutes from "./routes/complaintRoutes.js"
 import SignupRoutes from './routes/AgentRoute.js';
 import AgentRoutes from "./routes/AgentRoute.js"; // Import agent routes
 
@@ -84,7 +84,7 @@ app.use("/profile", profileRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/api/messages", message);
 app.use("/api/notifications", notification);
-
+app.use('/api/complaints', complaintRoutes);
 app.use("/api/loan", loanRoutes); // **CHANGED TO /api/loan**
 app.use("/api/user-address", UserAddress); // ✅ New route to save applicant data
 app.use("/api/user-second-address", userSecondAddressRoutes);
