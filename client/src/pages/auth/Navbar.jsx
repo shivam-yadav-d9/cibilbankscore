@@ -6,6 +6,7 @@ import ServicesDropdown from "./ServicesDropdown";
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [signupDropdownOpen, setSignupDropdownOpen] = useState(false);
+  const [loginDropdownOpen, setLoginDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
   const NavLinks = [
@@ -18,6 +19,7 @@ export default function Navbar() {
     navigate(path);
     setMenuOpen(false);
     setSignupDropdownOpen(false);
+    setLoginDropdownOpen(false);
   };
 
   return (
@@ -44,6 +46,33 @@ export default function Navbar() {
                 {link.name}
               </Link>
             ))}
+
+            {/* Login Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setLoginDropdownOpen(!loginDropdownOpen)}
+                className="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-300"
+              >
+                Login
+              </button>
+
+              {loginDropdownOpen && (
+                <div className="absolute top-full mt-2 right-0 bg-white text-blue-600 rounded-md shadow-lg w-48 z-50">
+                  <button
+                    onClick={() => handleNavigation("/login")}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  >
+                    Customer Login
+                  </button>
+                  <button
+                    onClick={() => handleNavigation("/LoginAgent")}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  >
+                    Agent Login
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Sign Up Dropdown */}
             <div className="relative">
@@ -101,6 +130,22 @@ export default function Navbar() {
                 {link.name}
               </button>
             ))}
+
+            {/* Mobile Login Button */}
+            <div className="flex flex-col items-center space-y-2">
+              <button
+                onClick={() => handleNavigation("/login")}
+                className="bg-white text-blue-600 px-6 py-2 rounded-lg text-xl font-semibold hover:bg-gray-100"
+              >
+                Customer Login
+              </button>
+              <button
+                onClick={() => handleNavigation("/LoginAgent")}
+                className="bg-white text-blue-600 px-6 py-2 rounded-lg text-xl font-semibold hover:bg-gray-100"
+              >
+                Agent Login
+              </button>
+            </div>
 
             {/* Mobile Signup Dropdown */}
             <div className="flex flex-col items-center space-y-2">

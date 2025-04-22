@@ -33,7 +33,7 @@ const LoanProcessor = () => {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   // Authentication credentials - already Base64 encoded in the Authorization header
-  const BASE_URL = "https://uat-api.evolutosolution.com/v1";
+  const BASE_URL = "http://localhost:3001/api/loanProcessor"; // Change here
 
   useEffect(() => {
     if (!loanTypeId) {
@@ -72,24 +72,11 @@ const LoanProcessor = () => {
       setError("");
       setIsAuthenticating(true);
 
-      const response = await axios({
-        method: "post",
-        maxBodyLength: Infinity,
-        url: `${BASE_URL}/authentication`,
-        headers: {
-          source: "web",
-          package: "10.0.2.215",
-          outletid: "OUI202590898",
-          Authorization:
-            "Basic NDdlM2I4ODk1NDAwM2NhYjNlNGY1MThjNTk3NjUxYmU3M2QyZDk2NmE0MWY4YWVjN2YyNjk3YjcyNTkwZDZjNTpCTlJxOFJNQzM2NkNselUzWDVmdFA4NXlLSW5NL3RERWI4Z3l6d3YxL3dtZlZ2cEQ3R1RGNUxySVJoU3kxUEVGOTdZWHUzbnNKekMzVWhjclVsMlRMQVFNWXJtMFFHbFEwZGFteGUyTEVQVDhzYTVHSUZHZE1WUnJDOHZPRHRCU3Z0K3BOaktudWlvZFhRSHd1emExTXRxSzZFODZtUng4SzNBY0FBTzVGeWtHbDR0ZnplOXllSzNmR21nRlpKM3o=",
-        },
-      });
+      const response = await axios.post(`${BASE_URL}/getToken`);  // Use the new route
 
-      if (response.data && response.data.data && response.data.data.token) {
-        setApiToken(response.data.data.token);
+      if (response.data && response.data.success && response.data.token) {
+        setApiToken(response.data.token);
         console.log("Token acquired successfully");
-        // After getting token, fetch loan types
-        fetchLoanTypes(response.data.data.token);
       } else {
         setError("Failed to get API token: No token in response");
       }
@@ -103,37 +90,6 @@ const LoanProcessor = () => {
     }
   };
 
-  // Function to fetch loan types
-  const fetchLoanTypes = async (token) => {
-    try {
-      setLoading(true);
-      const config = {
-        method: "get",
-        url: `${BASE_URL}/loan/getLoanTypes`,
-        headers: {
-          token: token,
-          "Content-Type": "application/json",
-        },
-      };
-
-      const response = await axios.request(config);
-
-      if (response.data && response.data.data) {
-        setLoanTypes(response.data.data);
-      } else {
-        console.warn("No loan types received");
-      }
-    } catch (err) {
-      console.error("Loan types fetch error:", err);
-      setError(
-        `Failed to fetch loan types: ${
-          err.response?.data?.message || err.message
-        }`
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -145,12 +101,6 @@ const LoanProcessor = () => {
         mobile: value,
         phone: value,
       });
-      // } else if (name === "phone") {
-      //   setFormData({
-      //     ...formData,
-      //     phone: value,
-      //     mobile: value,
-      //   });
     } else {
       setFormData({ ...formData, [name]: value });
     }
@@ -193,17 +143,11 @@ const LoanProcessor = () => {
     };
 
     try {
-      const config = {
-        method: "post",
-        url: `${BASE_URL}/loan/checkEligibility`,
+      const response = await axios.post(`${BASE_URL}/checkEligibility`, eligibilityData, {  // Use the new route
         headers: {
           token: apiToken,
-          "Content-Type": "application/json",
-        },
-        data: eligibilityData,
-      };
-
-      const response = await axios.request(config);
+        }
+      });
       setEligibilityResult(response.data);
     } catch (err) {
       console.error("Eligibility check error:", err);
@@ -224,15 +168,11 @@ const LoanProcessor = () => {
   }, [loanTypeId]);
 
   return (
-    /* Tailwind CSS styling for subtly futuristic loan processor with white background */
-
-    // Main container with soft shadows and subtle gradient border
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-lg border border-gray-100">
       <h2 className="text-3xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
         Loan Eligibility Assessment
       </h2>
 
-      {/* Status messages with clean design */}
       {error && (
         <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-lg mb-6 shadow-sm">
           <div className="flex items-center">
@@ -293,7 +233,6 @@ const LoanProcessor = () => {
         </div>
       )}
 
-      {/* Action buttons with subtle effects */}
       <div className="flex justify-between mb-6">
         <button
           onClick={fetchToken}
@@ -304,9 +243,7 @@ const LoanProcessor = () => {
         </button>
       </div>
 
-      {/* Form with subtle futuristic design */}
       <div className="bg-gray-50 rounded-xl px-8 pt-6 pb-8 mb-6 shadow-md border border-gray-100">
-        {/* Full Name Field with subtle glow effect on focus */}
         <div className="mb-5">
           <label
             className="block text-gray-700 text-sm font-semibold mb-2"
@@ -326,7 +263,6 @@ const LoanProcessor = () => {
           />
         </div>
 
-        {/* Two-column grid with responsive design */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="mb-5">
             <label
@@ -366,7 +302,6 @@ const LoanProcessor = () => {
           </div>
         </div>
 
-        {/* Stylized select dropdown */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="mb-5">
             <label
@@ -425,7 +360,6 @@ const LoanProcessor = () => {
           </div>
         </div>
 
-        {/* Date of Birth and PAN Number fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="mb-5">
             <label
@@ -464,7 +398,6 @@ const LoanProcessor = () => {
           </div>
         </div>
 
-        {/* Pincode and Aadhaar Number fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="mb-5">
             <label
@@ -503,7 +436,6 @@ const LoanProcessor = () => {
           </div>
         </div>
 
-        {/* CIBIL Score and Loan Amount fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="mb-5">
             <label
@@ -542,15 +474,13 @@ const LoanProcessor = () => {
           </div>
         </div>
 
-        {/* Submit button with subtle gradient */}
         <div className="flex items-center justify-center mt-8">
           <button
             onClick={checkEligibility}
-            className={`w-full py-3 px-6 rounded-lg font-bold text-lg transition-all duration-300 focus:outline-none ${
-              !apiToken || loading || isAuthenticating
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-lg hover:shadow-blue-200 transform hover:-translate-y-1"
-            }`}
+            className={`w-full py-3 px-6 rounded-lg font-bold text-lg transition-all duration-300 focus:outline-none ${!apiToken || loading || isAuthenticating
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-lg hover:shadow-blue-200 transform hover:-translate-y-1"
+              }`}
             disabled={!apiToken || loading || isAuthenticating}
           >
             Check Eligibility
@@ -588,19 +518,58 @@ const LoanProcessor = () => {
               </div>
             )}
 
-            {eligibilityResult.data && (
+            {eligibilityResult.data && eligibilityResult.success && (  // Render Bank List only if data is present and eligible
               <div className="mt-4">
-                <h4 className="font-medium mb-3 text-gray-700">Details:</h4>
-                <pre className="bg-gray-50 p-4 rounded-lg text-sm overflow-auto text-gray-800 border border-gray-200">
-                  {JSON.stringify(eligibilityResult.data, null, 2)}
-                </pre>
+                <h4 className="font-medium mb-3 text-gray-700">Eligible Banks:</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {eligibilityResult.data.map((bank) => (
+                    <div
+                      key={bank.id}
+                      className="bg-gray-50 p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200"
+                    >
+                      {bank.bank_logo && (
+                        <img
+                          src={`/images/${bank.bank_logo}`}  // Assuming logos are in /images folder
+                          alt={`${bank.bank} Logo`}
+                          className="h-12 w-auto mx-auto mb-2"
+                        />
+                      )}
+                      <h5 className="font-semibold text-lg text-gray-800 text-center">
+                        {bank.bank}
+                      </h5>
+                      {bank.bank_description && (
+                        <p className="text-sm text-gray-600 mt-2 text-center">
+                          {bank.bank_description}
+                        </p>
+                      )}
+                      {bank.bank_interest_rate && (
+                        <p className="text-sm text-gray-600 mt-2 text-center">
+                          Interest Rate: {bank.bank_interest_rate}
+                        </p>
+                      )}
+                      {bank.loan_amount && bank.tenure && (
+                        <p className="text-sm text-gray-600 mt-2 text-center">
+                          Loan Amount: {bank.loan_amount} for {bank.tenure}
+                        </p>
+                      )}
+                      {bank.utm_url && (
+                        <div className="mt-3 text-center">
+                          <a href={bank.utm_url}
+                            className="inline-block bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            target="_blank" rel="noopener noreferrer">
+                            Apply Now
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Continue Application Button with subtle animation */}
       <Link to="/UserBasicData">
         <button
           onClick={handleNext}
