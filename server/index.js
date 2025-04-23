@@ -7,6 +7,7 @@ import apiRoutes from "./routes/apiRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import message from "./routes/messages.js";
+import savedocsRoutes from "./routes/saveDocsRoutes.js"
 import notification from "./routes/notifications.js";
 import { Server } from "socket.io";
 import http from "http";
@@ -95,7 +96,7 @@ app.use("/api/user-second-address", userSecondAddressRoutes);
 app.use("/api/user-co-app", coApplicantRoutes);
 app.use("/api/user-references", userReferencesRoute);
 app.use("/api/user-previous-loans", userPreviousLoanRoutes);
-
+app.use("/api/loan/docs", savedocsRoutes);
 app.use('/api/SignupRoutes', SignupRoutes);
 app.use("/agent", AgentRoutes); // Mount agent routes
 app.use('/api/loanProcessor', LoanProcessorRoutes); // Mount loan processor routes

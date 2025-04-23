@@ -1,9 +1,6 @@
-import { createContext, useState, useContext, useEffect } from "react";
-import api from "../services/api";
+import { createContext, useState, useContext, useEffect } from 'react';
 
-const AuthContext = createContext();
-
-export const useAuth = () => useContext(AuthContext);
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -11,81 +8,42 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in from local storage
-    const token = localStorage.getItem("token");
+    // Check for user data in localStorage on mount
     const userData = localStorage.getItem("user");
-
-    if (token && userData) {
+    const token = localStorage.getItem("token");
+    
+    if (userData && token) {
       setUser(JSON.parse(userData));
       setIsAuthenticated(true);
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
-
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
-    try {
-      const response = await api.post("/user/login", { email, password });
-      const { token, user } = response.data;
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-      setUser(user);
-      setIsAuthenticated(true);
-      return { success: true };
-    } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Login failed",
-      };
-    }
-  };
-
-  const signup = async (name, email, password) => {
-    try {
-      const response = await api.post("/user/signup", {
-        name,
-        email,
-        password,
-      });
-      const { token, user } = response.data;
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-      setUser(user);
-      setIsAuthenticated(true);
-      return { success: true };
-    } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Signup failed",
-      };
-    }
+  const login = (userData) => {
+    setUser(userData);
+    setIsAuthenticated(true);
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("token", userData.token);
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    delete api.defaults.headers.common["Authorization"];
     setUser(null);
     setIsAuthenticated(false);
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
   };
 
-  const value = {
-    user,
-    isAuthenticated,
-    loading,
-    login,
-    signup,
-    logout,
-  };
+  return (
+    <AuthContext.Provider value={{ user, isAuthenticated, loading, login, logout }}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
+};
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };

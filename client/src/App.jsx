@@ -4,152 +4,308 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext.jsx";
 
 // Layout
 import Layout from "./pages/auth/Layout";
 
 // Auth Pages
-import Login from "./pages/auth/Login";
+import Login from "./pages/auth/Login.jsx";
 import Signup from "./pages/auth/SignUp";
+import LoginAgent from "./pages/auth/LoginAgent";
+import B2BSignup from "./pages/auth/B2BSignup";
 import UserInput from "./pages/auth/UserInput";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 
 // Home & Service Pages
 import Home from "./pages/auth/Home";
-import AboutUs from "./components/user-view/AboutUs";
-import CareerPage from "./components/user-view/CareerPage";
 import BankingAPIPage from "./pages/auth/BankingAPIPage";
 import B2BBankingSystems from "./pages/auth/B2BBankingSystems";
 import LoanServicesPage from "./pages/auth/LoanServicesPage";
 import CreditBuildingSolutions from "./pages/auth/CreditBuildingSolutions";
 import ATMInstallationPage from "./pages/auth/ATMInstallationPage";
 import InvestmentDashboard from "./pages/auth/InvestmentDashboard";
+import ExpertConnect from "./pages/auth/ExpertConnect";
+import LoanDocumentsPage from "./pages/auth/LoanDocumentsPage";
 
 // User Views
+import AboutUs from "./components/user-view/AboutUs";
+import CareerPage from "./components/user-view/CareerPage";
 import Dashboard from "./components/user-view/Dashboard";
 import CreditCheck from "./components/user-view/CreditCheck";
 import LoanInformation from "./components/user-view/LoanInformation";
 import LoanProcessor from "./components/user-view/LoanProcessor";
 import UserLoanpage from "./pages/auth/UserLoanPage";
 
-
 // Admin & Business Views
 import AdminLogin from "./components/admin-view/AdminLogin";
 import AdminPanel from "./components/admin-view/AdminPanel";
 import BusinessLogin from "./components/business-view/auth/BusinessLogin";
 import B2BDashboard from "./components/business-view/B2BDashboard";
+import TermsAndConditions from "./components/business-view/B2bServicesActivate";
 
+// User Data Pages
 import UserBasicData from "./pages/auth/UserBasicData";
 import UserAddress from "./pages/auth/UserAddress";
 import UserSecondAddress from "./pages/auth/UserSecondAddress";
 import UserCoApplications from "./pages/auth/UserCoApplications";
 import UserSaveRefrences from "./pages/auth/UserSaveRefrences";
 import UserPreviousData from "./pages/auth/UserPreviousData";
-import TermsAndConditions from "./components/business-view/B2bServicesActivate";
-import B2BSignup from "./pages/auth/B2BSignup";
-import LoginAgent from "./pages/auth/LoginAgent";
 import LoanReportDetail from "./pages/auth/LoanReportDetail";
+import UserDocuments from "./pages/auth/UserDocuments.jsx";
+import MyApplication from "./pages/auth/MyApplication.jsx";
 
-// forget password
+// Protected Route Component
+const ProtectedRoute = ({
+  children,
+  allowedTypes = ["customer", "agent", "admin", "business"],
+}) => {
+  const { user, isAuthenticated } = useAuth();
 
-import ForgotPassword from "./pages/auth/ForgotPassword";
-import ResetPassword from "./pages/auth/ResetPassword";
-import ExpertConnect from "./pages/auth/ExpertConnect";
-import LoanDocumentsPage from "./pages/auth/LoanDocumentsPage";
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/login" replace />;
+  }
 
-
-function App() {
-  const { isAuthenticated, loading, updateAuth } = useAuth();
-
-  return (
-    <Router>
-
-          <Routes>
-            <Route element={<Layout />}>
-              {/* Public Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/aboutus" element={<AboutUs />} />
-              <Route path="/careers" element={<CareerPage />} />
-              <Route path="/login" element={<Login updateAuth={updateAuth} />} />
-              
-              <Route path="/LoginAgent" element={<LoginAgent/>}/>
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/userinput" element={<UserInput />} />
-
-              <Route path="/B2BSignup" element={<B2BSignup/>}/>
-              
-
-              {/* Service Pages */}
-              <Route path="/services/banking-apis" element={<BankingAPIPage />} />
-              <Route path="/services/b2b-systems" element={<B2BBankingSystems />} />
-              <Route path="/services/digital-payments" element={<LoanServicesPage />} />
-              <Route path="/services/credit-building" element={<CreditBuildingSolutions />} />
-              <Route path="/services/atm" element={<ATMInstallationPage />} />
-              <Route path="/services/investment-and-wealth-management" element={<InvestmentDashboard />} />
-
-              {/* Admin & Business Auth */}
-              <Route path="/admin-login" element={<AdminLogin />} />
-              <Route path="/business-login" element={<BusinessLogin updateAuth={updateAuth} />} />
-
-              {/* forgetpassword  */}
-
-              <Route path="/forgot-password" element={<ForgotPassword/>} />
-              <Route path="/reset-password" element={<ResetPassword/>} />
-
-
-
-              {/* 🔒 Protected User Routes */}
-              <Route path="/dashboard" element={<ProtectedRoute><Dashboard updateAuth={updateAuth} /></ProtectedRoute>} />
-              <Route path="/credit-check" element={<ProtectedRoute><CreditCheck /></ProtectedRoute>} />
-              <Route path="/loan" element={<ProtectedRoute><LoanInformation /></ProtectedRoute>} />
-              <Route path="/UserLoanInput" element={<ProtectedRoute><LoanProcessor /></ProtectedRoute>} />
-              <Route path="/UserLoanpage" element={<ProtectedRoute><UserLoanpage /></ProtectedRoute>} />
-
-              <Route path="/UserBasicData" element={<UserBasicData />} />
-              <Route path="/UserAddress" element={<UserAddress />} />
-              <Route path="/UserSecondAddress" element={<UserSecondAddress />} />
-              <Route path="/UserCoApplications" element={<UserCoApplications />} />
-              <Route path="/UserSaveRefrences" element={<UserSaveRefrences/>} />
-              <Route path="/UserPreviousData" element={<UserPreviousData/>}/>
-              <Route path="/LoanReportDetail" element={<LoanReportDetail/>}/>
-              <Route path="/expert-connect" element={<ExpertConnect/>}/>
-              <Route path="/loan-documents" element={<LoanDocumentsPage/>}/>
-
-              {/* Protected Admin Route */}
-
-              <Route path="/admin" element={<AdminPanel />}/>
-              <Route path="/admin" element={<AdminPanel />} />
-
-              
-
-              {/* 🏢 Protected Business Route */}
-              <Route path="/business-dashboard" element={<B2BDashboard />} />
-              <Route path="/TermsAndConditions" element={<TermsAndConditions/>}/>
-
-              {/* Catch-All Route */}
-              <Route path="*" element={<h1 className="text-center text-white mt-10">404 - Page Not Found</h1>} />
-
-            </Route>
-          </Routes>
-       
-    </Router>
-  );
-}
-
-function ProtectedRoute({ children, adminOnly = false, businessOnly = false }) {
-  const { isAuthenticated, loading, user } = useAuth();
-
-  if (loading) return <div className="text-center py-10">Loading...</div>;
-
-  if (!isAuthenticated) return <Navigate to="/login" />;
-
-  if (adminOnly && user?.role !== "admin") return <Navigate to="/dashboard" />;
-
-  if (businessOnly && user?.role !== "business")
-    return <Navigate to="/dashboard" />;
+  if (!allowedTypes.includes(user.userType)) {
+    // Redirect based on user type
+    switch (user.userType) {
+      case "customer":
+        return <Navigate to="/dashboard" replace />;
+      case "agent":
+        return <Navigate to="/agent-dashboard" replace />;
+      // case "admin":
+      //   return <Navigate to="/admin" replace />;
+      case "business":
+        return <Navigate to="/business-dashboard" replace />;
+      default:
+        return <Navigate to="/login" replace />;
+    }
+  }
 
   return children;
+};
+
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <Layout>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/aboutus" element={<AboutUs />} />
+            <Route path="/careers" element={<CareerPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/LoginAgent" element={<LoginAgent />} />
+            <Route path="/B2BSignup" element={<B2BSignup />} />
+            <Route path="/userinput" element={<UserInput />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
+            <Route path="/business-login" element={<BusinessLogin />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+
+            {/* Service Pages */}
+            <Route path="/services/banking-apis" element={<BankingAPIPage />} />
+            <Route
+              path="/services/b2b-systems"
+              element={<B2BBankingSystems />}
+            />
+            <Route
+              path="/services/digital-payments"
+              element={<LoanServicesPage />}
+            />
+            <Route
+              path="/services/credit-building"
+              element={<CreditBuildingSolutions />}
+            />
+            <Route path="/services/atm" element={<ATMInstallationPage />} />
+            <Route
+              path="/services/investment-and-wealth-management"
+              element={<InvestmentDashboard />}
+            />
+
+            {/* Protected Customer Routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute allowedTypes={["customer"]}>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/credit-check"
+              element={
+                <ProtectedRoute allowedTypes={["customer"]}>
+                  <CreditCheck />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/loan"
+              element={
+                <ProtectedRoute allowedTypes={["customer"]}>
+                  <LoanInformation />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/UserLoanInput"
+              element={
+                <ProtectedRoute allowedTypes={["customer"]}>
+                  <LoanProcessor />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/UserLoanpage"
+              element={
+                <ProtectedRoute allowedTypes={["customer"]}>
+                  <UserLoanpage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* User Data Routes */}
+            <Route
+              path="/UserBasicData"
+              element={
+                <ProtectedRoute allowedTypes={["customer"]}>
+                  <UserBasicData />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/UserAddress"
+              element={
+                <ProtectedRoute allowedTypes={["customer"]}>
+                  <UserAddress />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/UserSecondAddress"
+              element={
+                <ProtectedRoute allowedTypes={["customer"]}>
+                  <UserSecondAddress />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/UserCoApplications"
+              element={
+                <ProtectedRoute allowedTypes={["customer"]}>
+                  <UserCoApplications />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/UserSaveRefrences"
+              element={
+                <ProtectedRoute allowedTypes={["customer"]}>
+                  <UserSaveRefrences />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/UserPreviousData"
+              element={
+                <ProtectedRoute allowedTypes={["customer"]}>
+                  <UserPreviousData />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/LoanReportDetail"
+              element={
+                <ProtectedRoute allowedTypes={["customer"]}>
+                  <LoanReportDetail />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/UserDocuments"
+              element={
+                <ProtectedRoute allowedTypes={["customer"]}>
+                  <UserDocuments />
+                </ProtectedRoute>
+              }
+            />
+
+<Route
+              path="/MyApplication"
+              element={
+                <ProtectedRoute allowedTypes={["customer"]}>
+                  <MyApplication />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/expert-connect"
+              element={
+                <ProtectedRoute allowedTypes={["customer"]}>
+                  <ExpertConnect />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/loan-documents"
+              element={
+                <ProtectedRoute allowedTypes={["customer"]}>
+                  <LoanDocumentsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Protected Admin Routes */}
+            <Route path="/admin" element={<AdminPanel />} />
+
+            {/* Protected Business Routes */}
+            <Route
+              path="/business-dashboard"
+              element={
+                <ProtectedRoute allowedTypes={["business"]}>
+                  <B2BDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/TermsAndConditions"
+              element={
+                <ProtectedRoute allowedTypes={["business"]}>
+                  <TermsAndConditions />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Protected Agent Routes */}
+            <Route
+              path="/agent-dashboard"
+              element={
+                <ProtectedRoute allowedTypes={["agent"]}>
+                  <B2BDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Catch-all Route */}
+            <Route
+              path="*"
+              element={
+                <div className="text-center py-10">
+                  <h1 className="text-2xl font-bold">404 - Page Not Found</h1>
+                </div>
+              }
+            />
+          </Routes>
+        </Layout>
+      </AuthProvider>
+    </Router>
+  );
 }
 
 export default App;

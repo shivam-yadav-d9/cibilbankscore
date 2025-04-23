@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Link, useLocation, useNavigate } from "react-router-dom"; // Import useLocation
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const LoanProcessor = () => {
-  const location = useLocation(); // Get location object
-  const loanTypeId = location.state?.loan_type_id; // Retrieve loan_type_id
+  const location = useLocation();
+  const loanTypeId = location.state?.loan_type_id;
   const navigate = useNavigate();
 
-  // Pre-populate with test data for easier testing
   const [formData, setFormData] = useState({
     ref_code: "OUI202590898",
     name: "",
@@ -22,7 +21,7 @@ const LoanProcessor = () => {
     aadhaar_no: "",
     cibil_score: "",
     loan_amount: "",
-    loan_type_id: loanTypeId, // Initialize with the passed value
+    loan_type_id: loanTypeId,
   });
 
   const [apiToken, setApiToken] = useState("");
@@ -32,16 +31,17 @@ const LoanProcessor = () => {
   const [error, setError] = useState("");
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
-  // Authentication credentials - already Base64 encoded in the Authorization header
-  const BASE_URL = "http://localhost:3001/api/loanProcessor"; // Change here
+  const BASE_URL = "http://localhost:3001/api/loanProcessor";
 
   useEffect(() => {
-    if (!loanTypeId) {
-      console.error("Loan type ID is missing. This should not happen.");
-      setError(
-        "Loan type ID is missing. Please go back and select a loan type."
-      );
-      return; // Stop further execution if loanTypeId is missing
+    if (loanTypeId) {
+      console.log(`Setting loan type ID from location state: ${loanTypeId}`);
+      setFormData((prev) => ({
+        ...prev,
+        loan_type_id: loanTypeId,
+      }));
+    } else {
+      console.warn("No loan type ID found in location state");
     }
   }, [loanTypeId]);
 
@@ -50,7 +50,6 @@ const LoanProcessor = () => {
     const userData = localStorage.getItem("user");
 
     if (!token) {
-      // Redirect to login if not authenticated
       navigate("/login");
       return;
     }
@@ -61,18 +60,16 @@ const LoanProcessor = () => {
         ...prev,
         name: user.name || "",
         email: user.email || "",
-        // You can add more fields here if they're available in user data
       }));
     }
   }, [navigate]);
 
-  // Function to get API token
   const fetchToken = async () => {
     try {
       setError("");
       setIsAuthenticating(true);
 
-      const response = await axios.post(`${BASE_URL}/getToken`);  // Use the new route
+      const response = await axios.post(`${BASE_URL}/getToken`);
 
       if (response.data && response.data.success && response.data.token) {
         setApiToken(response.data.token);
@@ -90,11 +87,8 @@ const LoanProcessor = () => {
     }
   };
 
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    // Special handling for mobile/phone to keep them in sync
     if (name === "mobile") {
       setFormData({
         ...formData,
@@ -106,13 +100,20 @@ const LoanProcessor = () => {
     }
   };
 
-  const handleNext = () => {
-    // Store the current form data in localStorage
-    localStorage.setItem("loanProcessorFormData", JSON.stringify(formData));
-    navigate("/UserBasicData", { state: { loan_type_id: loanTypeId } });
+  const handleNext = (bankId = null) => {
+    const dataToStore = {
+      ...formData,
+      bank_id: bankId
+    };
+    localStorage.setItem("loanProcessorFormData", JSON.stringify(dataToStore));
+    navigate("/UserBasicData", { 
+      state: { 
+        loan_type_id: loanTypeId,
+        bank_id: bankId 
+      } 
+    });
   };
 
-  // Check eligibility
   const checkEligibility = async (e) => {
     if (e) e.preventDefault();
 
@@ -126,16 +127,18 @@ const LoanProcessor = () => {
       return;
     }
 
+    console.log(
+      `Checking eligibility for loan type ID: ${formData.loan_type_id}`
+    );
+
     setError("");
     setLoading(true);
     setEligibilityResult(null);
 
-    // Extract first and last name from full name for API compatibility
     const nameParts = formData.name.split(" ");
     const firstName = nameParts[0] || "";
     const lastName = nameParts.slice(1).join(" ") || "";
 
-    // Create API request data with first and last name fields
     const eligibilityData = {
       ...formData,
       fname: firstName,
@@ -143,12 +146,55 @@ const LoanProcessor = () => {
     };
 
     try {
-      const response = await axios.post(`${BASE_URL}/checkEligibility`, eligibilityData, {  // Use the new route
-        headers: {
-          token: apiToken,
+      console.log("Sending eligibility request with data:", eligibilityData);
+
+      const response = await axios.post(
+        `${BASE_URL}/checkEligibility`,
+        eligibilityData,
+        {
+          headers: {
+            token: apiToken,
+          },
         }
+      );
+
+      console.log(
+        `Response received for loan type ID ${formData.loan_type_id}:`,
+        response.data
+      );
+
+      if (
+        response.data.data &&
+        response.data.data.loan_type_id &&
+        response.data.data.loan_type_id !== formData.loan_type_id
+      ) {
+        console.error(
+          `Response loan type (${response.data.data.loan_type_id}) doesn't match requested type (${formData.loan_type_id})`
+        );
+        setError(
+          "Received response for a different loan type than requested. Please try again."
+        );
+        setLoading(false);
+        return;
+      }
+
+      if (response.data.success && response.data.data) {
+        if (!Array.isArray(response.data.data)) {
+          if (
+            response.data.data.banks &&
+            Array.isArray(response.data.data.banks)
+          ) {
+            response.data.data = response.data.data.banks;
+          } else {
+            response.data.data = [response.data.data];
+          }
+        }
+      }
+
+      setEligibilityResult({
+        ...response.data,
+        requestedLoanTypeId: formData.loan_type_id,
       });
-      setEligibilityResult(response.data);
     } catch (err) {
       console.error("Eligibility check error:", err);
       setError(err.response?.data?.message || "Failed to check eligibility");
@@ -157,15 +203,20 @@ const LoanProcessor = () => {
     }
   };
 
-  // Load token on component mount
   useEffect(() => {
     fetchToken();
   }, []);
 
   useEffect(() => {
-    // Update form data when loanTypeId changes (e.g., when navigating from UserLoanpage)
     setFormData((prev) => ({ ...prev, loan_type_id: loanTypeId }));
   }, [loanTypeId]);
+
+  const handleImageError = (e) => {
+    e.target.onerror = null;
+    e.target.src =
+      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJmZWF0aGVyIGZlYXRoZXItaW1hZ2UiPjxyZWN0IHg9IjMiIHk9IjMiIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgcng9IjIiIHJ5PSIyIj48L3JlY3Q+PGNpcmNsZSBjeD0iOC41IiBjeT0iOC41IiByPSIxLjUiPjwvY2lyY2xlPjxwb2x5bGluZSBwb2ludHM9IjIxIDE1IDE2IDEwIDUgMjEiPjwvcG9seWxpbmU+PC9zdmc+";
+    e.target.alt = "Bank logo not available";
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-lg border border-gray-100">
@@ -244,6 +295,7 @@ const LoanProcessor = () => {
       </div>
 
       <div className="bg-gray-50 rounded-xl px-8 pt-6 pb-8 mb-6 shadow-md border border-gray-100">
+        {/* Form fields */}
         <div className="mb-5">
           <label
             className="block text-gray-700 text-sm font-semibold mb-2"
@@ -477,10 +529,11 @@ const LoanProcessor = () => {
         <div className="flex items-center justify-center mt-8">
           <button
             onClick={checkEligibility}
-            className={`w-full py-3 px-6 rounded-lg font-bold text-lg transition-all duration-300 focus:outline-none ${!apiToken || loading || isAuthenticating
-              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-              : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-lg hover:shadow-blue-200 transform hover:-translate-y-1"
-              }`}
+            className={`w-full py-3 px-6 rounded-lg font-bold text-lg transition-all duration-300 focus:outline-none ${
+              !apiToken || loading || isAuthenticating
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-lg hover:shadow-blue-200 transform hover:-translate-y-1"
+            }`}
             disabled={!apiToken || loading || isAuthenticating}
           >
             Check Eligibility
@@ -489,14 +542,16 @@ const LoanProcessor = () => {
       </div>
 
       {/* Eligibility Result Card */}
-      // ... existing code ...
-
-      {/* Eligibility Result Card */}
       {eligibilityResult && (
         <div className="bg-white rounded-xl px-6 pt-5 pb-6 mb-6 shadow-md border border-gray-100">
           <h3 className="text-2xl font-bold mb-4 text-indigo-600">
             Eligibility Result
           </h3>
+
+          <div className="mb-3 p-2 bg-blue-50 rounded text-sm">
+            <strong>Loan Type ID:</strong>{" "}
+            {eligibilityResult.requestedLoanTypeId || formData.loan_type_id}
+          </div>
 
           <div className="border-t border-b border-gray-200 py-4 mb-4">
             <div className="flex justify-between mb-3">
@@ -521,79 +576,92 @@ const LoanProcessor = () => {
               </div>
             )}
 
-            {eligibilityResult.data && eligibilityResult.success && Array.isArray(eligibilityResult.data) && eligibilityResult.data.length > 0 && (
-              <div className="mt-4">
-                <h4 className="font-medium mb-3 text-gray-700">Eligible Banks:</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {eligibilityResult.data.map((bank, index) => (
-                    <div
-                      key={bank.id || index}
-                      className="bg-gray-50 p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200"
-                    >
-                      {bank.bank_logo && (
-                        <img
-                          src={`/images/${bank.bank_logo}`}
-                          alt={`${bank.bank} Logo`}
-                          className="h-12 w-auto mx-auto mb-2"
-                        />
-                      )}
-                      <h5 className="font-semibold text-lg text-gray-800 text-center">
-                        {bank.bank || 'Bank Name Not Available'}
-                      </h5>
-                      {bank.bank_description && (
-                        <p className="text-sm text-gray-600 mt-2 text-center">
-                          {bank.bank_description}
-                        </p>
-                      )}
-                      {bank.bank_interest_rate && (
-                        <p className="text-sm text-gray-600 mt-2 text-center">
-                          Interest Rate: {bank.bank_interest_rate}
-                        </p>
-                      )}
-                      {bank.loan_amount && bank.tenure && (
-                        <p className="text-sm text-gray-600 mt-2 text-center">
-                          Loan Amount: {bank.loan_amount} for {bank.tenure}
-                        </p>
-                      )}
-                      {bank.utm_url && (
-                        <div className="mt-3 text-center">
-                          <a
-                            href={bank.utm_url}
-                            className="inline-block bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Apply Now
-                          </a>
+            {eligibilityResult.data &&
+              eligibilityResult.success &&
+              Array.isArray(eligibilityResult.data) &&
+              eligibilityResult.data.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="font-medium mb-3 text-gray-700">
+                    Eligible Banks:
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {eligibilityResult.data.map((bank, index) => (
+                      <div
+                        key={bank.id || index}
+                        className="bg-gray-50 p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200"
+                      >
+                        {bank.bank_logo && (
+                          <div className="h-12 flex items-center justify-center mb-2">
+                            <img
+                              src={`${BASE_URL}/bank-logos/${bank.bank_logo}`}
+                              alt={`${bank.bank} Logo`}
+                              className="h-12 w-auto object-contain"
+                              onError={handleImageError}
+                            />
+                          </div>
+                        )}
+                        <h5 className="font-semibold text-lg text-gray-800 text-center">
+                          {bank.bank || "Bank Name Not Available"}
+                        </h5>
+                        {bank.bank_description && (
+                          <p className="text-sm text-gray-600 mt-2 text-center">
+                            {bank.bank_description}
+                          </p>
+                        )}
+                        {bank.bank_interest_rate && (
+                          <p className="text-sm text-gray-600 mt-2 text-center">
+                            Interest Rate: {bank.bank_interest_rate}
+                          </p>
+                        )}
+                        {bank.loan_amount && bank.tenure && (
+                          <p className="text-sm text-gray-600 mt-2 text-center">
+                            Loan Amount: {bank.loan_amount} for {bank.tenure}
+                          </p>
+                        )}
+                        <div className="mt-4 space-y-2">
+                          {bank.utm_url && (
+                            <div className="text-center">
+                              <a
+                                href={bank.utm_url}
+                                className="inline-block bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Apply Now
+                              </a>
+                            </div>
+                          )}
+                          <div className="text-center">
+                            <button
+                              onClick={() => handleNext(bank.id)}
+                              className="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
+                            >
+                              Continue Application
+                            </button>
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  ))}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Display when data is not in expected format */}
-            {eligibilityResult.data && eligibilityResult.success && (!Array.isArray(eligibilityResult.data) || eligibilityResult.data.length === 0) && (
-              <div className="mt-4 text-center p-4 bg-yellow-50 rounded-lg">
-                <p className="text-yellow-700">
-                  No bank details are available at the moment. Please try again later.
-                </p>
-              </div>
-            )}
+            {eligibilityResult.data &&
+              eligibilityResult.success &&
+              (!Array.isArray(eligibilityResult.data) ||
+                eligibilityResult.data.length === 0) && (
+                <div className="mt-4 text-center p-4 bg-yellow-50 rounded-lg">
+                  <p className="text-yellow-700">
+                    No bank details are available at the moment. Please try
+                    again later.
+                  </p>
+                </div>
+              )}
           </div>
         </div>
       )}
 
-// ... existing code ...
-      <Link to="/UserBasicData">
-        <button
-          onClick={handleNext}
-          className="w-full py-4 px-6 rounded-lg font-bold text-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md hover:shadow-lg hover:shadow-blue-200 transition-all duration-300 transform hover:-translate-y-1"
-        >
-          Continue Application
-        </button>
-      </Link>
+    
     </div>
   );
 };

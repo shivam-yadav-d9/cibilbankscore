@@ -142,7 +142,7 @@ const UserPreviousData = () => {
 
             // Navigate after short delay to show success message
             setTimeout(() => {
-                navigate("/LoanReportDetail", {
+                navigate("/UserDocuments", {
                     state: { applicationId: formData.application_id }
                 });
             }, 1500);
@@ -217,7 +217,7 @@ const UserPreviousData = () => {
                             onChange={(e) => setFormData({...formData, application_id: e.target.value})}
                             placeholder="Application ID"
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                            required
+                            
                         />
                     </div>
                 </div>
@@ -250,7 +250,7 @@ const UserPreviousData = () => {
                                     onChange={e => handleChange(idx, "loan_account_no", e.target.value)}
                                     placeholder="Loan Account No"
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                                    required
+                                    
                                 />
                             </div>
 
@@ -266,7 +266,7 @@ const UserPreviousData = () => {
                                     min="1900"
                                     max={new Date().getFullYear()}
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                                    required
+                                    
                                 />
                             </div>
                         </div>
@@ -284,7 +284,7 @@ const UserPreviousData = () => {
                                     min="0"
                                     step="0.01"
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                                    required
+                                    
                                 />
                             </div>
 
@@ -300,7 +300,7 @@ const UserPreviousData = () => {
                                     min="0"
                                     step="0.01"
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                                    required
+                                    
                                 />
                             </div>
                         </div>
@@ -316,7 +316,7 @@ const UserPreviousData = () => {
                                     onChange={e => handleChange(idx, "product", e.target.value)}
                                     placeholder="Product"
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                                    required
+                                    
                                 />
                             </div>
 
@@ -330,7 +330,7 @@ const UserPreviousData = () => {
                                     onChange={e => handleChange(idx, "bank_name", e.target.value)}
                                     placeholder="Bank Name"
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                                    required
+                                    
                                 />
                             </div>
                         </div>

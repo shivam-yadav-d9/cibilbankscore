@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import { useAuth } from "../../contexts/AuthContext";
 
 const Login = ({ updateAuth }) => {
   const [email, setEmail] = useState("");
@@ -10,6 +11,7 @@ const Login = ({ updateAuth }) => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -21,17 +23,13 @@ const Login = ({ updateAuth }) => {
         email,
         password,
       });
-
       if (response.data.token) {
-        // Store token and user data
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
-            ...response.data.user,
-            email: email,
-          })
-        );
+        // Use the login function from AuthContext
+        login({
+          ...response.data.user,
+          token: response.data.token,
+          email: email,
+        });
 
         // Decode the JWT to get the userType
         const decodedToken = jwtDecode(response.data.token);
@@ -65,13 +63,16 @@ const Login = ({ updateAuth }) => {
     setShowPassword(!showPassword);
   };
 
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-blue-900 to-indigo-900 flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col md:flex-row w-full max-w-4xl bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
         {/* Left Side - Image */}
         <div className="flex w-full md:w-1/2 items-center justify-center p-0 m-0 md:p-6">
-          <img src="/hero.webp" alt="hero" className="w-full h-auto object-cover" />
+          <img
+            src="/hero.webp"
+            alt="hero"
+            className="w-full h-auto object-cover"
+          />
         </div>
 
         {/* Right Side - Login Form */}
@@ -165,16 +166,15 @@ const Login = ({ updateAuth }) => {
                 type="submit"
                 disabled={loading}
                 className={`w-full py-3 rounded-lg text-white font-medium 
-                  ${loading
-                    ? "bg-indigo-600/70 cursor-not-allowed"
-                    : "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-lg transition-transform hover:-translate-y-1"
+                  ${
+                    loading
+                      ? "bg-indigo-600/70 cursor-not-allowed"
+                      : "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-lg transition-transform hover:-translate-y-1"
                   }`}
               >
                 {loading ? "Authenticating..." : "Sign in"}
               </button>
             </div>
-
-           
           </form>
 
           {/* Links */}
