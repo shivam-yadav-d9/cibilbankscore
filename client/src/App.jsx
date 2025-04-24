@@ -41,10 +41,9 @@ import UserLoanpage from "./pages/auth/UserLoanPage";
 // Admin & Business Views
 import AdminLogin from "./components/admin-view/AdminLogin";
 import AdminPanel from "./components/admin-view/AdminPanel";
-
+import BusinessLogin from "./components/business-view/auth/BusinessLogin";
 import B2BDashboard from "./components/business-view/B2BDashboard";
 import TermsAndConditions from "./components/business-view/B2bServicesActivate";
-
 
 // User Data Pages
 import UserBasicData from "./pages/auth/UserBasicData";
@@ -74,8 +73,6 @@ const ProtectedRoute = ({
     switch (user.userType) {
       case "customer":
         return <Navigate to="/dashboard" replace />;
-      case "agent":
-        return <Navigate to="/agent-dashboard" replace />;
       // case "admin":
       //   return <Navigate to="/admin" replace />;
       case "business":
@@ -104,10 +101,9 @@ function App() {
             <Route path="/B2BSignup" element={<B2BSignup />} />
             <Route path="/userinput" element={<UserInput />} />
             <Route path="/admin-login" element={<AdminLogin />} />
+            <Route path="/business-login" element={<BusinessLogin />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-
-            <Route path="/CustomerLegalAdvice" element={<CustomerLegalAdvice/>}/>
 
             {/* Service Pages */}
             <Route path="/services/banking-apis" element={<BankingAPIPage />} />
@@ -146,6 +142,18 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+<Route
+              path="/CustomerLegalAdvice"
+              element={
+                <ProtectedRoute allowedTypes={["customer"]}>
+                  <CustomerLegalAdvice />
+                </ProtectedRoute>
+              }
+            />
+
+
+
             <Route
               path="/loan"
               element={
@@ -165,7 +173,7 @@ function App() {
             <Route
               path="/UserLoanpage"
               element={
-                <ProtectedRoute allowedTypes={["customer"]}>
+                <ProtectedRoute allowedTypes={["customer", "business"]}>
                   <UserLoanpage />
                 </ProtectedRoute>
               }
@@ -175,7 +183,7 @@ function App() {
             <Route
               path="/UserBasicData"
               element={
-                <ProtectedRoute allowedTypes={["customer"]}>
+                <ProtectedRoute allowedTypes={["customer", "business"]}>
                   <UserBasicData />
                 </ProtectedRoute>
               }
@@ -183,7 +191,7 @@ function App() {
             <Route
               path="/UserAddress"
               element={
-                <ProtectedRoute allowedTypes={["customer"]}>
+                <ProtectedRoute allowedTypes={["customer", "business"]}>
                   <UserAddress />
                 </ProtectedRoute>
               }
@@ -191,7 +199,7 @@ function App() {
             <Route
               path="/UserSecondAddress"
               element={
-                <ProtectedRoute allowedTypes={["customer"]}>
+                <ProtectedRoute allowedTypes={["customer", "business"]}>
                   <UserSecondAddress />
                 </ProtectedRoute>
               }
@@ -199,7 +207,7 @@ function App() {
             <Route
               path="/UserCoApplications"
               element={
-                <ProtectedRoute allowedTypes={["customer"]}>
+                <ProtectedRoute allowedTypes={["customer", "business"]}>
                   <UserCoApplications />
                 </ProtectedRoute>
               }
@@ -207,7 +215,7 @@ function App() {
             <Route
               path="/UserSaveRefrences"
               element={
-                <ProtectedRoute allowedTypes={["customer"]}>
+                <ProtectedRoute allowedTypes={["customer", "business"]}>
                   <UserSaveRefrences />
                 </ProtectedRoute>
               }
@@ -215,7 +223,7 @@ function App() {
             <Route
               path="/UserPreviousData"
               element={
-                <ProtectedRoute allowedTypes={["customer"]}>
+                <ProtectedRoute allowedTypes={["customer", "business"]}>
                   <UserPreviousData />
                 </ProtectedRoute>
               }
@@ -223,7 +231,7 @@ function App() {
             <Route
               path="/LoanReportDetail"
               element={
-                <ProtectedRoute allowedTypes={["customer"]}>
+                <ProtectedRoute allowedTypes={["customer", "business"]}>
                   <LoanReportDetail />
                 </ProtectedRoute>
               }
@@ -232,16 +240,16 @@ function App() {
             <Route
               path="/UserDocuments"
               element={
-                <ProtectedRoute allowedTypes={["customer"]}>
+                <ProtectedRoute allowedTypes={["customer", "business"]}>
                   <UserDocuments />
                 </ProtectedRoute>
               }
             />
 
-            <Route
+<Route
               path="/MyApplication"
               element={
-                <ProtectedRoute allowedTypes={["customer"]}>
+                <ProtectedRoute allowedTypes={["customer", "business"]}>
                   <MyApplication />
                 </ProtectedRoute>
               }
@@ -272,7 +280,7 @@ function App() {
               path="/business-dashboard"
               element={
                 <ProtectedRoute allowedTypes={["business"]}>
-                  <B2BDashboard/>
+                  <B2BDashboard />
                 </ProtectedRoute>
               }
             />
@@ -285,16 +293,8 @@ function App() {
               }
             />
 
-            {/* Protected Agent Routes */}
-            <Route
-              path="/agent-dashboard"
-              element={
-                <ProtectedRoute allowedTypes={["agent"]}>
-                  <B2BDashboard />
-                </ProtectedRoute>
-              }
-            />
-
+            
+           
             {/* Catch-all Route */}
             <Route
               path="*"

@@ -42,8 +42,8 @@ const Login = ({ updateAuth }) => {
         // Redirect based on userType
         if (userType === "customer") {
           navigate("/dashboard");
-        } else if (userType === "agent") {
-          navigate("/agent-dashboard");
+        } else if (userType === "business") {
+          navigate("/business-dashboard");
         } else {
           console.warn("Unknown user type:", userType);
           navigate("/default-dashboard");
@@ -202,7 +202,15 @@ const Login = ({ updateAuth }) => {
                 Go To Admin Login 👉
               </Link>
             </p>
-         
+            <p className="text-sm text-indigo-200">
+              For Business Purposes?{" "}
+              <Link
+                to="/business-login"
+                className="text-indigo-400 hover:text-white"
+              >
+                Go To Business Login 👉
+              </Link>
+            </p>
           </div>
         </div>
       </div>

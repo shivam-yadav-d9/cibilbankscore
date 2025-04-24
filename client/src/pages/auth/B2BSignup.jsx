@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const B2BSignup = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     companyName: '',
@@ -24,14 +26,28 @@ const B2BSignup = () => {
     e.preventDefault();
     try {
       const res = await axios.post('http://localhost:3001/api/SignupRoutes/signup', formData);
-      alert('Signup Successful! Your User ID: ' + res.data.userId);
+      
+      // Create a user object with business type
+      const userData = {
+        ...res.data,
+        userType: 'business', // Explicitly set user type
+        token: res.data.token,
+        email: formData.email,
+        companyName: formData.companyName
+      };
+
+      // Use the login function from AuthContext to set the authentication state
+      login(userData);
+      
       setError('');
-      navigate('/business-dashboard'); // ✅ Navigate after success
+      navigate('/business-dashboard');
     } catch (err) {
       setError('Signup failed. Please try again.');
       console.error(err);
     }
   };
+
+  // ... rest of your component code stays the same ...
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-blue-900 to-indigo-900 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
