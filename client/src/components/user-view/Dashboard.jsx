@@ -102,8 +102,8 @@ const Dashboard = () => {
             </div>
           </Link>
 
-          {/* Bill Payment */}
-          <Link to="/bill-payment" className="group">
+          {/* Legal Advice */}
+          <Link to="/CustomerLegalAdvice" className="group">
             <div className="bg-white h-full rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 hover:translate-y-[-8px] border border-slate-100 flex flex-col">
               <div className="h-12 w-12 rounded-2xl bg-teal-100 flex items-center justify-center mb-4 group-hover:bg-teal-500 transition-colors duration-300">
                 <FileText
@@ -112,14 +112,13 @@ const Dashboard = () => {
                 />
               </div>
               <h3 className="text-lg font-semibold mb-2 group-hover:text-teal-600 transition-colors duration-300">
-                Bill Payment
+                Legal Advice
               </h3>
               <p className="text-slate-500 text-sm mb-4 flex-grow">
-                Pay all your bills in one place with automated reminders and
-                payment tracking.
+                Get professional help for customer rights, legal queries, and contract advice.
               </p>
               <div className="flex items-center text-teal-600 font-medium text-sm">
-                <span>Pay Bills</span>
+                <span>Get Help</span>
                 <ArrowRight
                   size={16}
                   className="ml-1 group-hover:ml-2 transition-all duration-300"
@@ -127,6 +126,7 @@ const Dashboard = () => {
               </div>
             </div>
           </Link>
+
         </div>
       </div>
 
@@ -210,7 +210,7 @@ const Dashboard = () => {
               <div className="h-10 w-10 rounded-lg bg-teal-50 flex items-center justify-center group-hover:bg-teal-100 transition-all">
                 <FileText className="h-5 w-5 text-teal-600" />
               </div>
-              <span className="font-medium text-sm">Legal Advice</span>
+              <span className="font-medium text-sm"> Bill Payment</span>
             </div>
 
             {/* Add the remaining service items with similar structure */}

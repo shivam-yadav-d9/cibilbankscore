@@ -17,11 +17,7 @@ const ServicesDropdown = () => {
       href: "/services/banking-apis",
       component: BankingAPIPage,
     },
-    {
-      label: "B2B Banking Systems",
-      href: "/services/b2b-systems",
-      component: B2BBankingSystems,
-    },
+
     {
       label: "Loan Services",
       href: "/services/digital-payments",

@@ -41,9 +41,10 @@ import UserLoanpage from "./pages/auth/UserLoanPage";
 // Admin & Business Views
 import AdminLogin from "./components/admin-view/AdminLogin";
 import AdminPanel from "./components/admin-view/AdminPanel";
-import BusinessLogin from "./components/business-view/auth/BusinessLogin";
+
 import B2BDashboard from "./components/business-view/B2BDashboard";
 import TermsAndConditions from "./components/business-view/B2bServicesActivate";
+
 
 // User Data Pages
 import UserBasicData from "./pages/auth/UserBasicData";
@@ -55,6 +56,7 @@ import UserPreviousData from "./pages/auth/UserPreviousData";
 import LoanReportDetail from "./pages/auth/LoanReportDetail";
 import UserDocuments from "./pages/auth/UserDocuments.jsx";
 import MyApplication from "./pages/auth/MyApplication.jsx";
+import CustomerLegalAdvice from "./pages/auth/CustomerLegalAdvice.jsx";
 
 // Protected Route Component
 const ProtectedRoute = ({
@@ -102,9 +104,10 @@ function App() {
             <Route path="/B2BSignup" element={<B2BSignup />} />
             <Route path="/userinput" element={<UserInput />} />
             <Route path="/admin-login" element={<AdminLogin />} />
-            <Route path="/business-login" element={<BusinessLogin />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+
+            <Route path="/CustomerLegalAdvice" element={<CustomerLegalAdvice/>}/>
 
             {/* Service Pages */}
             <Route path="/services/banking-apis" element={<BankingAPIPage />} />
@@ -235,7 +238,7 @@ function App() {
               }
             />
 
-<Route
+            <Route
               path="/MyApplication"
               element={
                 <ProtectedRoute allowedTypes={["customer"]}>
@@ -269,7 +272,7 @@ function App() {
               path="/business-dashboard"
               element={
                 <ProtectedRoute allowedTypes={["business"]}>
-                  <B2BDashboard />
+                  <B2BDashboard/>
                 </ProtectedRoute>
               }
             />

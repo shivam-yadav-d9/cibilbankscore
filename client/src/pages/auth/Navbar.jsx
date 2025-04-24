@@ -13,7 +13,7 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const NavLinks = [
-    { name: "Mission", path: "#mission" },
+    { name: "Bussiness", path: "/services/b2b-systems" },
     { name: "About Us", path: "/aboutus" },
     { name: "Careers", path: "/careers" },
   ];
@@ -146,17 +146,24 @@ export default function Navbar() {
                         <p className="text-gray-500 text-xs">{user.email}</p>
                       </div>
                       <Link
-                        to="/profile"
+                        to="report-fraud"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        Your Profile
+                        Report Fraud
                       </Link>
                       <Link
-                        to="/settings"
+                        to="/refer-earn"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        Settings
+                        Refer & Earn
                       </Link>
+                      <Link
+                        to="/reedem"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Redeem Voucher
+                      </Link>
+
                       <button
                         onClick={handleLogout}
                         className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
