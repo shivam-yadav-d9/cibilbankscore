@@ -95,3 +95,5 @@ export const resetPassword = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+console.log("CLIENT_URL:", process.env.CLIENT_URL);
