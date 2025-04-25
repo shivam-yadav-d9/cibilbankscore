@@ -158,3 +158,26 @@ export const storeLoanDetails = async (req, res) => {
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
+
+
+// Get loan data by email
+export const getLoanDetailsByEmail = async (req, res) => {
+  const { email } = req.params;
+
+  try {
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const loanData = await LoanApplication.findOne({ email });
+
+    if (!loanData) {
+      return res.status(404).json({ message: "No loan data found for this email" });
+    }
+
+    res.status(200).json(loanData);
+  } catch (error) {
+    console.error("Error fetching loan data by email:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};

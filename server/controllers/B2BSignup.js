@@ -15,14 +15,25 @@ export const signupB2BUser = async (req, res) => {
     try {
         const { companyName, businessType, fullName, email, phone, password } = req.body;
 
-        const existingUser = await B2BSignup.findOne({ email });
-        if (existingUser) {
+        // Check if the email already exists
+        const existingEmail = await B2BSignup.findOne({ email });
+        if (existingEmail) {
             return res.status(400).json({ message: 'Email already registered' });
         }
 
+        // Check if the phone number already exists
+        const existingPhone = await B2BSignup.findOne({ phone });
+        if (existingPhone) {
+            return res.status(400).json({ message: 'Phone number already registered' });
+        }
+
+        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Generate custom user ID
         const customId = generateCustomId();
 
+        // Create a new agent
         const newUser = new B2BSignup({
             userId: customId,
             companyName,
@@ -31,11 +42,13 @@ export const signupB2BUser = async (req, res) => {
             email,
             phone,
             password: hashedPassword,
-            userType: 'agent'
+            userType: 'agent',
         });
 
+        // Save the new user to the database
         await newUser.save();
 
+        // Return a success response
         return res.status(201).json({
             message: 'Signup successful',
             userId: newUser.userId,
@@ -85,8 +98,6 @@ export const loginAgent = async (req, res) => {
 };
 
 // Get all agents for admin
-
-
 export const getAllAgents = async (req, res) => {
     try {
         const agents = await B2BSignup.find({ userType: 'agent' });
