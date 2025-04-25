@@ -30,6 +30,9 @@ import AgentRoutes from "./routes/AgentRoute.js"; // Import agent routes
 
 import forgetpassword from "./routes/forgotPassword.js";  // Import the auth routes
 
+import forgotPasswordAgentRoutes from './routes/forgotPasswordAgentroute.js';
+
+
 import expertConnectRoutes from './routes/expertConnect.js';
 
 
@@ -107,6 +110,9 @@ app.use('/api/loanProcessor', LoanProcessorRoutes); // Mount loan processor rout
 
 // Add the forgot password and reset password routes
 app.use("/api/auth", forgetpassword);
+app.use('/api/agent', forgotPasswordAgentRoutes);
+
+
 app.use('/api/expert-connect', expertConnectRoutes);
 
 
