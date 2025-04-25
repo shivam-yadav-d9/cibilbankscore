@@ -16,7 +16,7 @@ function UserBasicData() {
     loan_amount: "",
     pan: "",
     aadhaar: "",
-    loan_type_id: "60",
+    loan_type_id: loanTypeId,
     preferred_banks: "[1, 2]",
   });
 

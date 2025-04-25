@@ -56,8 +56,10 @@ import LoanReportDetail from "./pages/auth/LoanReportDetail";
 import UserDocuments from "./pages/auth/UserDocuments.jsx";
 import MyApplication from "./pages/auth/MyApplication.jsx";
 import CustomerLegalAdvice from "./pages/auth/CustomerLegalAdvice.jsx";
+
 import ForgotPasswordAgent from "./pages/auth/ForgotPasswordAgent.jsx";
 import ResetPasswordAgent from "./pages/auth/ResetPasswordAgent.jsx";
+import MyProfile from "./myProfile/MyProfile.jsx";
 
 // Protected Route Component
 const ProtectedRoute = ({
@@ -110,6 +112,10 @@ function App() {
             {/* Agent forget password */}
             <Route path="/forgot-password-agent" element={<ForgotPasswordAgent/>}/> 
             <Route path="/reset-password/:token" element={<ResetPasswordAgent/>}/>
+
+
+            {/* my profile */}
+            <Route path="/my-profile" element={<MyProfile/>}/>
 
             {/* Service Pages */}
             <Route path="/services/banking-apis" element={<BankingAPIPage />} />

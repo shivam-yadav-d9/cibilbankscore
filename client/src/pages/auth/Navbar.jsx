@@ -146,10 +146,10 @@ export default function Navbar() {
                         <p className="text-gray-500 text-xs">{user.email}</p>
                       </div>
                       <Link
-                        to="report-fraud"
+                        to="/my-profile"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        Report Fraud
+                        My Profile
                       </Link>
                       <Link
                         to="/refer-earn"
