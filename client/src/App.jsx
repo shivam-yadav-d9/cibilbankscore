@@ -56,6 +56,8 @@ import LoanReportDetail from "./pages/auth/LoanReportDetail";
 import UserDocuments from "./pages/auth/UserDocuments.jsx";
 import MyApplication from "./pages/auth/MyApplication.jsx";
 import CustomerLegalAdvice from "./pages/auth/CustomerLegalAdvice.jsx";
+import ForgotPasswordAgent from "./pages/auth/ForgotPasswordAgent.jsx";
+import ResetPasswordAgent from "./pages/auth/ResetPasswordAgent.jsx";
 
 // Protected Route Component
 const ProtectedRoute = ({
@@ -102,8 +104,12 @@ function App() {
             <Route path="/userinput" element={<UserInput />} />
             <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/business-login" element={<BusinessLogin />} />
+            {/* user forgot password */}
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            {/* Agent forget password */}
+            <Route path="/forgot-password-agent" element={<ForgotPasswordAgent/>}/> 
+            <Route path="/reset-password/:token" element={<ResetPasswordAgent/>}/>
 
             {/* Service Pages */}
             <Route path="/services/banking-apis" element={<BankingAPIPage />} />
@@ -143,7 +149,7 @@ function App() {
               }
             />
 
-<Route
+            <Route
               path="/CustomerLegalAdvice"
               element={
                 <ProtectedRoute allowedTypes={["customer"]}>
@@ -246,7 +252,7 @@ function App() {
               }
             />
 
-<Route
+            <Route
               path="/MyApplication"
               element={
                 <ProtectedRoute allowedTypes={["customer", "business"]}>
@@ -293,8 +299,8 @@ function App() {
               }
             />
 
-            
-           
+
+
             {/* Catch-all Route */}
             <Route
               path="*"

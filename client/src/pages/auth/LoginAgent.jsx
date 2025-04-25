@@ -179,7 +179,7 @@ const LoginAgent = ({ updateAuth }) => {
           <div className="mt-6 text-center">
             <p className="text-sm text-indigo-200">
               <Link
-                to="/forgot-password"
+                to="/forgot-password-agent"
                 className="text-indigo-400 hover:text-white"
               >
                 Forgot password?
