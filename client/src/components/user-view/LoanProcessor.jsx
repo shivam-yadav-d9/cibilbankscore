@@ -581,7 +581,7 @@ const LoanProcessor = () => {
               <h3 className="text-2xl font-bold">Eligibility Result</h3>
               <button 
                 onClick={handleResetForm}
-                className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                className="bg-white bg-opacity-20 hover:bg-opacity-30 text-black px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer"
               >
                 New Check
               </button>
