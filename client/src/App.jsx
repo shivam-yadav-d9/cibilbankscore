@@ -34,7 +34,6 @@ import AboutUs from "./components/user-view/AboutUs";
 import CareerPage from "./components/user-view/CareerPage";
 import Dashboard from "./components/user-view/Dashboard";
 import CreditCheck from "./components/user-view/CreditCheck";
-import LoanInformation from "./components/user-view/LoanInformation";
 import LoanProcessor from "./components/user-view/LoanProcessor";
 import UserLoanpage from "./pages/auth/UserLoanPage";
 
@@ -176,18 +175,11 @@ function App() {
               }
             />
 
-            <Route
-              path="/loan"
-              element={
-                <ProtectedRoute allowedTypes={["customer"]}>
-                  <LoanInformation />
-                </ProtectedRoute>
-              }
-            />
+            
             <Route
               path="/UserLoanInput"
               element={
-                <ProtectedRoute allowedTypes={["customer"]}>
+                <ProtectedRoute allowedTypes={["customer", "business"]}>
                   <LoanProcessor />
                 </ProtectedRoute>
               }
