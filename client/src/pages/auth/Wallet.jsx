@@ -89,17 +89,6 @@ const WalletPage = () => {
           If loan is not approved then commission is not granted. Commission will be added in a wallet after 15 days of disbursement date.
         </p>
       </div>
-
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-100">
-        <div className="flex justify-around p-3 max-w-md mx-auto">
-          <BottomNavItem icon={<WalletIcon />} title="Wallet" active />
-          <BottomNavItem icon={<Send />} title="Transfer" />
-          <BottomNavItem icon={<Plus size={20} />} isMain />
-          <BottomNavItem icon={<History />} title="History" />
-          <BottomNavItem icon={<Settings />} title="More" />
-        </div>
-      </div>
     </div>
   );
 };

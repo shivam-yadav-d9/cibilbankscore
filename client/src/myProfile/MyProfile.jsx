@@ -11,6 +11,8 @@ import {
   FaUniversity,
   FaIdCard,
   FaBriefcase,
+  FaMapMarkerAlt,
+  FaBuilding
 } from "react-icons/fa";
 
 const MyProfile = () => {
@@ -18,6 +20,7 @@ const MyProfile = () => {
   const [loanData, setLoanData] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [agentDetails, setAgentDetails] = useState(null);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -27,12 +30,23 @@ const MyProfile = () => {
       return;
     }
 
-    // Store user data from local storage
+    console.log("User data from localStorage:", user); // Debug log
     setUserData(user);
 
-    // If user is an agent, we don't need to fetch loan data
+    // If user is an agent/business, fetch agent details
     if (user.userType === "business" || user.userType === "agent") {
-      setLoading(false);
+      // If you have a specific endpoint for agent details, use that instead
+      axios.get(`http://localhost:3001/agent/profile/${user._id || user.id}`)
+        .then(res => {
+          console.log("Agent details:", res.data); // Debug log
+          setAgentDetails(res.data);
+          setLoading(false);
+        })
+        .catch(err => {
+          console.error("Could not fetch agent details:", err);
+          // Even if we can't get agent details, we still show the basic profile
+          setLoading(false);
+        });
       return;
     }
 
@@ -75,11 +89,71 @@ const MyProfile = () => {
       </div>
     );
 
+  // Enhanced function to get user's phone/mobile number from various possible properties
+  const getUserPhone = () => {
+    // Check userData first (from localStorage)
+    if (userData) {
+      // Direct properties on userData
+      if (userData.phone) return userData.phone;
+      if (userData.mobile) return userData.mobile;
+      if (userData.phoneNumber) return userData.phoneNumber;
+      if (userData.mobileNumber) return userData.mobileNumber;
+      if (userData.contactNumber) return userData.contactNumber;
+      
+      // If nested within contact object
+      if (userData.contact && userData.contact.phone) return userData.contact.phone;
+      if (userData.contact && userData.contact.mobile) return userData.contact.mobile;
+    }
+    
+    // Then check in agentDetails from API
+    if (agentDetails) {
+      // Direct properties on agentDetails
+      if (agentDetails.phone) return agentDetails.phone;
+      if (agentDetails.mobile) return agentDetails.mobile;
+      if (agentDetails.phoneNumber) return agentDetails.phoneNumber;
+      if (agentDetails.mobileNumber) return agentDetails.mobileNumber;
+      if (agentDetails.contactNumber) return agentDetails.contactNumber;
+      
+      // If nested within contact object
+      if (agentDetails.contact && agentDetails.contact.phone) return agentDetails.contact.phone;
+      if (agentDetails.contact && agentDetails.contact.mobile) return agentDetails.contact.mobile;
+    }
+    
+    return "N/A";
+  };
+
+  // Enhanced function to get company name from various possible properties
+  const getCompanyName = () => {
+    if (agentDetails) {
+      const companyFields = ['company', 'companyName', 'businessName', 'agencyName', 'organization', 'firm'];
+      for (const field of companyFields) {
+        if (agentDetails[field]) return agentDetails[field];
+      }
+      
+      // If nested within business or company object
+      if (agentDetails.business && agentDetails.business.name) return agentDetails.business.name;
+      if (agentDetails.company && agentDetails.company.name) return agentDetails.company.name;
+    }
+    
+    // Then check in userData
+    const userCompanyFields = ['company', 'companyName', 'businessName', 'agencyName', 'organization', 'firm'];
+    for (const field of userCompanyFields) {
+      if (userData[field]) return userData[field];
+    }
+    
+    // Check if nested
+    if (userData.business && userData.business.name) return userData.business.name;
+    if (userData.company && userData.company.name) return userData.company.name;
+    
+    return "N/A";
+  };
+
   return (
     <div className="flex flex-col justify-start items-center py-10 bg-gradient-to-tr from-indigo-50 via-purple-50 to-pink-50 px-4 min-h-screen">
       <div className="bg-white shadow-2xl rounded-2xl overflow-hidden w-full max-w-4xl border border-gray-200">
         <div className="px-6 py-5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-center">
           <h2 className="text-3xl font-bold">My Profile</h2>
+          <p className="text-indigo-200 mt-1">{userData?.userType === "business" || userData?.userType === "agent" ? "Agent Account" : "Customer Account"}</p>
         </div>
 
         {/* User Basic Info - Always shown */}
@@ -87,10 +161,41 @@ const MyProfile = () => {
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Basic Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {[
-              { label: "Name", value: userData?.name || userData?.fullName || userData?.username || "N/A", icon: <FaUser /> },
-              { label: "Email", value: userData?.email || "N/A", icon: <FaEnvelope /> },
-              { label: "User Type", value: userData?.userType || "N/A", icon: <FaIdCard /> },
-              { label: "Mobile", value: userData?.mobile || userData?.phone || "N/A", icon: <FaMobile /> },
+              { 
+                label: "Name", 
+                value: userData?.name || userData?.fullName || userData?.username || agentDetails?.name || agentDetails?.fullName || "N/A", 
+                icon: <FaUser /> 
+              },
+              { 
+                label: "Email", 
+                value: userData?.email || agentDetails?.email || "N/A", 
+                icon: <FaEnvelope /> 
+              },
+              { 
+                label: "User Type", 
+                value: (userData?.userType === "business" ? "Agent" : userData?.userType) || "N/A", 
+                icon: <FaIdCard /> 
+              },
+              { 
+                label: "Phone Number", 
+                value: getUserPhone(), // Use the getUserPhone function instead of direct properties
+                icon: <FaMobile /> 
+              },
+              // Add more fields for agent if needed
+              ...(userData?.userType === "business" || userData?.userType === "agent" ? [
+                { 
+                  label: "Company", 
+                  value: getCompanyName(), 
+                  icon: <FaBuilding /> 
+                },
+                { 
+                  label: "Location", 
+                  value: agentDetails?.location || userData?.location || agentDetails?.city || userData?.city || 
+                         (agentDetails?.address ? (typeof agentDetails.address === 'string' ? agentDetails.address : 
+                         `${agentDetails.address.city || ''} ${agentDetails.address.state || ''}`.trim()) : "N/A"), 
+                  icon: <FaMapMarkerAlt /> 
+                }
+              ] : [])
             ].map((item, index) => (
               <div
                 key={index}
@@ -105,6 +210,26 @@ const MyProfile = () => {
             ))}
           </div>
         </div>
+
+        {/* Debug section - will be visible only in development */}
+        {/* {process.env.NODE_ENV !== 'production' && (
+          <div className="px-6 py-4 bg-gray-100 border-t border-gray-200">
+            <details>
+              <summary className="text-sm font-medium text-gray-600 cursor-pointer">Debug Information</summary>
+              <div className="mt-2 p-3 bg-gray-200 rounded overflow-auto max-h-60 text-xs">
+                <p className="font-bold">User Data from localStorage:</p>
+                <pre>{JSON.stringify(userData, null, 2)}</pre>
+                
+                {agentDetails && (
+                  <>
+                    <p className="font-bold mt-2">Agent Details from API:</p>
+                    <pre>{JSON.stringify(agentDetails, null, 2)}</pre>
+                  </>
+                )}
+              </div>
+            </details>
+          </div>
+        )} */}
 
         {/* Loan Information - Only shown for customers who have loan data */}
         {loanData && userData?.userType === "customer" && (
@@ -181,9 +306,11 @@ const MyProfile = () => {
 
         {/* Message for agents/business users */}
         {(userData?.userType === "business" || userData?.userType === "agent") && (
-          <div className="px-6 py-8 text-center text-gray-500 border-t border-gray-200">
-            <p className="text-lg">Welcome to your agent profile!</p>
-            <p className="mt-2">You can manage your clients and applications from the business dashboard.</p>
+          <div className="px-6 py-8 text-center border-t border-gray-200">
+            <div className="bg-indigo-50 p-4 rounded-lg">
+              <p className="text-lg font-medium text-indigo-700">Welcome to your agent profile!</p>
+              <p className="mt-2 text-indigo-600">You can manage your clients and applications from the business dashboard.</p>
+            </div>
           </div>
         )}
       </div>

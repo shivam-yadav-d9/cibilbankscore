@@ -1,5 +1,6 @@
 import React from 'react';
 import Navbar from './Navbar';
+import Footer from "./Footer"
 
 const Layout = ({ children }) => {
   return (
@@ -8,6 +9,7 @@ const Layout = ({ children }) => {
       <main className="pt-20"> {/* Add padding top to account for fixed navbar */}
         {children}
       </main>
+      <Footer/>
     </div>
   );
 };

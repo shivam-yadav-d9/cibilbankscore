@@ -314,15 +314,6 @@ const LoanProcessor = () => {
 
       {showForm && (
         <>
-          <div className="flex justify-between mb-6">
-            <button
-              onClick={fetchToken}
-              className="relative px-6 py-2 overflow-hidden rounded-lg bg-gray-100 text-gray-800 font-medium transition-all duration-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50"
-              disabled={isAuthenticating}
-            >
-              {apiToken ? "Refresh Token" : "Authenticate"}
-            </button>
-          </div>
 
           <div className="bg-gray-50 rounded-xl px-8 pt-6 pb-8 mb-6 shadow-md border border-gray-100">
             {/* Form fields */}
