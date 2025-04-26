@@ -62,9 +62,7 @@ import ResetPasswordAgent from "./pages/auth/ResetPasswordAgent.jsx";
 import PaymentHistory from "./pages/auth/PaymentHistory.jsx";
 import WalletPage from "./pages/auth/Wallet.jsx";
 
-
 import MyProfile from "./myProfile/MyProfile.jsx";
-
 
 // Protected Route Component
 const ProtectedRoute = ({
@@ -124,9 +122,7 @@ function App() {
               element={<ResetPasswordAgent />}
             />
 
-
             {/* my profile */}
-            <Route path="/my-profile" element={<MyProfile/>}/>
 
             {/* Service Pages */}
             <Route path="/services/banking-apis" element={<BankingAPIPage />} />
@@ -160,8 +156,19 @@ function App() {
             <Route
               path="/credit-check"
               element={
-                <ProtectedRoute allowedTypes={["customer", "agent", "admin", "business"]}>
+                <ProtectedRoute
+                  allowedTypes={["customer", "agent", "admin", "business"]}
+                >
                   <CreditCheck />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/my-profile"
+              element={
+                <ProtectedRoute allowedTypes={["customer", "business", "agent"]}>
+                  <MyProfile />
                 </ProtectedRoute>
               }
             />
@@ -175,7 +182,6 @@ function App() {
               }
             />
 
-            
             <Route
               path="/UserLoanInput"
               element={
