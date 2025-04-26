@@ -26,7 +26,7 @@ const B2BSignup = () => {
     e.preventDefault();
     try {
       const res = await axios.post('http://localhost:3001/api/SignupRoutes/signup', formData);
-      
+
       // Create a user object with business type
       const userData = {
         ...res.data,
@@ -39,15 +39,18 @@ const B2BSignup = () => {
       // Use the login function from AuthContext to set the authentication state
       login(userData);
       
-      setError('');
+      setError('');  // Clear any previous error messages
       navigate('/business-dashboard');
     } catch (err) {
-      setError('Signup failed. Please try again.');
+      // Check if the error message is from the backend (email or phone already exists)
+      if (err.response && err.response.data && err.response.data.message) {
+        setError(err.response.data.message);  // Set the error message from the backend
+      } else {
+        setError('Signup failed. Please try again.');  // Default error message
+      }
       console.error(err);
     }
   };
-
-  // ... rest of your component code stays the same ...
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-blue-900 to-indigo-900 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
@@ -58,6 +61,9 @@ const B2BSignup = () => {
         <h2 className="text-3xl font-bold text-white text-center tracking-tight">
           Create Your Account
         </h2>
+
+        {/* Error Message */}
+        {error && <div className="text-red-500 text-sm text-center">{error}</div>}
 
         {/* Company Name */}
         <div>

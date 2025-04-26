@@ -33,7 +33,7 @@ const TermsAndConditions = () => {
                     {/* Centered Button */}
                     <div className="px-6 py-8 flex justify-center"> {/* Flex container for centering */}
 
-                      <button
+                        <button
                             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-md transition duration-300"
                         >
                             Now you can start your journey with us
@@ -55,9 +55,16 @@ const TermsAndConditions = () => {
                                 <div className="hover:-translate-y-2 transition-transform duration-300">
                                     <CreditCard size={50} />
                                 </div>
-                                <span className="font-semibold text-lg">Credit Card</span>
+                                <span className="font-semibold text-lg">Credit Score</span>
                             </div>
                         </Link>
+
+                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                            <div className="hover:-translate-y-2 transition-transform duration-300">
+                                <CreditCard size={50} />
+                            </div>
+                            <span className="font-semibold text-lg">Credit Card</span>
+                        </div>
 
                         <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
                             <div className="hover:-translate-y-2 transition-transform duration-300">

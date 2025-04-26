@@ -56,10 +56,15 @@ import LoanReportDetail from "./pages/auth/LoanReportDetail";
 import UserDocuments from "./pages/auth/UserDocuments.jsx";
 import MyApplication from "./pages/auth/MyApplication.jsx";
 import CustomerLegalAdvice from "./pages/auth/CustomerLegalAdvice.jsx";
+
 import ForgotPasswordAgent from "./pages/auth/ForgotPasswordAgent.jsx";
 import ResetPasswordAgent from "./pages/auth/ResetPasswordAgent.jsx";
+
 import PaymentHistory from "./pages/auth/PaymentHistory.jsx";
 import WalletPage from "./pages/auth/Wallet.jsx";
+
+
+import MyProfile from "./myProfile/MyProfile.jsx";
 
 
 // Protected Route Component
@@ -120,6 +125,10 @@ function App() {
               element={<ResetPasswordAgent />}
             />
 
+
+            {/* my profile */}
+            <Route path="/my-profile" element={<MyProfile/>}/>
+
             {/* Service Pages */}
             <Route path="/services/banking-apis" element={<BankingAPIPage />} />
             <Route
@@ -152,7 +161,7 @@ function App() {
             <Route
               path="/credit-check"
               element={
-                <ProtectedRoute allowedTypes={["customer"]}>
+                <ProtectedRoute allowedTypes={["customer", "agent", "admin", "business"]}>
                   <CreditCheck />
                 </ProtectedRoute>
               }
