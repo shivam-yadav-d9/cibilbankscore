@@ -5,11 +5,11 @@ const CreditCheck = () => {
   // Pre-populate with test data for easier testing
   const [formData, setFormData] = useState({
     ref_code: "OUI202590898", // Default value
-    fname: "Mahesh",
-    lname: "Waghmare",
-    phone: "9370643086",
-    pan_no: "ABSPW8730C",
-    dob: "1982-06-03"
+    fname: "",
+    lname: "",
+    phone: "",
+    pan_no: "",
+    dob: ""
   });
 
   const [apiToken, setApiToken] = useState("");
@@ -114,11 +114,11 @@ const CreditCheck = () => {
     try {
       const data = JSON.stringify({
         "ref_code": "OUI202590898",
-        "fname": "Mahesh",
-        "lname": "Waghmare",
-        "phone": "9370643086",
-        "pan_no": "ABSPW8730C",
-        "dob": "1982-06-03"
+        "fname": "",
+        "lname": "",
+        "phone": "",
+        "pan_no": "",
+        "dob": ""
       });
 
       const config = {

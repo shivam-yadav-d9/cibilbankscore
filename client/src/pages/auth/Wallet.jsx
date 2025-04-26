@@ -94,6 +94,13 @@ const WalletPage = () => {
         </div>
       </div>
 
+      {/* Commission Disclaimer */}
+      <div className="bg-red-50 p-4">
+        <p className="text-red-600 text-sm font-medium text-center">
+          If loan is not approved then commission is not granted. Commission will be added in a wallet after 15 days of disbursement date.
+        </p>
+      </div>
+
       {/* Bottom Navigation */}
       <div className="bg-white shadow-md">
         <div className="flex justify-around p-4">
