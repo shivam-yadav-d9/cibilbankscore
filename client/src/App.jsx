@@ -58,11 +58,14 @@ import MyApplication from "./pages/auth/MyApplication.jsx";
 import CustomerLegalAdvice from "./pages/auth/CustomerLegalAdvice.jsx";
 import ForgotPasswordAgent from "./pages/auth/ForgotPasswordAgent.jsx";
 import ResetPasswordAgent from "./pages/auth/ResetPasswordAgent.jsx";
+import PaymentHistory from "./pages/auth/PaymentHistory.jsx";
+import WalletPage from "./pages/auth/Wallet.jsx";
+
 
 // Protected Route Component
 const ProtectedRoute = ({
   children,
-  allowedTypes = ["customer", "agent", "admin", "business"],
+  allowedTypes = ["customer", "admin", "business"],
 }) => {
   const { user, isAuthenticated } = useAuth();
 
@@ -108,8 +111,14 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             {/* Agent forget password */}
-            <Route path="/forgot-password-agent" element={<ForgotPasswordAgent/>}/> 
-            <Route path="/reset-password/:token" element={<ResetPasswordAgent/>}/>
+            <Route
+              path="/forgot-password-agent"
+              element={<ForgotPasswordAgent />}
+            />
+            <Route
+              path="/reset-password/:token"
+              element={<ResetPasswordAgent />}
+            />
 
             {/* Service Pages */}
             <Route path="/services/banking-apis" element={<BankingAPIPage />} />
@@ -157,8 +166,6 @@ function App() {
                 </ProtectedRoute>
               }
             />
-
-
 
             <Route
               path="/loan"
@@ -269,6 +276,25 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            <Route
+              path="/payment-history"
+              element={
+                <ProtectedRoute allowedTypes={["customer", "business"]}>
+                  <PaymentHistory />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/wallet"
+              element={
+                <ProtectedRoute allowedTypes={["customer", "business"]}>
+                  <WalletPage />
+                </ProtectedRoute>
+              }
+            />
+
             <Route
               path="/loan-documents"
               element={
@@ -298,8 +324,6 @@ function App() {
                 </ProtectedRoute>
               }
             />
-
-
 
             {/* Catch-all Route */}
             <Route

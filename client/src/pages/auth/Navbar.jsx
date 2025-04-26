@@ -164,6 +164,20 @@ export default function Navbar() {
                         Redeem Voucher
                       </Link>
 
+                      <Link
+                        to="/payment-history"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Payment History
+                      </Link>
+
+                      <Link
+                        to="/wallet"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Wallet
+                      </Link>
+
                       <button
                         onClick={handleLogout}
                         className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
