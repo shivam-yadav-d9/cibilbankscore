@@ -166,13 +166,13 @@ export const getLoanDetailsByEmail = async (req, res) => {
 
   try {
     if (!email) {
-      return res.status(400).json({ message: "Email is required" });
+      return res.status(400).json({ message: "Email is required  " });
     }
 
     const loanData = await LoanApplication.findOne({ email });
 
     if (!loanData) {
-      return res.status(404).json({ message: "No loan data found for this email" });
+      return res.status(404).json({ message: "No Loan data found for this email" });
     }
 
     res.status(200).json(loanData);
