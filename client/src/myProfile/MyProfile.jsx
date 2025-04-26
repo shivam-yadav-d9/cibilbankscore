@@ -64,7 +64,7 @@ const MyProfile = () => {
         </div>
 
         {loanData && Object.keys(loanData).length > 0 ? (
-          <div className="px-6 py-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="px-6 py-8 grid grid-cols-1 md:grid-cols-2 gap-5">
             {[
               { label: "Name", value: loanData.name, icon: <FaUser /> },
               { label: "Email", value: loanData.email, icon: <FaEnvelope /> },

@@ -149,7 +149,7 @@ function App() {
             <Route
               path="/credit-check"
               element={
-                <ProtectedRoute allowedTypes={["customer"]}>
+                <ProtectedRoute allowedTypes={["customer", "agent", "admin", "business"]}>
                   <CreditCheck />
                 </ProtectedRoute>
               }
