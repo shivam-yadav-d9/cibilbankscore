@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Wallet as WalletIcon, Send, CreditCard, History, Bell, Settings, Plus, ChevronRight, Banknote, Tag, Gift, Smartphone } from 'lucide-react';
+import { 
+  Wallet, Send, CreditCard, History, Bell, Settings, Plus, 
+  ChevronRight, Banknote, Tag, Gift, Smartphone, ArrowDown, 
+  ArrowUp, Menu, Search, Wallet as WalletIcon
+} from 'lucide-react';
 
 const WalletPage = () => {
   const [balance, setBalance] = useState(5250.75);
@@ -11,65 +15,50 @@ const WalletPage = () => {
   ]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
+    <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-blue-600 text-white p-4">
+      <header className="bg-indigo-600 text-white p-4 rounded-b-xl shadow-md">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
-            <WalletIcon className="mr-2" size={24} />
-            <h1 className="text-xl font-bold">My Wallet</h1>
+            <Menu className="mr-3" size={22} />
+            <h1 className="text-xl font-bold tracking-tight">My Wallet</h1>
           </div>
-          <div className="flex items-center">
-            <Bell className="mr-4" size={20} />
-            <Settings size={20} />
+          <div className="flex items-center space-x-4">
+            <Search size={20} />
+            <Bell size={20} />
+            <div className="h-8 w-8 bg-indigo-400 rounded-full flex items-center justify-center">
+              <span className="text-sm font-medium">JD</span>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Balance Card */}
-      <div className="mx-4 -mt-2 relative z-10">
-        <div className="bg-white rounded-lg shadow-md p-4">
-          <div className="flex justify-between items-center mb-2">
-            <h2 className="text-gray-500">Total Balance</h2>
-            <button className="bg-blue-600 text-white text-sm rounded-full px-3 py-1 flex items-center">
-              <Plus size={16} className="mr-1" /> Add Money
-            </button>
+      <div className="mx-4 -mt-4 relative z-10">
+        <div className="bg-gradient-to-r from-indigo-700 to-blue-500 rounded-2xl shadow-lg p-5 text-white">
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="text-indigo-100 font-medium">Total Balance</h2>
+            <div className="flex items-center text-xs bg-white/20 rounded-full px-3 py-1.5">
+              <WalletIcon size={14} className="mr-1" />
+              <span>Main Wallet</span>
+            </div>
           </div>
-          <div className="mb-4">
-            <h1 className="text-3xl font-bold">₹{balance.toFixed(2)}</h1>
+          <div className="mb-6">
+            <h1 className="text-4xl font-bold">₹{balance.toFixed(2)}</h1>
+            <p className="text-indigo-100 text-xs mt-1">Updated just now</p>
           </div>
-          <div className="flex justify-between">
-            <button className="flex flex-col items-center">
-              <div className="bg-blue-100 p-2 rounded-full mb-1">
-                <Send size={20} className="text-blue-600" />
-              </div>
-              <span className="text-xs">Send</span>
-            </button>
-            <button className="flex flex-col items-center">
-              <div className="bg-blue-100 p-2 rounded-full mb-1">
-                <CreditCard size={20} className="text-blue-600" />
-              </div>
-              <span className="text-xs">Pay</span>
-            </button>
-            <button className="flex flex-col items-center">
-              <div className="bg-blue-100 p-2 rounded-full mb-1">
-                <History size={20} className="text-blue-600" />
-              </div>
-              <span className="text-xs">History</span>
-            </button>
-            <button className="flex flex-col items-center">
-              <div className="bg-blue-100 p-2 rounded-full mb-1">
-                <Smartphone size={20} className="text-blue-600" />
-              </div>
-              <span className="text-xs">Recharge</span>
-            </button>
+          <div className="grid grid-cols-4 gap-2">
+            <ActionButton icon={<Plus />} label="Add" />
+            <ActionButton icon={<Send />} label="Send" />
+            <ActionButton icon={<CreditCard />} label="Pay" />
+            <ActionButton icon={<History />} label="History" />
           </div>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white mt-4 p-4">
-        <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
+      <div className="bg-white mt-6 mx-4 rounded-xl shadow-sm p-5">
+        <h2 className="text-base font-semibold text-gray-800 mb-4">Quick Services</h2>
         <div className="grid grid-cols-4 gap-4">
           <QuickAction icon={<Banknote />} title="Bills" />
           <QuickAction icon={<Smartphone />} title="Mobile" />
@@ -79,10 +68,10 @@ const WalletPage = () => {
       </div>
 
       {/* Recent Transactions */}
-      <div className="bg-white mt-4 p-4 flex-grow">
+      <div className="bg-white mt-6 mx-4 rounded-xl shadow-sm p-5 flex-grow mb-20">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Recent Transactions</h2>
-          <button className="text-blue-600 text-sm flex items-center">
+          <h2 className="text-base font-semibold text-gray-800">Recent Transactions</h2>
+          <button className="text-indigo-600 text-sm flex items-center font-medium">
             View All <ChevronRight size={16} />
           </button>
         </div>
@@ -95,18 +84,18 @@ const WalletPage = () => {
       </div>
 
       {/* Commission Disclaimer */}
-      <div className="bg-red-50 p-4">
-        <p className="text-red-600 text-sm font-medium text-center">
+      <div className="bg-amber-50 mx-4 mb-6 rounded-lg p-4 border border-amber-200">
+        <p className="text-amber-700 text-sm font-medium text-center">
           If loan is not approved then commission is not granted. Commission will be added in a wallet after 15 days of disbursement date.
         </p>
       </div>
 
       {/* Bottom Navigation */}
-      <div className="bg-white shadow-md">
-        <div className="flex justify-around p-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-100">
+        <div className="flex justify-around p-3 max-w-md mx-auto">
           <BottomNavItem icon={<WalletIcon />} title="Wallet" active />
           <BottomNavItem icon={<Send />} title="Transfer" />
-          <BottomNavItem icon={<CreditCard />} title="Pay" />
+          <BottomNavItem icon={<Plus size={20} />} isMain />
           <BottomNavItem icon={<History />} title="History" />
           <BottomNavItem icon={<Settings />} title="More" />
         </div>
@@ -115,13 +104,24 @@ const WalletPage = () => {
   );
 };
 
+const ActionButton = ({ icon, label }) => {
+  return (
+    <button className="flex flex-col items-center bg-white/10 rounded-lg py-2 hover:bg-white/20 transition-colors">
+      <div className="mb-1">
+        {icon}
+      </div>
+      <span className="text-xs">{label}</span>
+    </button>
+  );
+};
+
 const QuickAction = ({ icon, title }) => {
   return (
     <button className="flex flex-col items-center">
-      <div className="bg-blue-50 p-3 rounded-full mb-2">
-        <div className="text-blue-600">{icon}</div>
+      <div className="bg-indigo-50 p-3 rounded-xl mb-2">
+        <div className="text-indigo-600">{icon}</div>
       </div>
-      <span className="text-xs">{title}</span>
+      <span className="text-xs font-medium text-gray-700">{title}</span>
     </button>
   );
 };
@@ -130,34 +130,44 @@ const TransactionItem = ({ transaction }) => {
   const isCredit = transaction.type === 'credit';
   
   return (
-    <div className="flex items-center justify-between border-b pb-3">
+    <div className="flex items-center justify-between py-3 border-b border-gray-100">
       <div className="flex items-center">
-        <div className={`p-2 rounded-full mr-3 ${isCredit ? 'bg-green-100' : 'bg-red-100'}`}>
+        <div className={`p-2 rounded-full mr-3 ${isCredit ? 'bg-emerald-100' : 'bg-rose-100'}`}>
           {isCredit ? (
-            <Plus size={16} className="text-green-600" />
+            <ArrowDown size={16} className="text-emerald-600" />
           ) : (
-            <CreditCard size={16} className="text-red-600" />
+            <ArrowUp size={16} className="text-rose-600" />
           )}
         </div>
         <div>
-          <h3 className="font-medium">{transaction.description}</h3>
+          <h3 className="font-medium text-gray-800">{transaction.description}</h3>
           <p className="text-xs text-gray-500">{transaction.date} • {transaction.time}</p>
         </div>
       </div>
-      <div className={`font-semibold ${isCredit ? 'text-green-600' : 'text-red-600'}`}>
+      <div className={`font-semibold ${isCredit ? 'text-emerald-600' : 'text-rose-600'}`}>
         {isCredit ? '+' : '-'}₹{transaction.amount}
       </div>
     </div>
   );
 };
 
-const BottomNavItem = ({ icon, title, active = false }) => {
+const BottomNavItem = ({ icon, title, active = false, isMain = false }) => {
+  if (isMain) {
+    return (
+      <button className="flex items-center justify-center">
+        <div className="bg-indigo-600 rounded-full p-3 text-white -mt-6 shadow-lg">
+          {icon}
+        </div>
+      </button>
+    );
+  }
+  
   return (
     <button className="flex flex-col items-center">
-      <div className={active ? 'text-blue-600' : 'text-gray-500'}>
+      <div className={active ? 'text-indigo-600' : 'text-gray-500'}>
         {icon}
       </div>
-      <span className={`text-xs mt-1 ${active ? 'text-blue-600 font-medium' : 'text-gray-500'}`}>
+      <span className={`text-xs mt-1 ${active ? 'text-indigo-600 font-medium' : 'text-gray-500'}`}>
         {title}
       </span>
     </button>
