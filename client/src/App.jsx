@@ -14,7 +14,6 @@ import Login from "./pages/auth/Login.jsx";
 import Signup from "./pages/auth/SignUp";
 import LoginAgent from "./pages/auth/LoginAgent";
 import B2BSignup from "./pages/auth/B2BSignup";
-import UserInput from "./pages/auth/UserInput";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
 
@@ -63,6 +62,7 @@ import PaymentHistory from "./pages/auth/PaymentHistory.jsx";
 import WalletPage from "./pages/auth/Wallet.jsx";
 
 import MyProfile from "./myProfile/MyProfile.jsx";
+import { ThemeProvider } from "./contexts/ThemeContext.jsx";
 
 // Protected Route Component
 const ProtectedRoute = ({
@@ -95,6 +95,7 @@ const ProtectedRoute = ({
 function App() {
   return (
     <Router>
+      <ThemeProvider>
       <AuthProvider>
         <Layout>
           <Routes>
@@ -106,7 +107,6 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/LoginAgent" element={<LoginAgent />} />
             <Route path="/B2BSignup" element={<B2BSignup />} />
-            <Route path="/userinput" element={<UserInput />} />
             <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/business-login" element={<BusinessLogin />} />
             {/* user forgot password */}
@@ -344,6 +344,7 @@ function App() {
           </Routes>
         </Layout>
       </AuthProvider>
+      </ThemeProvider>
     </Router>
   );
 }

@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import ServicesDropdown from "./ServicesDropdown";
 
 export default function Navbar() {
@@ -8,27 +9,55 @@ export default function Navbar() {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const { user, logout } = useAuth();
+  const { isDarkMode, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
+  const dropdownRef = useRef(null);
 
   const NavLinks = [
-    { name: "Business", path: "/services/b2b-systems" },
-    { name: "About Us", path: "/aboutus" },
-    { name: "Careers", path: "/careers" },
+    { name: "Business", path: "/services/b2b-systems", icon: "far fa-building" },
+    { name: "About Us", path: "/aboutus", icon: "far fa-address-card" },
+    { name: "Careers", path: "/careers", icon: "far fa-briefcase" },
   ];
 
-  // Handle scroll effect
+  // Handle scroll effect with throttling
   useEffect(() => {
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+
     const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
+      lastScrollY = window.scrollY;
+      
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrolled(lastScrollY > 20);
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setActiveDropdown(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Close dropdown when route changes
+  useEffect(() => {
+    setMenuOpen(false);
+    setActiveDropdown(null);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -49,38 +78,52 @@ export default function Navbar() {
   // Get user's initials for avatar
   const getInitials = (name) => {
     if (!name) return "";
-    return name.split(" ")[0][0].toUpperCase();
+    const nameParts = name.split(" ");
+    if (nameParts.length > 1) {
+      return (nameParts[0][0] + nameParts[1][0]).toUpperCase();
+    }
+    return nameParts[0][0].toUpperCase();
+  };
+
+  const isActive = (path) => {
+    return location.pathname === path;
   };
 
   return (
     <nav 
-      className={`fixed w-full z-50 top-0 transition-all duration-300 ${
+      className={`fixed w-full z-50 top-0 transition-all duration-500 ${
         scrolled 
-          ? "bg-opacity-95 backdrop-blur-md bg-blue-900" 
-          : "bg-indigo-900 backdrop-blur-sm"
+          ? "bg-gradient-to-r from-blue-950 to-indigo-950 bg-opacity-85 backdrop-blur-lg shadow-lg shadow-blue-900/20 h-16" 
+          : "bg-gradient-to-r from-blue-900 to-indigo-900 h-20"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+        <div className="flex justify-between items-center h-full">
           {/* Logo */}
-          <div className="flex-shrink-0">
-            <Link to="/" className="inline-block">
+          <div className="flex-shrink-0 flex items-center">
+            <Link to="/" className="inline-flex items-center">
               <img 
                 src="/logo2.png" 
                 alt="Logo" 
-                className="h-12 w-auto filter drop-shadow-lg" 
+                className={`transition-all duration-500 ${scrolled ? 'h-8' : 'h-12'} w-auto filter drop-shadow-lg`} 
               />
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
+          <div className="hidden lg:flex items-center space-x-8">
             <div className="group relative">
-              <button className="text-white hover:text-blue-200 transition-colors duration-300 group-hover:text-blue-200">
-                Services
+              <button className="text-white group-hover:text-blue-200 transition-colors duration-300 flex items-center font-medium">
+                <span className="relative z-10">Services</span>
+                <svg className="w-4 h-4 ml-1 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 group-hover:w-full transition-all duration-300"></span>
               </button>
-              <div className="absolute hidden group-hover:block top-full left-0 bg-blue-900 bg-opacity-90 backdrop-blur-md rounded-lg shadow-2xl p-4 w-64 mt-2 transition-all duration-300 border border-blue-500">
-                <ServicesDropdown />
+              <div className="absolute hidden group-hover:block top-full left-0 bg-gradient-to-b from-blue-900 to-indigo-900 bg-opacity-95 backdrop-blur-md rounded-xl shadow-2xl p-4 w-72 mt-2 transition-all duration-300 border border-blue-700/30 transform origin-top scale-95 group-hover:scale-100 opacity-0 group-hover:opacity-100">
+                <div className="p-2">
+                  <ServicesDropdown />
+                </div>
               </div>
             </div>
 
@@ -88,37 +131,65 @@ export default function Navbar() {
               <Link
                 key={link.path}
                 to={link.path}
-                className="text-white hover:text-blue-200 transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-300 after:transition-all hover:after:w-full"
+                className={`text-white hover:text-blue-200 transition-colors duration-300 relative font-medium flex items-center ${isActive(link.path) ? 'text-blue-200' : ''}`}
               >
-                {link.name}
+                <span className="relative z-10">{link.name}</span>
+                <span className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 transition-all duration-300 ${isActive(link.path) ? 'w-full' : 'w-0'}`}></span>
               </Link>
             ))}
 
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="relative group p-2 rounded-lg bg-blue-800/40 hover:bg-blue-700/60 transition-all duration-300 focus:outline-none"
+              aria-label="Toggle theme"
+            >
+              {isDarkMode ? (
+                <svg className="w-5 h-5 text-yellow-300 transform transition-transform duration-300 group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-blue-200 transform transition-transform duration-300 group-hover:-rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              )}
+              <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </button>
+
             {/* Show either login/signup buttons or user profile */}
             {!user ? (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-4" ref={dropdownRef}>
                 {/* Login Button */}
                 <div className="relative">
                   <button
                     onClick={() => toggleDropdown("login")}
-                    className="bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 border border-blue-500 shadow-md hover:shadow-blue-500/50"
+                    className="bg-blue-800 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 border border-blue-600/30 shadow-md hover:shadow-blue-500/30 flex items-center space-x-2"
                   >
-                    Login
+                    <span>Login</span>
+                    <svg className={`w-4 h-4 transition-transform duration-300 ${activeDropdown === "login" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
                   </button>
 
                   {activeDropdown === "login" && (
-                    <div className="absolute top-full mt-2 right-0 bg-blue-900 bg-opacity-90 backdrop-blur-md rounded-lg shadow-2xl border border-blue-500 w-48 z-50 overflow-hidden">
+                    <div className="absolute top-full mt-2 right-0 bg-gradient-to-b from-blue-900 to-indigo-900 bg-opacity-95 backdrop-blur-md rounded-lg shadow-2xl border border-blue-700/30 w-52 z-50 overflow-hidden transform origin-top animate-dropdown">
                       <div className="p-1">
                         <button
                           onClick={() => handleNavigation("/login")}
-                          className="block w-full text-left px-4 py-3 text-white hover:bg-blue-700 rounded transition-colors duration-200"
+                          className="w-full text-left px-4 py-3 text-white hover:bg-blue-700/50 rounded transition-colors duration-200 flex items-center"
                         >
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                          </svg>
                           Customer Login
                         </button>
                         <button
                           onClick={() => handleNavigation("/LoginAgent")}
-                          className="block w-full text-left px-4 py-3 text-white hover:bg-blue-700 rounded transition-colors duration-200"
+                          className="w-full text-left px-4 py-3 text-white hover:bg-blue-700/50 rounded transition-colors duration-200 flex items-center"
                         >
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                          </svg>
                           Agent Login
                         </button>
                       </div>
@@ -130,24 +201,33 @@ export default function Navbar() {
                 <div className="relative">
                   <button
                     onClick={() => toggleDropdown("signup")}
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-5 py-2 rounded-full font-medium transition-all duration-300 shadow-md hover:shadow-blue-500/50"
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2 rounded-lg font-medium transition-all duration-300 shadow-md hover:shadow-blue-500/30 flex items-center space-x-2 border border-indigo-500/30"
                   >
-                    Sign Up
+                    <span>Sign Up</span>
+                    <svg className={`w-4 h-4 transition-transform duration-300 ${activeDropdown === "signup" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
                   </button>
 
                   {activeDropdown === "signup" && (
-                    <div className="absolute top-full mt-2 right-0 bg-blue-900 bg-opacity-90 backdrop-blur-md rounded-lg shadow-2xl border border-blue-500 w-48 z-50 overflow-hidden">
+                    <div className="absolute top-full mt-2 right-0 bg-gradient-to-b from-blue-900 to-indigo-900 bg-opacity-95 backdrop-blur-md rounded-lg shadow-2xl border border-blue-700/30 w-52 z-50 overflow-hidden transform origin-top animate-dropdown">
                       <div className="p-1">
                         <button
                           onClick={() => handleNavigation("/signup")}
-                          className="block w-full text-left px-4 py-3 text-white hover:bg-blue-700 rounded transition-colors duration-200"
+                          className="w-full text-left px-4 py-3 text-white hover:bg-blue-700/50 rounded transition-colors duration-200 flex items-center"
                         >
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                          </svg>
                           Customer Signup
                         </button>
                         <button
                           onClick={() => handleNavigation("/B2BSignup")}
-                          className="block w-full text-left px-4 py-3 text-white hover:bg-blue-700 rounded transition-colors duration-200"
+                          className="w-full text-left px-4 py-3 text-white hover:bg-blue-700/50 rounded transition-colors duration-200 flex items-center"
                         >
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                          </svg>
                           Agent Signup
                         </button>
                       </div>
@@ -157,61 +237,94 @@ export default function Navbar() {
               </div>
             ) : (
               /* User Profile */
-              <div className="relative">
+              <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => toggleDropdown("profile")}
-                  className="flex items-center space-x-2 focus:outline-none"
+                  className="flex items-center space-x-3 focus:outline-none group"
                   aria-label="User profile"
                 >
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold shadow-md relative overflow-hidden border-2 border-blue-300">
-                    <span className="relative z-10">{getInitials(user.name)}</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 opacity-80 animate-pulse"></div>
+                  <div className="flex flex-col items-end mr-2">
+                    <span className="text-white text-sm font-medium">Welcome back</span>
+                    <span className="text-blue-200 text-xs">{user.name}</span>
                   </div>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold shadow-md relative overflow-hidden border-2 border-blue-400 group-hover:border-blue-300 transition-all duration-300">
+                    <span className="relative z-10">{getInitials(user.name)}</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-500 opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
+                  <svg className={`w-4 h-4 text-blue-200 transition-transform duration-300 ml-1 ${activeDropdown === "profile" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
                 </button>
 
                 {activeDropdown === "profile" && (
-                  <div className="absolute top-full right-0 mt-2 w-56 rounded-lg shadow-2xl bg-blue-900 bg-opacity-90 backdrop-blur-md border border-blue-500 overflow-hidden">
+                  <div className="absolute top-full right-0 mt-2 w-64 rounded-xl shadow-2xl bg-gradient-to-b from-blue-900 to-indigo-900 bg-opacity-95 backdrop-blur-md border border-blue-700/30 overflow-hidden transform origin-top animate-dropdown">
                     <div className="py-2">
-                      <div className="px-4 py-3 border-b border-blue-700">
-                        <p className="font-medium text-white">{user.name}</p>
-                        <p className="text-blue-200 text-xs">{user.email}</p>
+                      <div className="px-4 py-3 border-b border-blue-700/50 flex items-center space-x-3">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold shadow-md">
+                          <span className="relative z-10">{getInitials(user.name)}</span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-white">{user.name}</p>
+                          <p className="text-blue-200 text-xs">{user.email}</p>
+                        </div>
                       </div>
+                      
                       <Link
                         to="/my-profile"
-                        className="block px-4 py-2 text-sm text-white hover:bg-blue-700 transition-colors duration-200"
+                        className="px-4 py-2 text-sm text-white hover:bg-blue-700/50 transition-colors duration-200 flex items-center"
                       >
+                        <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
                         My Profile
                       </Link>
                       <Link
                         to="/refer-earn"
-                        className="block px-4 py-2 text-sm text-white hover:bg-blue-700 transition-colors duration-200"
+                        className="px-4 py-2 text-sm text-white hover:bg-blue-700/50 transition-colors duration-200 flex items-center"
                       >
+                        <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
                         Refer & Earn
                       </Link>
                       <Link
                         to="/reedem"
-                        className="block px-4 py-2 text-sm text-white hover:bg-blue-700 transition-colors duration-200"
+                        className="px-4 py-2 text-sm text-white hover:bg-blue-700/50 transition-colors duration-200 flex items-center"
                       >
+                        <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
+                        </svg>
                         Redeem Voucher
                       </Link>
                       <Link
                         to="/payment-history"
-                        className="block px-4 py-2 text-sm text-white hover:bg-blue-700 transition-colors duration-200"
+                        className="px-4 py-2 text-sm text-white hover:bg-blue-700/50 transition-colors duration-200 flex items-center"
                       >
+                        <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
                         Payment History
                       </Link>
                       <Link
                         to="/wallet"
-                        className="block px-4 py-2 text-sm text-white hover:bg-blue-700 transition-colors duration-200"
+                        className="px-4 py-2 text-sm text-white hover:bg-blue-700/50 transition-colors duration-200 flex items-center"
                       >
+                        <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
                         Wallet
                       </Link>
-                      <button
-                        onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-sm text-red-300 hover:bg-blue-700 transition-colors duration-200"
-                      >
-                        Sign out
-                      </button>
+                      <div className="border-t border-blue-700/50 mt-1 pt-1">
+                        <button
+                          onClick={handleLogout}
+                          className="w-full text-left px-4 py-2 text-sm text-red-300 hover:bg-blue-700/50 transition-colors duration-200 flex items-center"
+                        >
+                          <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                          </svg>
+                          Sign out
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -220,16 +333,16 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Menu Toggle */}
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label={menuOpen ? "Close menu" : "Open menu"}
-              className="focus:outline-none text-white"
+              className="focus:outline-none text-white group"
             >
               <div className="w-8 flex flex-col items-end space-y-1.5">
-                <span className={`block h-0.5 bg-white rounded transition-all duration-300 ${menuOpen ? 'w-8 transform rotate-45 translate-y-2' : 'w-8'}`}></span>
-                <span className={`block h-0.5 bg-white rounded transition-all duration-300 ${menuOpen ? 'opacity-0' : 'w-6'}`}></span>
-                <span className={`block h-0.5 bg-white rounded transition-all duration-300 ${menuOpen ? 'w-8 transform -rotate-45 -translate-y-2' : 'w-4'}`}></span>
+                <span className={`block h-0.5 bg-gradient-to-r from-blue-400 to-indigo-400 rounded transition-all duration-300 ${menuOpen ? 'w-8 transform rotate-45 translate-y-2' : 'w-8 group-hover:w-6'}`}></span>
+                <span className={`block h-0.5 bg-gradient-to-r from-blue-400 to-indigo-400 rounded transition-all duration-300 ${menuOpen ? 'opacity-0' : 'w-6 group-hover:w-8'}`}></span>
+                <span className={`block h-0.5 bg-gradient-to-r from-blue-400 to-indigo-400 rounded transition-all duration-300 ${menuOpen ? 'w-8 transform -rotate-45 -translate-y-2' : 'w-4 group-hover:w-6'}`}></span>
               </div>
             </button>
           </div>
@@ -238,90 +351,235 @@ export default function Navbar() {
 
       {/* Mobile Menu Overlay */}
       {menuOpen && (
-        <div className="fixed inset-0 bg-blue-900 bg-opacity-95 backdrop-blur-md z-40 md:hidden">
-          <div className="px-4 pt-24 pb-8 space-y-8 flex flex-col items-center h-full">
-            <div className="text-xl font-medium text-white mb-6">Services</div>
-            <ServicesDropdown />
-
-            {NavLinks.map((link) => (
+        <div className="fixed inset-0 bg-gradient-to-br from-blue-900 to-indigo-950 bg-opacity-98 backdrop-blur-md z-40 lg:hidden">
+          <div className="px-4 pt-24 pb-8 flex flex-col h-full overflow-y-auto">
+            {/* Theme Toggle - Mobile */}
+            <div className="mb-8 px-4">
               <button
-                key={link.path}
-                onClick={() => handleNavigation(link.path)}
-                className="text-xl text-white hover:text-blue-200 transition-colors duration-300"
+                onClick={toggleTheme}
+                className="w-full bg-blue-800/30 border border-blue-700/30 rounded-lg py-3 px-4 text-white flex items-center justify-between group hover:bg-blue-700/40 transition-all duration-300"
               >
-                {link.name}
+                <div className="flex items-center">
+                  {isDarkMode ? (
+                    <svg className="w-5 h-5 text-yellow-300 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 text-blue-200 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                  )}
+                  <span className="text-lg">
+                    {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+                  </span>
+                </div>
+                <div className="w-12 h-6 bg-blue-900/50 rounded-full p-1 duration-300 ease-in-out">
+                  <div className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${isDarkMode ? 'translate-x-6 bg-yellow-300' : ''}`} />
+                </div>
               </button>
-            ))}
+            </div>
 
-            {/* Mobile User Profile or Login/Signup */}
-            {user ? (
-              <div className="flex flex-col items-center space-y-6 mt-6">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-3xl text-white font-semibold relative overflow-hidden">
-                  <span className="relative z-10">{getInitials(user.name)}</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 opacity-80 animate-pulse"></div>
+            {/* Mobile Search */}
+            <div className="mb-8 px-4">
+              <div className="relative">
+                <input 
+                  type="text" 
+                  placeholder="Search..." 
+                  className="w-full bg-blue-800/30 border border-blue-700/30 rounded-lg py-3 px-4 pl-10 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <svg className="w-5 h-5 text-blue-300 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+              </div>
+            </div>
+
+            <div className="text-lg font-medium text-white mb-4 px-4 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7"></path>
+              </svg>
+              Services
+            </div>
+            <div className="bg-blue-800/20 rounded-xl mb-6 p-4">
+              <ServicesDropdown />
+            </div>
+
+            {/* Navigation Links - Mobile */}
+            <div className="space-y-4 mb-8">
+              {NavLinks.map((link) => (
+                <button
+                  key={link.path}
+                  onClick={() => handleNavigation(link.path)}
+                  className={`w-full flex items-center text-white py-3 px-4 rounded-lg text-lg font-medium ${
+                    isActive(link.path) 
+                      ? 'bg-gradient-to-r from-blue-600/40 to-indigo-600/40 border border-blue-500/30' 
+                      : 'hover:bg-blue-800/30'
+                  }`}
+                >
+                  <i className={`${link.icon} mr-3`}></i>
+                  <span>{link.name}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Profile or Login Options - Mobile */}
+            {!user ? (
+              <div className="space-y-4 px-4">
+                <div className="text-lg font-medium text-white mb-4 flex items-center">
+                  <svg className="w-5 h-5 mr-2 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                  </svg>
+                  Account
                 </div>
-                <p className="text-xl font-medium text-white">{user.name}</p>
-                
-                <div className="flex flex-col space-y-3 w-full max-w-xs">
-                  <Link to="/my-profile" className="bg-blue-800 hover:bg-blue-700 text-white py-3 px-6 rounded-lg text-center">
-                    My Profile
-                  </Link>
-                  <Link to="/wallet" className="bg-blue-800 hover:bg-blue-700 text-white py-3 px-6 rounded-lg text-center">
-                    Wallet
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-lg text-center"
-                  >
-                    Sign out
-                  </button>
-                </div>
+                <button
+                  onClick={() => handleNavigation("/login")}
+                  className="w-full bg-blue-800/30 border border-blue-700/30 rounded-lg py-3 px-4 text-white text-left flex items-center justify-between hover:bg-blue-700/40 transition-all duration-300"
+                >
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 mr-3 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                    </svg>
+                    <span className="text-lg">Customer Login</span>
+                  </div>
+                  <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </button>
+                <button
+                  onClick={() => handleNavigation("/LoginAgent")}
+                  className="w-full bg-blue-800/30 border border-blue-700/30 rounded-lg py-3 px-4 text-white text-left flex items-center justify-between hover:bg-blue-700/40 transition-all duration-300"
+                >
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 mr-3 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    <span className="text-lg">Agent Login</span>
+                  </div>
+                  <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </button>
+                <button
+                  onClick={() => handleNavigation("/signup")}
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg py-3 px-4 text-white text-center font-medium text-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-md shadow-blue-700/20"
+                >
+                  Sign Up
+                </button>
               </div>
             ) : (
-              <div className="flex flex-col items-center space-y-6 mt-6">
-                <div className="flex flex-col items-center space-y-3 w-full max-w-xs">
+              <div className="space-y-4 px-4">
+                {/* User Profile - Mobile */}
+                <div className="bg-blue-800/30 border border-blue-700/30 rounded-lg p-4 mb-6">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xl font-semibold shadow-md">
+                      {getInitials(user.name)}
+                    </div>
+                    <div>
+                      <h3 className="text-white text-lg font-medium">{user.name}</h3>
+                      <p className="text-blue-200 text-sm">{user.email}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* User Navigation - Mobile */}
+                <div className="space-y-2">
                   <button
-                    onClick={() => handleNavigation("/login")}
-                    className="w-full bg-blue-700 hover:bg-blue-600 text-white py-3 px-6 rounded-lg text-center"
+                    onClick={() => handleNavigation("/my-profile")}
+                    className="w-full bg-blue-800/30 border border-blue-700/30 rounded-lg py-3 px-4 text-white text-left flex items-center justify-between hover:bg-blue-700/40 transition-all duration-300"
                   >
-                    Customer Login
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-3 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                      </svg>
+                      <span className="text-lg">My Profile</span>
+                    </div>
+                    <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
                   </button>
                   <button
-                    onClick={() => handleNavigation("/LoginAgent")}
-                    className="w-full bg-blue-700 hover:bg-blue-600 text-white py-3 px-6 rounded-lg text-center"
+                    onClick={() => handleNavigation("/refer-earn")}
+                    className="w-full bg-blue-800/30 border border-blue-700/30 rounded-lg py-3 px-4 text-white text-left flex items-center justify-between hover:bg-blue-700/40 transition-all duration-300"
                   >
-                    Agent Login
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-3 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                      </svg>
+                      <span className="text-lg">Refer & Earn</span>
+                    </div>
+                    <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handleNavigation("/reedem")}
+                    className="w-full bg-blue-800/30 border border-blue-700/30 rounded-lg py-3 px-4 text-white text-left flex items-center justify-between hover:bg-blue-700/40 transition-all duration-300"
+                  >
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-3 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
+                      </svg>
+                      <span className="text-lg">Redeem Voucher</span>
+                    </div>
+                    <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handleNavigation("/payment-history")}
+                    className="w-full bg-blue-800/30 border border-blue-700/30 rounded-lg py-3 px-4 text-white text-left flex items-center justify-between hover:bg-blue-700/40 transition-all duration-300"
+                  >
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-3 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      <span className="text-lg">Payment History</span>
+                    </div>
+                    <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handleNavigation("/wallet")}
+                    className="w-full bg-blue-800/30 border border-blue-700/30 rounded-lg py-3 px-4 text-white text-left flex items-center justify-between hover:bg-blue-700/40 transition-all duration-300"
+                  >
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-3 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                      </svg>
+                      <span className="text-lg">Wallet</span>
+                    </div>
+                    <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
                   </button>
                 </div>
 
-                <div className="flex flex-col items-center space-y-3 w-full max-w-xs">
+                {/* Sign Out - Mobile */}
+                <div className="pt-4 border-t border-blue-700/30 mt-4">
                   <button
-                    onClick={() => handleNavigation("/signup")}
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 px-6 rounded-lg text-center"
+                    onClick={handleLogout}
+                    className="w-full bg-blue-800/30 border border-blue-700/30 rounded-lg py-3 px-4 text-red-300 text-left flex items-center hover:bg-blue-700/40 transition-all duration-300"
                   >
-                    Customer Signup
-                  </button>
-                  <button
-                    onClick={() => handleNavigation("/B2BSignup")}
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 px-6 rounded-lg text-center"
-                  >
-                    Agent Signup
+                    <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    <span className="text-lg">Sign out</span>
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Close Menu Button */}
-            <button
-              onClick={() => setMenuOpen(false)}
-              className="absolute top-6 right-6 text-white hover:text-gray-200"
-              aria-label="Close menu"
-            >
-              <div className="w-8 flex flex-col items-end space-y-1.5">
-                <span className="block h-0.5 w-8 bg-white rounded transform rotate-45"></span>
-                <span className="block h-0.5 w-8 bg-white rounded transform -rotate-45 -translate-y-2"></span>
-              </div>
-            </button>
+            {/* Close Button - Mobile */}
+            <div className="absolute top-6 right-6">
+              <button
+                onClick={() => setMenuOpen(false)}
+                className="h-10 w-10 rounded-full bg-blue-800/40 flex items-center justify-center text-white hover:bg-blue-700/60 transition-colors duration-300 focus:outline-none"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       )}

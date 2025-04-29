@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "../../contexts/ThemeContext";
 
 function MyApplication() {
   const navigate = useNavigate();
+  const { isDarkMode } = useTheme();
   const [documents, setDocuments] = useState([]);
   const applicationId = localStorage.getItem("applicationId");
 
@@ -12,12 +14,10 @@ function MyApplication() {
       navigate("/login");
       return;
     }
-    
     if (!applicationId) {
       navigate("/UserBasicData");
       return;
     }
-    
     // Get documents from localStorage
     const savedDocs = localStorage.getItem(`documents_${applicationId}`);
     if (savedDocs) {
@@ -34,14 +34,33 @@ function MyApplication() {
     return doc ? doc.file_data : null;
   };
 
+  // Theme-based classes
+  const bgMain = isDarkMode ? "bg-slate-800" : "bg-gray-100";
+  const cardBg = isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-gray-100";
+  const cardShadow = "shadow-xl";
+  const titleText = isDarkMode ? "text-blue-300" : "text-blue-700";
+  const sectionTitle = isDarkMode ? "text-slate-100" : "text-gray-800";
+  const descText = isDarkMode ? "text-slate-400" : "text-gray-600";
+  const tableHeaderBg = isDarkMode ? "bg-slate-900 text-slate-200" : "bg-gray-50 text-gray-700";
+  const tableBorder = isDarkMode ? "border-slate-700" : "border-gray-200";
+  const tableRowBg = isDarkMode ? "bg-slate-800" : "";
+  const tableText = isDarkMode ? "text-slate-200" : "text-gray-800";
+  const emptyText = isDarkMode ? "text-slate-500" : "text-gray-500";
+  const statusUploaded = isDarkMode ? "text-green-400" : "text-green-600";
+  const statusNotUploaded = isDarkMode ? "text-red-400" : "text-red-600";
+  const statusOptional = isDarkMode ? "text-yellow-400" : "text-yellow-600";
+  const btnBg = isDarkMode ? "bg-blue-700 hover:bg-blue-800" : "bg-blue-600 hover:bg-blue-700";
+  const btnText = "text-white";
+
   return (
-    <div className="p-8 max-w-4xl mx-auto bg-white shadow-xl rounded-2xl mt-16 mb-16 border border-gray-100">
+    <div className={`${bgMain} min-h-screen py-12`}>
+    <div className={`p-8 max-w-4xl mx-auto ${cardBg} ${cardShadow} mt-16 mb-16 rounded-2xl border ${bgMain}`}>
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 mb-4">
+        <h2 className={`text-3xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 mb-4 ${titleText}`}>
           My Application
         </h2>
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <p className="text-gray-600">
+        <div className={`${isDarkMode ? "bg-slate-900" : "bg-blue-50"} p-4 rounded-lg`}>
+          <p className={descText}>
             <span className="font-semibold">Application ID:</span> {applicationId}
           </p>
         </div>
@@ -49,32 +68,30 @@ function MyApplication() {
 
       {/* Documents Section */}
       <div>
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">Uploaded Documents</h3>
-        
+        <h3 className={`text-xl font-semibold mb-4 ${sectionTitle}`}>Uploaded Documents</h3>
         <div className="space-y-4">
           {/* Document List */}
-          <div className="border border-gray-200 rounded-lg overflow-hidden">
-            <div className="grid grid-cols-12 bg-gray-50 py-3 px-4 text-sm font-medium text-gray-700">
+          <div className={`border rounded-lg overflow-hidden ${tableBorder}`}>
+            <div className={`grid grid-cols-12 py-3 px-4 text-sm font-medium ${tableHeaderBg}`}>
               <div className="col-span-1">#</div>
               <div className="col-span-3">Document Type</div>
               <div className="col-span-2">Document Number</div>
               <div className="col-span-4">Preview</div>
               <div className="col-span-2 text-right">Actions</div>
             </div>
-            
             {documents.length > 0 ? (
               documents.map((doc, index) => (
-                <div key={doc.id || index} className="grid grid-cols-12 py-4 px-4 border-t border-gray-200 items-center">
-                  <div className="col-span-1 font-medium text-gray-800">{index + 1}</div>
+                <div key={doc.id || index} className={`grid grid-cols-12 py-4 px-4 border-t items-center ${tableBorder} ${tableRowBg}`}>
+                  <div className={`col-span-1 font-medium ${tableText}`}>{index + 1}</div>
                   <div className="col-span-3">
                     <div className="flex items-center">
                       <svg className="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
-                      <span>{doc.doc_type}</span>
+                      <span className={tableText}>{doc.doc_type}</span>
                     </div>
                   </div>
-                  <div className="col-span-2 font-mono text-sm">
+                  <div className={`col-span-2 font-mono text-sm ${tableText}`}>
                     {doc.doc_no !== 'NA' ? doc.doc_no : '-'}
                   </div>
                   <div className="col-span-4">
@@ -89,7 +106,7 @@ function MyApplication() {
                   <div className="col-span-2 text-right">
                     <button 
                       onClick={() => navigate('/UserDocuments')}
-                      className="text-indigo-600 hover:text-indigo-800 hover:underline"
+                      className="text-indigo-400 hover:text-indigo-200 hover:underline"
                     >
                       Replace
                     </button>
@@ -97,11 +114,11 @@ function MyApplication() {
                 </div>
               ))
             ) : (
-              <div className="py-8 text-center text-gray-500">
+              <div className={`py-8 text-center ${emptyText}`}>
                 No documents have been uploaded yet. 
                 <button 
                   onClick={() => navigate('/UserDocuments')} 
-                  className="text-blue-600 hover:underline ml-1"
+                  className="text-blue-400 hover:underline ml-1"
                 >
                   Upload documents
                 </button>
@@ -113,9 +130,9 @@ function MyApplication() {
         {/* Document Status Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
           {/* PAN Card Status */}
-          <div className={`p-4 rounded-lg border ${getDocumentStatus('PAN CARD') ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+          <div className={`p-4 rounded-lg border ${getDocumentStatus('PAN CARD') ? 'bg-green-50 border-green-200' : isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-red-50 border-red-200'}`}>
             <div className="flex items-center mb-2">
-              <span className={`flex items-center justify-center w-8 h-8 rounded-full ${getDocumentStatus('PAN CARD') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              <span className={`flex items-center justify-center w-8 h-8 rounded-full ${getDocumentStatus('PAN CARD') ? 'bg-green-100 text-green-800' : isDarkMode ? 'bg-slate-800 text-red-400' : 'bg-red-100 text-red-800'}`}>
                 {getDocumentStatus('PAN CARD') ? (
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -135,15 +152,15 @@ function MyApplication() {
                 className="w-full h-20 object-cover rounded mt-2"
               />
             )}
-            <p className={`text-sm mt-2 ${getDocumentStatus('PAN CARD') ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`text-sm mt-2 ${getDocumentStatus('PAN CARD') ? statusUploaded : statusNotUploaded}`}>
               {getDocumentStatus('PAN CARD') ? 'Uploaded' : 'Not uploaded'}
             </p>
           </div>
 
           {/* Aadhaar Card Status */}
-          <div className={`p-4 rounded-lg border ${getDocumentStatus('AADHAAR CARD') ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+          <div className={`p-4 rounded-lg border ${getDocumentStatus('AADHAAR CARD') ? 'bg-green-50 border-green-200' : isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-red-50 border-red-200'}`}>
             <div className="flex items-center mb-2">
-              <span className={`flex items-center justify-center w-8 h-8 rounded-full ${getDocumentStatus('AADHAAR CARD') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              <span className={`flex items-center justify-center w-8 h-8 rounded-full ${getDocumentStatus('AADHAAR CARD') ? 'bg-green-100 text-green-800' : isDarkMode ? 'bg-slate-800 text-red-400' : 'bg-red-100 text-red-800'}`}>
                 {getDocumentStatus('AADHAAR CARD') ? (
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -163,15 +180,15 @@ function MyApplication() {
                 className="w-full h-20 object-cover rounded mt-2"
               />
             )}
-            <p className={`text-sm mt-2 ${getDocumentStatus('AADHAAR CARD') ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`text-sm mt-2 ${getDocumentStatus('AADHAAR CARD') ? statusUploaded : statusNotUploaded}`}>
               {getDocumentStatus('AADHAAR CARD') ? 'Uploaded' : 'Not uploaded'}
             </p>
           </div>
 
           {/* Income Proof Status */}
-          <div className={`p-4 rounded-lg border ${getDocumentStatus('INCOME PROOF') ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
+          <div className={`p-4 rounded-lg border ${getDocumentStatus('INCOME PROOF') ? 'bg-green-50 border-green-200' : isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-yellow-50 border-yellow-200'}`}>
             <div className="flex items-center mb-2">
-              <span className={`flex items-center justify-center w-8 h-8 rounded-full ${getDocumentStatus('INCOME PROOF') ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+              <span className={`flex items-center justify-center w-8 h-8 rounded-full ${getDocumentStatus('INCOME PROOF') ? 'bg-green-100 text-green-800' : isDarkMode ? 'bg-slate-800 text-yellow-400' : 'bg-yellow-100 text-yellow-800'}`}>
                 {getDocumentStatus('INCOME PROOF') ? (
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -191,15 +208,15 @@ function MyApplication() {
                 className="w-full h-20 object-cover rounded mt-2"
               />
             )}
-            <p className={`text-sm mt-2 ${getDocumentStatus('INCOME PROOF') ? 'text-green-600' : 'text-yellow-600'}`}>
+            <p className={`text-sm mt-2 ${getDocumentStatus('INCOME PROOF') ? statusUploaded : statusOptional}`}>
               {getDocumentStatus('INCOME PROOF') ? 'Uploaded' : 'Optional'}
             </p>
           </div>
 
           {/* Photograph Status */}
-          <div className={`p-4 rounded-lg border ${getDocumentStatus('PHOTOGRAPH') ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
+          <div className={`p-4 rounded-lg border ${getDocumentStatus('PHOTOGRAPH') ? 'bg-green-50 border-green-200' : isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-yellow-50 border-yellow-200'}`}>
             <div className="flex items-center mb-2">
-              <span className={`flex items-center justify-center w-8 h-8 rounded-full ${getDocumentStatus('PHOTOGRAPH') ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+              <span className={`flex items-center justify-center w-8 h-8 rounded-full ${getDocumentStatus('PHOTOGRAPH') ? 'bg-green-100 text-green-800' : isDarkMode ? 'bg-slate-800 text-yellow-400' : 'bg-yellow-100 text-yellow-800'}`}>
                 {getDocumentStatus('PHOTOGRAPH') ? (
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -219,7 +236,7 @@ function MyApplication() {
                 className="w-full h-20 object-cover rounded mt-2"
               />
             )}
-            <p className={`text-sm mt-2 ${getDocumentStatus('PHOTOGRAPH') ? 'text-green-600' : 'text-yellow-600'}`}>
+            <p className={`text-sm mt-2 ${getDocumentStatus('PHOTOGRAPH') ? statusUploaded : statusOptional}`}>
               {getDocumentStatus('PHOTOGRAPH') ? 'Uploaded' : 'Optional'}
             </p>
           </div>
@@ -230,11 +247,12 @@ function MyApplication() {
       <div className="mt-10 flex justify-center space-x-4">
         <button
           onClick={() => navigate("/UserDocuments")}
-          className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-8 rounded-lg transition-colors duration-200"
+          className={`${btnBg} ${btnText} py-2 px-8 rounded-lg transition-colors duration-200`}
         >
           Upload More Documents
         </button>
       </div>
+    </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useTheme } from "../../contexts/ThemeContext"; // Adjust path as needed
 
 const UserAddress = () => {
   const [error, setError] = useState("");
@@ -8,6 +9,8 @@ const UserAddress = () => {
   const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { isDarkMode } = useTheme();
+
   const [formData, setFormData] = useState({
     ref_code: "OUI202590898",
     application_id: "",
@@ -49,28 +52,21 @@ const UserAddress = () => {
     cost_of_accessories: "",
   });
 
-  // Add this to your existing useEffect or create a new one
   useEffect(() => {
-    // First check for application ID (as you already do)
     let applicationId = "";
     if (location.state?.applicationId) {
       applicationId = location.state.applicationId;
     } else {
       applicationId = localStorage.getItem("applicationId") || "";
     }
-
-    // Then try to load saved form data from localStorage
     const savedFormData = localStorage.getItem(`formData_${applicationId}`);
-
     if (savedFormData) {
-      // Parse the saved data and set it to state
       const parsedData = JSON.parse(savedFormData);
       setFormData({
         ...parsedData,
-        application_id: applicationId, // Ensure application_id is always set correctly
+        application_id: applicationId,
       });
     } else {
-      // If no saved data, just set the application_id
       setFormData((prev) => ({
         ...prev,
         application_id: applicationId,
@@ -78,12 +74,9 @@ const UserAddress = () => {
     }
   }, [location]);
 
-  // Modify your handleChange function
   const handleChange = (e) => {
     const updatedFormData = { ...formData, [e.target.name]: e.target.value };
     setFormData(updatedFormData);
-
-    // Save to localStorage whenever form data changes
     if (updatedFormData.application_id) {
       localStorage.setItem(
         `formData_${updatedFormData.application_id}`,
@@ -92,82 +85,111 @@ const UserAddress = () => {
     }
   };
 
-  // Modify your handleSubmit function to also save before submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-    
-    // Save the current state to localStorage before submitting
     if (formData.application_id) {
       localStorage.setItem(`formData_${formData.application_id}`, JSON.stringify(formData));
     }
-    
     try {
       const res = await axios.post(
         "http://localhost:3001/api/user-address/save-user-address",
         formData
       );
       setSuccess("Submitted successfully");
-      console.log(res.data);
-      // Navigate programmatically after successful submission
       navigate("/UserSecondAddress", {
         state: { applicationId: formData.application_id },
       });
     } catch (err) {
-      console.error(err);
       setError("Error submitting form: " + (err.response?.data?.message || err.message));
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Theme-based classes
+  const containerClass = isDarkMode
+    ? "min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center"
+    : "min-h-screen bg-gradient-to-br from-white to-gray-100 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center";
+
+  const cardClass = isDarkMode
+    ? "max-w-2xl w-full bg-white/10 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl border border-white/20 animate-fadeIn"
+    : "max-w-2xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl border border-gray-100 animate-fadeIn";
+
+  const innerClass = isDarkMode ? "p-8 md:p-12" : "p-8 md:p-12";
+
+  const sectionTitleClass = isDarkMode
+    ? "text-3xl font-bold text-white mb-2"
+    : "text-3xl font-bold text-gray-900 mb-2";
+
+  const labelClass = isDarkMode
+    ? "absolute -top-2.5 left-3 bg-slate-900 px-1 text-xs font-medium text-indigo-300"
+    : "absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600";
+
+  const inputClass = isDarkMode
+    ? "w-full px-4 py-3 bg-slate-800/50 backdrop-blur-sm text-white border border-indigo-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+    : "w-full px-4 py-3 bg-white text-gray-800 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200";
+
+  const selectClass = isDarkMode
+    ? "w-full px-4 py-3 bg-slate-800/50 backdrop-blur-sm text-white border border-indigo-500/30 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+    : "w-full px-4 py-3 bg-white text-gray-800 border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200";
+
+  const buttonClass = isDarkMode
+    ? "w-full font-bold py-4 rounded-lg shadow-md transition-all duration-300 bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:shadow-lg hover:from-indigo-500 hover:to-purple-500"
+    : "w-full font-bold py-4 rounded-lg shadow-md transition-all duration-300 bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-lg hover:from-blue-600 hover:to-indigo-700";
+
   return (
-    <div className="p-8 max-w-2xl mx-auto bg-white shadow-xl rounded-2xl mt-16 mb-16 border border-gray-100">
-      {error && (
-        <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg flex items-center">
-          <svg
-            className="h-5 w-5 mr-3 text-red-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-            />
-          </svg>
-          <p>{error}</p>
-        </div>
-      )}
+    <div className={containerClass}>
+      <div className={cardClass}>
+        <div className={innerClass}>
+          {error && (
+            <div className={isDarkMode
+              ? "bg-red-900/20 backdrop-blur-sm border border-red-500/50 text-red-100 p-4 mb-6 rounded-2xl flex items-center"
+              : "bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg flex items-center"}>
+              <svg
+                className="h-5 w-5 mr-3 text-red-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <p>{error}</p>
+            </div>
+          )}
 
-      {success && (
-        <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-lg flex items-center">
-          <svg
-            className="h-5 w-5 mr-3 text-green-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-          <p>{success}</p>
-        </div>
-      )}
+          {success && (
+            <div className={isDarkMode
+              ? "bg-emerald-900/20 backdrop-blur-sm border border-emerald-500/50 text-emerald-100 p-4 mb-6 rounded-2xl flex items-center"
+              : "bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-lg flex items-center"}>
+              <svg
+                className="h-5 w-5 mr-3 text-green-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              <p>{success}</p>
+            </div>
+          )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <h2 className="text-3xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 mb-8">
-          Applicant Details
-        </h2>
-
-        {/* Personal Details Section */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <h2 className={sectionTitleClass + " text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 mb-8"}>
+              Applicant Details
+            </h2>
+            {/* Personal Details Section */}
         <div className="space-y-5">
           <h3 className="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">
             Personal Details
@@ -835,47 +857,45 @@ const UserAddress = () => {
           </div>
         </div>
 
-        {/* Submit Button */}
-        <div className="pt-4">
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`w-full font-bold py-4 rounded-lg shadow-md transition-all duration-300 ${
-              isLoading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-lg hover:from-blue-600 hover:to-indigo-700"
-            }`}
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center">
-                <svg
-                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Processing...
-              </div>
-            ) : (
-              "Submit Application"
-            )}
-          </button>
+            {/* Submit Button */}
+            <div className="pt-4">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className={`${buttonClass} ${isLoading ? "bg-gray-600 cursor-not-allowed" : ""}`}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Processing...
+                  </div>
+                ) : (
+                  "Submit Application"
+                )}
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

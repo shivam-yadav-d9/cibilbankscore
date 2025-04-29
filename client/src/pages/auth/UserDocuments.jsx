@@ -1,16 +1,62 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+// Adjust the import path as needed for your project:
+import { useTheme } from '../../contexts/ThemeContext';
 
 function UserDocuments() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isDarkMode } = useTheme();
   const applicationId = location.state?.applicationId || localStorage.getItem("applicationId");
-  
+
   const [isLoading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [documents, setDocuments] = useState([]);
-  
+  const [activeStep, setActiveStep] = useState(0);
+  const [showScanner, setShowScanner] = useState(false);
+  const [scanningEffect, setScanningEffect] = useState(false);
+
+  const documentTypes = [
+    { 
+      key: 'PAN CARD', 
+      title: 'PAN Card',
+      icon: 'id-card',
+      required: true,
+      hasNumber: true,
+      numberKey: 'pan_no',
+      numberLabel: 'PAN Number',
+      description: 'Government-issued Personal Account Number card'
+    },
+    { 
+      key: 'AADHAAR CARD', 
+      title: 'Aadhaar Card',
+      icon: 'fingerprint',
+      required: true,
+      hasNumber: true,
+      numberKey: 'aadhaar_no',
+      numberLabel: 'Aadhaar Number',
+      description: 'Unique identification card with biometric data'
+    },
+    { 
+      key: 'INCOME PROOF', 
+      title: 'Income Proof',
+      icon: 'document-text',
+      required: false,
+      hasNumber: false,
+      description: 'Salary slips, tax returns, or bank statements'
+    },
+    { 
+      key: 'PHOTOGRAPH', 
+      title: 'Photograph',
+      icon: 'camera',
+      required: false,
+      hasNumber: false,
+      description: 'Recent passport-sized photograph with clear face'
+    }
+  ];
+
   const [uploadedFiles, setUploadedFiles] = useState({
     'PAN CARD': null,
     'AADHAAR CARD': null,
@@ -29,19 +75,15 @@ function UserDocuments() {
       navigate("/login");
       return;
     }
-    
     if (!applicationId) {
       navigate("/UserBasicData");
       return;
     }
-
     // Load existing documents from localStorage
     const savedDocs = localStorage.getItem(`documents_${applicationId}`);
     if (savedDocs) {
       const parsedDocs = JSON.parse(savedDocs);
       setDocuments(parsedDocs);
-      
-      // Set uploaded status based on saved documents
       const updatedFiles = { ...uploadedFiles };
       parsedDocs.forEach(doc => {
         updatedFiles[doc.doc_type] = {
@@ -53,7 +95,6 @@ function UserDocuments() {
       });
       setUploadedFiles(updatedFiles);
     }
-
     // Load document numbers from localStorage
     const userData = localStorage.getItem("userBasicData");
     if (userData) {
@@ -63,29 +104,40 @@ function UserDocuments() {
         aadhaar_no: parsedData.aadhaar || ""
       });
     }
+    // eslint-disable-next-line
   }, [navigate, applicationId]);
 
-  const handleFileChange = (docType, e) => {
+  const simulateDocumentScan = (docType, e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      
-      reader.onload = (event) => {
-        setUploadedFiles(prev => ({
-          ...prev,
-          [docType]: {
-            file: file,
-            preview: event.target.result,
-            doc_type: docType,
-            doc_no: docType === 'PAN CARD' ? docNumbers.pan_no : 
-                   docType === 'AADHAAR CARD' ? docNumbers.aadhaar_no :
-                   generateDocNumber(docType),
-            created_at: new Date().toISOString()
-          }
-        }));
-      };
-      
-      reader.readAsDataURL(file);
+      setShowScanner(true);
+      setScanningEffect(true);
+      setTimeout(() => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setUploadedFiles(prev => ({
+            ...prev,
+            [docType]: {
+              file: file,
+              preview: event.target.result,
+              doc_type: docType,
+              doc_no: docType === 'PAN CARD' ? docNumbers.pan_no : 
+                     docType === 'AADHAAR CARD' ? docNumbers.aadhaar_no :
+                     generateDocNumber(docType),
+              created_at: new Date().toISOString()
+            }
+          }));
+          setScanningEffect(false);
+          setTimeout(() => {
+            setShowScanner(false);
+            const currentIndex = documentTypes.findIndex(doc => doc.key === docType);
+            if (currentIndex < documentTypes.length - 1) {
+              setActiveStep(currentIndex + 1);
+            }
+          }, 1000);
+        };
+        reader.readAsDataURL(file);
+      }, 2000);
     }
   };
 
@@ -115,9 +167,7 @@ function UserDocuments() {
   const handleUpload = () => {
     setLoading(true);
     setError(null);
-    
     try {
-      // Convert uploadedFiles object to array and filter out null values
       const newDocuments = Object.values(uploadedFiles)
         .filter(doc => doc !== null)
         .map((doc, index) => ({
@@ -129,18 +179,14 @@ function UserDocuments() {
           created_at: doc.created_at,
           file_data: doc.preview
         }));
-
-      // Save to localStorage
       localStorage.setItem(`documents_${applicationId}`, JSON.stringify(newDocuments));
       setDocuments(newDocuments);
-      setSuccess("Documents saved successfully!");
-
-      // Navigate after a short delay
+      setSuccess("Documents verified successfully!");
       setTimeout(() => {
         navigate('/MyApplication');
-      }, 1500);
+      }, 2000);
     } catch (error) {
-      setError("Failed to save documents. Please try again.");
+      setError("Verification failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -150,261 +196,628 @@ function UserDocuments() {
     return uploadedFiles[docType] !== null;
   };
 
+  const getOverallProgress = () => {
+    const requiredDocs = documentTypes.filter(doc => doc.required);
+    const uploadedRequiredDocs = requiredDocs.filter(doc => uploadedFiles[doc.key] !== null);
+    return Math.round((uploadedRequiredDocs.length / requiredDocs.length) * 100);
+  };
+
+  const renderIcon = (iconName) => {
+    switch (iconName) {
+      case 'id-card':
+        return (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+          </svg>
+        );
+      case 'fingerprint':
+        return (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
+          </svg>
+        );
+      case 'document-text':
+        return (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        );
+      case 'camera':
+        return (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const isPanAadhaarUploaded = uploadedFiles['PAN CARD'] !== null || uploadedFiles['AADHAAR CARD'] !== null;
+
+  // Theme-based classes
+  const containerClass = isDarkMode
+    ? "min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 py-12 px-4 sm:px-6 lg:px-8 text-white overflow-hidden"
+    : "min-h-screen bg-gradient-to-br from-white to-gray-100 py-12 px-4 sm:px-6 lg:px-8 text-gray-900 overflow-hidden";
+
+  const cardClass = isDarkMode
+    ? "max-w-5xl mx-auto relative z-10"
+    : "max-w-5xl mx-auto relative z-10";
+
   return (
-    <div className="p-8 max-w-4xl mx-auto bg-white shadow-xl rounded-2xl mt-16 mb-16 border border-gray-100">
-      <h2 className="text-3xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 mb-8">
-        Upload Documents
-      </h2>
-
-      {error && (
-        <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg">
-          <p>{error}</p>
-        </div>
-      )}
-
-      {success && (
-        <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-lg">
-          <p>{success}</p>
-        </div>
-      )}
-
-      <div className="space-y-6">
-        {/* PAN Card Section */}
-        <div className="p-6 border border-gray-200 rounded-lg">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-700">
-              PAN Card <span className="text-red-500">*</span>
-            </h3>
-            <span className={`text-sm ${getDocumentStatus('PAN CARD') ? 'text-green-600' : 'text-red-500'}`}>
-              {getDocumentStatus('PAN CARD') ? 'Uploaded' : 'Not uploaded'}
-            </span>
+    <div className={containerClass}>
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className={isDarkMode
+          ? "absolute -top-10 -right-10 w-60 h-60 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"
+          : "absolute -top-10 -right-10 w-60 h-60 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"}></div>
+        <div className={isDarkMode
+          ? "absolute top-20 right-40 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"
+          : "absolute top-20 right-40 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"}></div>
+        <div className={isDarkMode
+          ? "absolute -bottom-8 left-20 w-80 h-80 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-4000"
+          : "absolute -bottom-8 left-20 w-80 h-80 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-4000"}></div>
+      </div>
+      <div className={cardClass}>
+        {/* Holographic header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-12 text-center"
+        >
+          <h1 className={isDarkMode
+            ? "text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-indigo-500 to-purple-500 inline-block"
+            : "text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 inline-block"}>
+            Quantum Document Verification
+          </h1>
+          <div className={isDarkMode
+            ? "mt-3 text-lg text-indigo-200 max-w-2xl mx-auto"
+            : "mt-3 text-lg text-indigo-500 max-w-2xl mx-auto"}>
+            Secure your application with our advanced verification system
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                PAN Number
-              </label>
-              <input
-                name="pan_no"
-                placeholder="Enter PAN Number"
-                value={docNumbers.pan_no}
-                onChange={handleDocNumberChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-              />
-            </div>
-
-            <div className="space-y-4">
-              {uploadedFiles['PAN CARD']?.preview ? (
-                <div className="space-y-4">
-                  <img 
-                    src={uploadedFiles['PAN CARD'].preview}
-                    alt="PAN Card"
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                  <button
-                    onClick={() => setUploadedFiles(prev => ({ ...prev, 'PAN CARD': null }))}
-                    className="text-red-600 hover:text-red-800 text-sm"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleFileChange('PAN CARD', e)}
-                    className="block w-full text-sm text-gray-500
-                      file:mr-4 file:py-2 file:px-4
-                      file:rounded-full file:border-0
-                      file:text-sm file:font-semibold
-                      file:bg-blue-50 file:text-blue-700
-                      hover:file:bg-blue-100"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Aadhaar Card Section */}
-        <div className="p-6 border border-gray-200 rounded-lg">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-700">
-              Aadhaar Card <span className="text-red-500">*</span>
-            </h3>
-            <span className={`text-sm ${getDocumentStatus('AADHAAR CARD') ? 'text-green-600' : 'text-red-500'}`}>
-              {getDocumentStatus('AADHAAR CARD') ? 'Uploaded' : 'Not uploaded'}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Aadhaar Number
-              </label>
-              <input
-                name="aadhaar_no"
-                placeholder="Enter Aadhaar Number"
-                value={docNumbers.aadhaar_no}
-                onChange={handleDocNumberChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-              />
-            </div>
-
-            <div className="space-y-4">
-              {uploadedFiles['AADHAAR CARD']?.preview ? (
-                <div className="space-y-4">
-                  <img 
-                    src={uploadedFiles['AADHAAR CARD'].preview}
-                    alt="Aadhaar Card"
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                  <button
-                    onClick={() => setUploadedFiles(prev => ({ ...prev, 'AADHAAR CARD': null }))}
-                    className="text-red-600 hover:text-red-800 text-sm"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleFileChange('AADHAAR CARD', e)}
-                    className="block w-full text-sm text-gray-500
-                      file:mr-4 file:py-2 file:px-4
-                      file:rounded-full file:border-0
-                      file:text-sm file:font-semibold
-                      file:bg-blue-50 file:text-blue-700
-                      hover:file:bg-blue-100"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Income Proof Section */}
-        <div className="p-6 border border-gray-200 rounded-lg">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-700">Income Proof</h3>
-            <span className={`text-sm ${getDocumentStatus('INCOME PROOF') ? 'text-green-600' : 'text-yellow-600'}`}>
-              {getDocumentStatus('INCOME PROOF') ? 'Uploaded' : 'Optional'}
-            </span>
-          </div>
-
-          <div className="space-y-4">
-            {uploadedFiles['INCOME PROOF']?.preview ? (
-              <div className="space-y-4">
-                <img 
-                  src={uploadedFiles['INCOME PROOF'].preview}
-                  alt="Income Proof"
-                  className="w-full h-48 object-cover rounded-lg"
-                />
-                <button
-                  onClick={() => setUploadedFiles(prev => ({ ...prev, 'INCOME PROOF': null }))}
-                  className="text-red-600 hover:text-red-800 text-sm"
-                >
-                  Remove
-                </button>
-              </div>
-            ) : (
-              <div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileChange('INCOME PROOF', e)}
-                  className="block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-full file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-blue-50 file:text-blue-700
-                    hover:file:bg-blue-100"
-                />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Photograph Section */}
-        <div className="p-6 border border-gray-200 rounded-lg">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-700">Photograph</h3>
-            <span className={`text-sm ${getDocumentStatus('PHOTOGRAPH') ? 'text-green-600' : 'text-yellow-600'}`}>
-              {getDocumentStatus('PHOTOGRAPH') ? 'Uploaded' : 'Optional'}
-            </span>
-          </div>
-
-          <div className="space-y-4">
-            {uploadedFiles['PHOTOGRAPH']?.preview ? (
-              <div className="space-y-4">
-                <img 
-                  src={uploadedFiles['PHOTOGRAPH'].preview}
-                  alt="Photograph"
-                  className="w-full h-48 object-cover rounded-lg"
-                />
-                <button
-                  onClick={() => setUploadedFiles(prev => ({ ...prev, 'PHOTOGRAPH': null }))}
-                  className="text-red-600 hover:text-red-800 text-sm"
-                >
-                  Remove
-                </button>
-              </div>
-            ) : (
-              <div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileChange('PHOTOGRAPH', e)}
-                  className="block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-full file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-blue-50 file:text-blue-700
-                    hover:file:bg-blue-100"
-                />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Save Button */}
-        <div className="pt-6">
-          <button
-            onClick={handleUpload}
-            disabled={isLoading || (!uploadedFiles['PAN CARD'] && !uploadedFiles['AADHAAR CARD'])}
-            className={`w-full font-bold py-4 rounded-lg shadow-md transition-all duration-300 ${
-              isLoading || (!uploadedFiles['PAN CARD'] && !uploadedFiles['AADHAAR CARD'])
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-lg hover:from-blue-600 hover:to-indigo-700"
-            }`}
+        </motion.div>
+        {/* Main cards area */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left sidebar */}
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="lg:col-span-1"
           >
-            {isLoading ? (
-              <div className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Saving...
+            {/* Progress card */}
+            <div className={isDarkMode
+              ? "backdrop-blur-lg bg-white/10 rounded-2xl p-6 border border-white/20 shadow-lg mb-8"
+              : "backdrop-blur-lg bg-white rounded-2xl p-6 border border-gray-200 shadow-lg mb-8"}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className={isDarkMode ? "text-lg font-semibold text-white" : "text-lg font-semibold text-gray-900"}>Verification Progress</h3>
+                <div className="relative h-10 w-10">
+                  <svg className="w-10 h-10" viewBox="0 0 36 36">
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke={isDarkMode ? "rgba(255, 255, 255, 0.2)" : "rgba(0,0,0,0.1)"}
+                      strokeWidth="3"
+                    />
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="url(#gradient)"
+                      strokeWidth="3"
+                      strokeDasharray={`${getOverallProgress()}, 100`}
+                      className="animate-pulse"
+                    />
+                    <defs>
+                      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#4f46e5" />
+                        <stop offset="100%" stopColor="#06b6d4" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center font-semibold text-cyan-300">
+                    {getOverallProgress()}%
+                  </div>
+                </div>
               </div>
-            ) : (
-              "Save & Continue"
+              {/* Status indicators */}
+              <div className="space-y-4">
+                {documentTypes.map((doc) => (
+                  <div 
+                    key={doc.key}
+                    className="flex items-center"
+                  >
+                    <div 
+                      className={`flex-shrink-0 w-3 h-3 rounded-full mr-3 ${
+                        getDocumentStatus(doc.key) 
+                          ? 'bg-gradient-to-r from-green-400 to-emerald-500 animate-pulse' 
+                          : doc.required
+                            ? 'bg-red-500'
+                            : 'bg-amber-500'
+                      }`}
+                    ></div>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">{doc.title}</span>
+                        <span 
+                          className={`text-xs ${
+                            getDocumentStatus(doc.key) 
+                              ? 'text-emerald-400' 
+                              : doc.required 
+                                ? 'text-red-400' 
+                                : 'text-amber-400'
+                          }`}
+                        >
+                          {getDocumentStatus(doc.key) 
+                            ? 'Verified' 
+                            : doc.required 
+                              ? 'Required' 
+                              : 'Optional'}
+                        </span>
+                      </div>
+                      <div className="mt-1 bg-slate-700/40 rounded-full h-1.5">
+                        <div 
+                          className={`h-1.5 rounded-full ${
+                            getDocumentStatus(doc.key) 
+                              ? 'bg-gradient-to-r from-green-400 to-emerald-500' 
+                              : 'bg-transparent'
+                          }`}
+                          style={{ width: getDocumentStatus(doc.key) ? '100%' : '0%' }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Help section */}
+            <div className={isDarkMode
+              ? "backdrop-blur-lg bg-white/10 rounded-2xl p-6 border border-white/20 shadow-lg"
+              : "backdrop-blur-lg bg-white rounded-2xl p-6 border border-gray-200 shadow-lg"}>
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-cyan-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                </svg>
+                AI Assistance
+              </h3>
+              <div className="text-indigo-200 text-sm space-y-3">
+                <p>Our quantum verification system uses advanced AI to verify your documents in real-time.</p>
+                <p>For best results, ensure your documents are:</p>
+                <ul className="list-disc list-inside space-y-1 text-cyan-200">
+                  <li>Well-lit and clear images</li>
+                  <li>All corners visible and readable</li>
+                  <li>No glare or shadows on text</li>
+                </ul>
+                <button className="mt-4 w-full py-2 bg-indigo-600/50 hover:bg-indigo-600/70 rounded-lg text-sm flex items-center justify-center backdrop-blur-sm border border-indigo-500/30 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                  </svg>
+                  Watch Tutorial
+                </button>
+              </div>
+            </div>
+          </motion.div>
+          {/* Main content area */}
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="lg:col-span-2"
+          >
+            {/* Scanner overlay */}
+            {showScanner && (
+              <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+                <div className="relative w-full max-w-md">
+                  <div className="bg-slate-900 rounded-xl p-6 border border-indigo-500/30">
+                    <div className="text-center mb-4">
+                      <h3 className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
+                        {scanningEffect ? 'Advanced Scanning' : 'Verification Complete'}
+                      </h3>
+                      <p className="text-indigo-300 text-sm mt-1">
+                        {scanningEffect 
+                          ? 'Analyzing document authenticity and extracting data...' 
+                          : 'Document verified and authenticated successfully!'}
+                      </p>
+                    </div>
+                    <div className="relative h-64 bg-slate-800 rounded-lg overflow-hidden mb-6">
+                      {scanningEffect ? (
+                        <>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-full h-1 bg-cyan-500/30">
+                              <div className="h-full bg-gradient-to-r from-cyan-400 to-indigo-500 animate-scan"></div>
+                            </div>
+                          </div>
+                          <div className="absolute inset-0">
+                            <div className="grid grid-cols-6 grid-rows-6 gap-0.5 h-full">
+                              {Array(36).fill().map((_, i) => (
+                                <div key={i} className="bg-white/5 backdrop-blur-sm flex items-center justify-center">
+                                  {i % 7 === 0 && (
+                                    <div className="h-2 w-2 bg-cyan-500 rounded-full animate-ping"></div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <p className="text-sm text-green-400 font-medium">Document Authentication Complete</p>
+                          <div className="grid grid-cols-2 gap-2 mt-3 text-xs text-indigo-300">
+                            <div className="bg-slate-800/80 p-2 rounded">
+                              <span className="block text-gray-400">Security Score</span>
+                              <span className="text-green-400">98%</span>
+                            </div>
+                            <div className="bg-slate-800/80 p-2 rounded">
+                              <span className="block text-gray-400">AI Confidence</span>
+                              <span className="text-green-400">High</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    {!scanningEffect && (
+                      <button
+                        onClick={() => setShowScanner(false)}
+                        className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-sm transition-colors"
+                      >
+                        Continue
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
             )}
-          </button>
-        </div>
-
-        {/* Progress indicator */}
-        <div className="flex justify-center space-x-2 pt-4">
-          <div className="h-2 w-8 rounded-full bg-blue-600"></div>
-          <div className="h-2 w-8 rounded-full bg-blue-600"></div>
-          <div className="h-2 w-8 rounded-full bg-gray-300"></div>
+            {/* Notification area */}
+            <AnimatedNotification error={error} success={success} />
+            {/* Main card */}
+            <div className={isDarkMode
+              ? "backdrop-blur-lg bg-white/10 rounded-2xl border border-white/20 shadow-lg overflow-hidden mb-8"
+              : "backdrop-blur-lg bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden mb-8"}>
+              {/* Tab navigation */}
+              <div className="flex overflow-x-auto scrollbar-hide py-3 px-4 gap-2 bg-slate-800/50 border-b border-white/10">
+                {documentTypes.map((doc, index) => (
+                  <button
+                    key={doc.key}
+                    onClick={() => setActiveStep(index)}
+                    className={`flex items-center px-4 py-2 rounded-lg whitespace-nowrap transition-all ${
+                      activeStep === index
+                        ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg transform scale-105'
+                        : getDocumentStatus(doc.key)
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                          : 'bg-slate-700/50 text-gray-300 hover:bg-slate-700 hover:text-white'
+                    }`}
+                  >
+                    <span className="mr-2 w-5 h-5">{renderIcon(doc.icon)}</span>
+                    <span>{doc.title}</span>
+                    {getDocumentStatus(doc.key) && (
+                      <span className="ml-2 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center text-xs">
+                        ✓
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+              {/* Document content */}
+              {documentTypes.map((doc, index) => (
+                <motion.div 
+                  key={doc.key}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: activeStep === index ? 1 : 0 }}
+                  transition={{ duration: 0.3 }}
+                  className={`${activeStep === index ? 'block' : 'hidden'}`}
+                >
+                  <div className="p-6">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                      <div className="flex items-center mb-4 md:mb-0">
+                        <div className="p-3 bg-gradient-to-br from-indigo-500/30 to-indigo-700/30 text-indigo-400 rounded-lg border border-indigo-500/20">
+                          {renderIcon(doc.icon)}
+                        </div>
+                        <div className="ml-4">
+                          <div className="flex items-center">
+                            <h3 className="text-xl font-semibold text-white">
+                              {doc.title}
+                            </h3>
+                            {doc.required && (
+                              <span className="ml-2 px-2 py-0.5 text-xs bg-red-500/20 text-red-400 rounded-full border border-red-500/30">
+                                Required
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-indigo-300 mt-1">
+                            {doc.description}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <StatusBadge doc={doc} status={getDocumentStatus(doc.key)} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Left column - Document data */}
+                      <div>
+                        {doc.hasNumber && (
+                          <div className="mb-6">
+                            <label className="block text-sm font-medium text-indigo-300 mb-2">
+                              {doc.numberLabel}
+                            </label>
+                            <div className="relative">
+                              <input
+                                name={doc.numberKey}
+                                placeholder={`Enter ${doc.numberLabel}`}
+                                value={docNumbers[doc.numberKey]}
+                                onChange={handleDocNumberChange}
+                                className="w-full px-4 py-3 bg-slate-800/50 border border-indigo-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-white placeholder-indigo-400/70"
+                              />
+                              <div className="absolute right-3 top-3 text-indigo-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {/* Upload section */}
+                        <div className="mb-4">
+                          <div className="border-2 border-dashed border-indigo-500/40 rounded-lg p-6 text-center hover:border-indigo-500/70 transition-colors">
+                            <input
+                              type="file"
+                              id={`file-upload-${doc.key}`}
+                              className="hidden"
+                              accept="image/*,.pdf"
+                              onChange={(e) => simulateDocumentScan(doc.key, e)}
+                            />
+                            {!uploadedFiles[doc.key] ? (
+                              <label 
+                                htmlFor={`file-upload-${doc.key}`}
+                                className="cursor-pointer block"
+                              >
+                                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-indigo-500/20 mb-4">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                  </svg>
+                                </div>
+                                <span className="block text-sm font-medium text-indigo-300">
+                                  Upload {doc.title}
+                                </span>
+                                <span className="mt-2 block text-xs text-indigo-400">
+                                  PNG, JPG, or PDF up to 5MB
+                                </span>
+                              </label>
+                            ) : (
+                              <div className="text-center">
+                                <div className="inline-block bg-green-500/20 rounded-full p-2 mb-3">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                </div>
+                                <p className="text-sm text-green-400">
+                                  Document Uploaded Successfully
+                                </p>
+                                <button
+                                  onClick={() => {
+                                    setUploadedFiles(prev => ({
+                                      ...prev,
+                                      [doc.key]: null
+                                    }));
+                                  }}
+                                  className="mt-2 text-xs text-indigo-400 hover:text-indigo-300"
+                                >
+                                  Remove and Upload Again
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      {/* Right column - Document preview */}
+                      <div>
+                        <div className="rounded-lg overflow-hidden border border-indigo-500/30 bg-slate-800/50 h-64 flex items-center justify-center relative">
+                          {uploadedFiles[doc.key] ? (
+                            <div className="relative w-full h-full">
+                              <img 
+                                src={uploadedFiles[doc.key].preview} 
+                                alt={`Preview of ${doc.title}`} 
+                                className="object-contain w-full h-full p-2"
+                              />
+                              {/* Verification overlay */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 to-transparent flex flex-col items-center justify-end p-4">
+                                <div className="bg-green-500/20 px-3 py-1 rounded-full text-green-400 text-xs font-medium flex items-center mb-2">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                  </svg>
+                                  Verified with QuantumScan™
+                                </div>
+                                <div className="w-full bg-slate-800/80 rounded-lg p-2 text-xs">
+                                  <div className="flex justify-between mb-1">
+                                    <span className="text-gray-400">Document Number:</span>
+                                    <span className="text-cyan-400">{uploadedFiles[doc.key].doc_no}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-400">Verified On:</span>
+                                    <span className="text-cyan-400">
+                                      {new Date(uploadedFiles[doc.key].created_at).toLocaleDateString()}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-center p-6">
+                              <div className="w-16 h-16 rounded-full bg-indigo-500/20 mx-auto flex items-center justify-center mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                              <p className="text-indigo-300 text-sm">
+                                Document preview will appear here
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        {uploadedFiles[doc.key] && (
+                          <div className="mt-4 bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                            <div className="flex items-start">
+                              <div className="flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                              <div className="ml-3">
+                                <h4 className="text-sm font-medium text-green-400">
+                                  AI Verification Successful
+                                </h4>
+                                <p className="mt-1 text-xs text-green-300">
+                                  This document has passed our authenticity checks and meets all requirements for the application process.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Navigation buttons */}
+                  <div className="px-6 py-4 bg-slate-800/50 border-t border-white/10 flex justify-between">
+                    <button
+                      onClick={() => setActiveStep(Math.max(0, activeStep - 1))}
+                      disabled={activeStep === 0}
+                      className={`px-4 py-2 rounded-md text-sm flex items-center ${
+                        activeStep === 0
+                          ? 'bg-slate-700/50 text-gray-400 cursor-not-allowed'
+                          : 'bg-slate-700 text-white hover:bg-slate-600 transition-colors'
+                      }`}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                      </svg>
+                      Previous
+                    </button>
+                    {activeStep < documentTypes.length - 1 ? (
+                      <button
+                        onClick={() => {
+                          if (uploadedFiles[doc.key] || !doc.required) {
+                            setActiveStep(Math.min(documentTypes.length - 1, activeStep + 1));
+                          }
+                        }}
+                        className={`px-4 py-2 rounded-md text-sm flex items-center ${
+                          doc.required && !uploadedFiles[doc.key]
+                            ? 'bg-indigo-500/50 text-indigo-300 cursor-not-allowed'
+                            : 'bg-indigo-600 text-white hover:bg-indigo-700 transition-colors'
+                        }`}
+                      >
+                        Next
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleUpload}
+                        disabled={isLoading || !isPanAadhaarUploaded}
+                        className={`px-4 py-2 rounded-md text-sm flex items-center ${
+                          isLoading || !isPanAadhaarUploaded
+                            ? 'bg-indigo-500/50 text-indigo-300 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 transition-colors'
+                        }`}
+                      >
+                        {isLoading ? (
+                          <>
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            Submit All Documents
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </div>
     </div>
   );
+}
+
+// Helper Components
+function AnimatedNotification({ error, success }) {
+  if (!error && !success) return null;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className={`mb-6 rounded-lg p-4 flex items-start ${
+        error 
+          ? 'bg-red-500/20 border border-red-500/30' 
+          : 'bg-green-500/20 border border-green-500/30'
+      }`}
+    >
+      <div className="flex-shrink-0">
+        {error ? (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          </svg>
+        )}
+      </div>
+      <div className="ml-3">
+        <h3 className={`text-sm font-medium ${error ? 'text-red-400' : 'text-green-400'}`}>
+          {error || success}
+        </h3>
+      </div>
+    </motion.div>
+  );
+}
+
+function StatusBadge({ doc, status }) {
+  if (status) {
+    return (
+      <span className="px-3 py-1 inline-flex items-center text-xs font-medium rounded-full bg-green-500/20 text-green-400 border border-green-500/30">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+        </svg>
+        Verified
+      </span>
+    );
+  } else if (doc.required) {
+    return (
+      <span className="px-3 py-1 inline-flex items-center text-xs font-medium rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+        </svg>
+        Required
+      </span>
+    );
+  } else {
+    return (
+      <span className="px-3 py-1 inline-flex items-center text-xs font-medium rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+        </svg>
+        Optional
+      </span>
+    );
+  }
 }
 
 export default UserDocuments;

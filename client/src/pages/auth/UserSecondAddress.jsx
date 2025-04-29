@@ -1,127 +1,116 @@
-import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useTheme } from "../../contexts/ThemeContext"; // Adjust path as needed
 
-const UserSecondAddress = () => {
+function UserSecondAddress() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [sameAsPresent, setSameAsPresent] = useState(false);
+  const { isDarkMode } = useTheme();
+
   const [formData, setFormData] = useState({
     application_id: "",
-    residential_status: "Resident",
-    residence_type: "1",
-    years_of_residence: "3",
-    monthly_rent: "5000",
-    ref_code: "OUI202590898",
-    addresses: {
-      present_address: {
-        address_line1: "",
-        address_line2: "",
-        address_line3: "",
-        pincode: "",
-        state: "",
-        city: "",
-        landmark: "",
-        email: "",
-        phone: ""
-      },
-      permanent_address: {
-        address_line1: "",
-        address_line2: "",
-        address_line3: "",
-        pincode: "",
-        state: "",
-        city: "",
-        landmark: "",
-        email: "",
-        phone: ""
-      },
-      office_address: {
-        address_line1: "",
-        address_line2: "",
-        address_line3: "",
-        pincode: "",
-        state: "",
-        city: "",
-        landmark: "",
-        email: "",
-        phone: ""
-      }
+    present_address: {
+      address_line1: "",
+      address_line2: "",
+      address_line3: "",
+      pincode: "",
+      state: "",
+      city: "",
+      landmark: "",
+      email: "",
+      phone: ""
+    },
+    permanent_address: {
+      address_line1: "",
+      address_line2: "",
+      address_line3: "",
+      pincode: "",
+      state: "",
+      city: "",
+      landmark: "",
+      email: "",
+      phone: ""
+    },
+    office_address: {
+      address_line1: "",
+      address_line2: "",
+      address_line3: "",
+      pincode: "",
+      state: "",
+      city: "",
+      landmark: "",
+      email: "",
+      phone: ""
     }
   });
 
+  const [isLoading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const [sameAsPresent, setSameAsPresent] = useState(false);
+
+  // Theme-based classes (copied from UserBasicData)
+  const containerClass = isDarkMode
+    ? "min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center"
+    : "min-h-screen bg-gradient-to-br from-white to-gray-100 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center";
+
+  const cardClass = isDarkMode
+    ? "max-w-4xl w-full bg-white/10 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl border border-white/20 animate-fadeIn"
+    : "max-w-4xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl border border-gray-100 animate-fadeIn";
+
+  const innerClass = isDarkMode
+    ? "p-8 md:p-12"
+    : "p-8 md:p-12";
+
+  const sectionTitleClass = isDarkMode
+    ? "text-4xl font-bold text-white mb-2"
+    : "text-4xl font-bold text-gray-900 mb-2";
+
+  const labelClass = isDarkMode
+    ? "absolute left-4 top-4 transition-all duration-300 transform peer-focus:-translate-y-5 peer-focus:scale-75 peer-focus:text-indigo-400 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:text-gray-400 -translate-y-5 scale-75 text-indigo-400"
+    : "absolute left-4 top-4 transition-all duration-300 transform peer-focus:-translate-y-5 peer-focus:scale-75 peer-focus:text-indigo-600 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:text-gray-400 -translate-y-5 scale-75 text-indigo-600";
+
+  const inputClass = isDarkMode
+    ? "w-full px-4 py-4 bg-slate-800/50 backdrop-blur-sm text-white border border-indigo-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 peer"
+    : "w-full px-4 py-4 bg-white text-gray-800 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-300 peer";
+
+  const buttonClass = isDarkMode
+    ? "w-full font-medium text-lg py-4 px-6 rounded-xl shadow-lg transition-all duration-500 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white hover:shadow-indigo-500/50 transform hover:-translate-y-1"
+    : "w-full font-medium text-lg py-4 px-6 rounded-xl shadow-lg transition-all duration-500 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white hover:shadow-indigo-500/50 transform hover:-translate-y-1";
+
   useEffect(() => {
     let applicationId = "";
-
-    // First check if it was passed via navigation state
     if (location.state?.applicationId) {
       applicationId = location.state.applicationId;
-    }
-    // If not, try to get it from localStorage
-    else {
+    } else {
       applicationId = localStorage.getItem("applicationId") || "";
     }
-
-    // Try to load saved form data from localStorage
     const savedFormData = localStorage.getItem(`secondFormData_${applicationId}`);
-
     if (savedFormData) {
-      // Parse the saved data and set it to state
       setFormData(JSON.parse(savedFormData));
     } else {
-      // If no saved data, just set the application_id
       setFormData(prev => ({
         ...prev,
         application_id: applicationId
       }));
-      
-      // Only fetch from API if no saved data was found
-      if (applicationId) {
-        fetchExistingData(applicationId);
-      }
     }
   }, [location]);
 
-  const fetchExistingData = async (applicationId) => {
-    try {
-      const response = await axios.get(`http://localhost:3001/api/user-second-address/${applicationId}`);
-      if (response.data) {
-        setFormData(response.data);
-      }
-    } catch (error) {
-      // If 404, it's a new application - no need to show error
-      if (error.response && error.response.status !== 404) {
-        console.error("Error fetching existing data:", error);
-        setError("Error fetching data: " + (error.response?.data?.message || error.message));
-      }
-    }
-  };
-
-  // Handle change for basic form fields
   const handleChange = (e, addressType = null, field = null) => {
     let updatedFormData;
-    
     if (addressType) {
       updatedFormData = {
         ...formData,
-        addresses: {
-          ...formData.addresses,
-          [addressType]: {
-            ...formData.addresses[addressType],
-            [field]: e.target.value
-          }
+        [addressType]: {
+          ...formData[addressType],
+          [field]: e.target.value
         }
       };
     } else {
       updatedFormData = { ...formData, [e.target.name]: e.target.value };
     }
-    
     setFormData(updatedFormData);
-
-    // Save to localStorage whenever form data changes
     if (updatedFormData.application_id) {
       localStorage.setItem(
         `secondFormData_${updatedFormData.application_id}`,
@@ -130,25 +119,17 @@ const UserSecondAddress = () => {
     }
   };
 
-  // Handle "Same as Present Address" checkbox
   const handleSameAsPresent = (e) => {
     const isChecked = e.target.checked;
     setSameAsPresent(isChecked);
-    
     if (isChecked) {
-      // Copy present address to permanent address
       const updatedFormData = {
         ...formData,
-        addresses: {
-          ...formData.addresses,
-          permanent_address: {
-            ...formData.addresses.present_address
-          }
+        permanent_address: {
+          ...formData.present_address
         }
       };
       setFormData(updatedFormData);
-      
-      // Save to localStorage
       if (updatedFormData.application_id) {
         localStorage.setItem(
           `secondFormData_${updatedFormData.application_id}`,
@@ -160,601 +141,298 @@ const UserSecondAddress = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    setIsLoading(true);
-    setError("");
-    
-    // Save the current state to localStorage before submitting
+    setLoading(true);
+    setError(null);
     if (formData.application_id) {
       localStorage.setItem(
-        `secondFormData_${formData.application_id}`, 
+        `secondFormData_${formData.application_id}`,
         JSON.stringify(formData)
       );
     }
-    
     try {
-      const res = await axios.post("http://localhost:3001/api/user-second-address/save", formData);
+      await axios.post("http://localhost:3001/api/user-second-address/save", formData);
       setSuccess("Address information saved successfully!");
-      console.log(res.data);
-      
-      // Navigate programmatically after successful submission
-      navigate("/UserCoApplications", { 
-        state: { applicationId: formData.application_id } 
+      navigate("/UserCoApplications", {
+        state: { applicationId: formData.application_id }
       });
     } catch (err) {
-      console.error("Submit error:", err.message);
       setError("Error submitting form: " + (err.response?.data?.error || err.message));
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
+  // Helper to render address fields
+  const renderAddressFields = (type, disabled = false) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="group relative">
+        <input
+          placeholder=" "
+          value={formData[type].address_line1}
+          onChange={e => handleChange(e, type, "address_line1")}
+          className={inputClass}
+          required
+          disabled={disabled}
+        />
+        <label className={labelClass}>Address Line 1</label>
+      </div>
+      <div className="group relative">
+        <input
+          placeholder=" "
+          value={formData[type].address_line2}
+          onChange={e => handleChange(e, type, "address_line2")}
+          className={inputClass}
+          disabled={disabled}
+        />
+        <label className={labelClass}>Address Line 2</label>
+      </div>
+      <div className="group relative">
+        <input
+          placeholder=" "
+          value={formData[type].address_line3}
+          onChange={e => handleChange(e, type, "address_line3")}
+          className={inputClass}
+          disabled={disabled}
+        />
+        <label className={labelClass}>Address Line 3</label>
+      </div>
+      <div className="group relative">
+        <input
+          placeholder=" "
+          value={formData[type].pincode}
+          onChange={e => handleChange(e, type, "pincode")}
+          className={inputClass}
+          required
+          disabled={disabled}
+        />
+        <label className={labelClass}>Pincode</label>
+      </div>
+      <div className="group relative">
+        <input
+          placeholder=" "
+          value={formData[type].city}
+          onChange={e => handleChange(e, type, "city")}
+          className={inputClass}
+          required
+          disabled={disabled}
+        />
+        <label className={labelClass}>City</label>
+      </div>
+      <div className="group relative">
+        <input
+          placeholder=" "
+          value={formData[type].state}
+          onChange={e => handleChange(e, type, "state")}
+          className={inputClass}
+          required
+          disabled={disabled}
+        />
+        <label className={labelClass}>State</label>
+      </div>
+      <div className="group relative">
+        <input
+          placeholder=" "
+          value={formData[type].landmark}
+          onChange={e => handleChange(e, type, "landmark")}
+          className={inputClass}
+          disabled={disabled}
+        />
+        <label className={labelClass}>Landmark</label>
+      </div>
+      <div className="group relative">
+        <input
+          placeholder=" "
+          value={formData[type].email}
+          onChange={e => handleChange(e, type, "email")}
+          className={inputClass}
+          required
+          disabled={disabled}
+        />
+        <label className={labelClass}>Email</label>
+      </div>
+      <div className="group relative">
+        <input
+          placeholder=" "
+          value={formData[type].phone}
+          onChange={e => handleChange(e, type, "phone")}
+          className={inputClass}
+          required
+          disabled={disabled}
+        />
+        <label className={labelClass}>Phone</label>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="p-8 max-w-2xl mx-auto bg-white shadow-xl rounded-2xl mt-16 mb-16 border border-gray-100">
-      {error && (
-        <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg flex items-center">
-          <svg
-            className="h-5 w-5 mr-3 text-red-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-            />
-          </svg>
-          <p>{error}</p>
-        </div>
-      )}
-
-      {success && (
-        <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-lg flex items-center">
-          <svg
-            className="h-5 w-5 mr-3 text-green-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-          <p>{success}</p>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <h2 className="text-3xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 mb-8">
-          Address Details
-        </h2>
-
-        {/* Application ID */}
-        <div className="space-y-5">
-          <div className="relative">
-            <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-              Application ID
-            </label>
-            <input
-              name="application_id"
-              type="text"
-              value={formData.application_id}
-              onChange={(e) => handleChange(e)}
-              placeholder="Application ID"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-              required
-            />
-          </div>
-        </div>
-
-        {/* Present Address Section */}
-        <div className="space-y-5">
-          <h3 className="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">
-            Present Address
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Address Line 1
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.present_address.address_line1}
-                onChange={(e) => handleChange(e, "present_address", "address_line1")}
-                placeholder="Address Line 1"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                required
-              />
-            </div>
-
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Address Line 2
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.present_address.address_line2}
-                onChange={(e) => handleChange(e, "present_address", "address_line2")}
-                placeholder="Address Line 2"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Address Line 3
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.present_address.address_line3}
-                onChange={(e) => handleChange(e, "present_address", "address_line3")}
-                placeholder="Address Line 3"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-              />
-            </div>
-
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Pincode
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.present_address.pincode}
-                onChange={(e) => handleChange(e, "present_address", "pincode")}
-                placeholder="Pincode"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                City
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.present_address.city}
-                onChange={(e) => handleChange(e, "present_address", "city")}
-                placeholder="City"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                required
-              />
-            </div>
-
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                State
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.present_address.state}
-                onChange={(e) => handleChange(e, "present_address", "state")}
-                placeholder="State"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Landmark
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.present_address.landmark}
-                onChange={(e) => handleChange(e, "present_address", "landmark")}
-                placeholder="Landmark"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-              />
-            </div>
-
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Email
-              </label>
-              <input
-                type="email"
-                value={formData.addresses.present_address.email}
-                onChange={(e) => handleChange(e, "present_address", "email")}
-                placeholder="Email"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Phone
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.present_address.phone}
-                onChange={(e) => handleChange(e, "present_address", "phone")}
-                placeholder="Phone"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                required
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Permanent Address Section */}
-        <div className="space-y-5">
-          <div className="flex justify-between items-center border-b border-gray-200 pb-2">
-            <h3 className="text-lg font-semibold text-gray-700">
-              Permanent Address
-            </h3>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="sameAsPresent"
-                checked={sameAsPresent}
-                onChange={handleSameAsPresent}
-                className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-400"
-              />
-              <label htmlFor="sameAsPresent" className="ml-2 text-sm font-medium text-gray-700">
-                Same as Present Address
-              </label>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Address Line 1
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.permanent_address.address_line1}
-                onChange={(e) => handleChange(e, "permanent_address", "address_line1")}
-                placeholder="Address Line 1"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                required
-                disabled={sameAsPresent}
-              />
-            </div>
-
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Address Line 2
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.permanent_address.address_line2}
-                onChange={(e) => handleChange(e, "permanent_address", "address_line2")}
-                placeholder="Address Line 2"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                disabled={sameAsPresent}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Address Line 3
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.permanent_address.address_line3}
-                onChange={(e) => handleChange(e, "permanent_address", "address_line3")}
-                placeholder="Address Line 3"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                disabled={sameAsPresent}
-              />
-            </div>
-
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Pincode
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.permanent_address.pincode}
-                onChange={(e) => handleChange(e, "permanent_address", "pincode")}
-                placeholder="Pincode"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                required
-                disabled={sameAsPresent}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                City
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.permanent_address.city}
-                onChange={(e) => handleChange(e, "permanent_address", "city")}
-                placeholder="City"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                required
-                disabled={sameAsPresent}
-              />
-            </div>
-
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                State
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.permanent_address.state}
-                onChange={(e) => handleChange(e, "permanent_address", "state")}
-                placeholder="State"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                required
-                disabled={sameAsPresent}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Landmark
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.permanent_address.landmark}
-                onChange={(e) => handleChange(e, "permanent_address", "landmark")}
-                placeholder="Landmark"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                disabled={sameAsPresent}
-              />
-            </div>
-
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Email
-              </label>
-              <input
-                type="email"
-                value={formData.addresses.permanent_address.email}
-                onChange={(e) => handleChange(e, "permanent_address", "email")}
-                placeholder="Email"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                required
-                disabled={sameAsPresent}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Phone
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.permanent_address.phone}
-                onChange={(e) => handleChange(e, "permanent_address", "phone")}
-                placeholder="Phone"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                required
-                disabled={sameAsPresent}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Office Address Section */}
-        <div className="space-y-5">
-          <h3 className="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">
-            Office Address
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Address Line 1
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.office_address.address_line1}
-                onChange={(e) => handleChange(e, "office_address", "address_line1")}
-                placeholder="Address Line 1"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                required
-              />
-            </div>
-
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Address Line 2
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.office_address.address_line2}
-                onChange={(e) => handleChange(e, "office_address", "address_line2")}
-                placeholder="Address Line 2"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Address Line 3
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.office_address.address_line3}
-                onChange={(e) => handleChange(e, "office_address", "address_line3")}
-                placeholder="Address Line 3"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-              />
-            </div>
-
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Pincode
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.office_address.pincode}
-                onChange={(e) => handleChange(e, "office_address", "pincode")}
-                placeholder="Pincode"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                City
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.office_address.city}
-                onChange={(e) => handleChange(e, "office_address", "city")}
-                placeholder="City"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                required
-              />
-            </div>
-
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                State
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.office_address.state}
-                onChange={(e) => handleChange(e, "office_address", "state")}
-                placeholder="State"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Landmark
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.office_address.landmark}
-                onChange={(e) => handleChange(e, "office_address", "landmark")}
-                placeholder="Landmark"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-              />
-            </div>
-
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Email
-              </label>
-              <input
-                type="email"
-                value={formData.addresses.office_address.email}
-                onChange={(e) => handleChange(e, "office_address", "email")}
-                placeholder="Email"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="relative">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-600">
-                Phone
-              </label>
-              <input
-                type="text"
-                value={formData.addresses.office_address.phone}
-                onChange={(e) => handleChange(e, "office_address", "phone")}
-                placeholder="Phone"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                required
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Submit Button */}
-        <div className="pt-4">
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`w-full font-bold py-4 rounded-lg shadow-md transition-all duration-300 ${
-              isLoading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-lg hover:from-blue-600 hover:to-indigo-700"
-            }`}
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center">
-              <svg 
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" 
-                xmlns="http://www.w3.org/2000/svg" 
-                fill="none" 
+    <div className={containerClass}>
+      <div className={cardClass}>
+        <div className={innerClass}>
+          {error && (
+            <div className={isDarkMode
+              ? "bg-red-900/20 backdrop-blur-sm border border-red-500/50 text-red-100 p-4 mb-6 rounded-2xl flex items-center animate-pulse"
+              : "bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-xl flex items-center animate-pulse"}>
+              <svg
+                className="h-5 w-5 mr-3"
+                fill="none"
                 viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <circle 
-                  className="opacity-25" 
-                  cx="12" 
-                  cy="12" 
-                  r="10" 
-                  stroke="currentColor" 
-                  strokeWidth="4"
-                ></circle>
-                <path 
-                  className="opacity-75" 
-                  fill="currentColor" 
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
               </svg>
-              Saving...
+              <p>{error}</p>
             </div>
-          ) : (
-            "Save & Continue"
           )}
-        </button>
-      </div>
 
-      {/* Navigation Links */}
-      <div className="flex flex-col md:flex-row justify-between pt-4 text-sm text-blue-600">
-        <Link
-          to="/UserFirstForm"
-          className="mb-2 md:mb-0 hover:text-blue-800 transition-colors duration-200"
-        >
-          ← Back to Personal Details
-        </Link>
-        <Link
-          to="/UserCoApplications"
-          className="hover:text-blue-800 transition-colors duration-200"
-          state={{ applicationId: formData.application_id }}
-        >
-          Skip to Co-applicants →
-        </Link>
+          {success && (
+            <div className={isDarkMode
+              ? "bg-emerald-900/20 backdrop-blur-sm border border-emerald-500/50 text-emerald-100 p-4 mb-6 rounded-2xl flex items-center"
+              : "bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-4 mb-6 rounded-xl flex items-center"}>
+              <svg
+                className="h-5 w-5 mr-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              <p>{success}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="text-center mb-12">
+              <div className="flex justify-center mb-4">
+                <div className={isDarkMode
+                  ? "h-2 w-24 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full"
+                  : "h-2 w-24 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-full"}></div>
+              </div>
+              <h2 className={sectionTitleClass}>
+                <span className={isDarkMode
+                  ? "bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400"
+                  : "bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600"}>
+                  Address Details
+                </span>
+              </h2>
+              <p className={isDarkMode ? "text-slate-300" : "text-gray-500"}>Enter your addresses below</p>
+            </div>
+
+            {/* Application ID */}
+            <div className="group relative mb-8">
+              <input
+                name="application_id"
+                placeholder=" "
+                value={formData.application_id}
+                onChange={handleChange}
+                required
+                className={inputClass}
+                readOnly
+              />
+              <label className={labelClass}>Application ID</label>
+            </div>
+
+            {/* Present Address */}
+            <div>
+              <div className="flex items-center mb-4">
+                <div className={isDarkMode
+                  ? "h-px flex-1 bg-gradient-to-r from-transparent via-purple-400 to-transparent"
+                  : "h-px flex-1 bg-gradient-to-r from-transparent via-indigo-400 to-transparent"}></div>
+                <h3 className={isDarkMode
+                  ? "text-lg font-medium text-indigo-300 px-4 flex items-center"
+                  : "text-lg font-medium text-indigo-600 px-4 flex items-center"}>
+                  Present Address
+                </h3>
+                <div className={isDarkMode
+                  ? "h-px flex-1 bg-gradient-to-r from-purple-400 via-indigo-400 to-transparent"
+                  : "h-px flex-1 bg-gradient-to-r from-indigo-400 via-blue-400 to-transparent"}></div>
+              </div>
+              {renderAddressFields("present_address")}
+            </div>
+
+            {/* Permanent Address */}
+            <div>
+              <div className="flex items-center mb-4">
+                <div className={isDarkMode
+                  ? "h-px flex-1 bg-gradient-to-r from-transparent via-purple-400 to-transparent"
+                  : "h-px flex-1 bg-gradient-to-r from-transparent via-indigo-400 to-transparent"}></div>
+                <h3 className={isDarkMode
+                  ? "text-lg font-medium text-indigo-300 px-4 flex items-center"
+                  : "text-lg font-medium text-indigo-600 px-4 flex items-center"}>
+                  Permanent Address
+                </h3>
+                <div className={isDarkMode
+                  ? "h-px flex-1 bg-gradient-to-r from-purple-400 via-indigo-400 to-transparent"
+                  : "h-px flex-1 bg-gradient-to-r from-indigo-400 via-blue-400 to-transparent"}></div>
+                <div className="ml-4 flex items-center">
+                  <input
+                    type="checkbox"
+                    id="sameAsPresent"
+                    checked={sameAsPresent}
+                    onChange={handleSameAsPresent}
+                    className="w-4 h-4 text-indigo-600 rounded focus:ring-2 focus:ring-indigo-400"
+                  />
+                  <label htmlFor="sameAsPresent" className="ml-2 text-sm font-medium">
+                    Same as Present Address
+                  </label>
+                </div>
+              </div>
+              {renderAddressFields("permanent_address", sameAsPresent)}
+            </div>
+
+            {/* Office Address */}
+            <div>
+              <div className="flex items-center mb-4">
+                <div className={isDarkMode
+                  ? "h-px flex-1 bg-gradient-to-r from-transparent via-purple-400 to-transparent"
+                  : "h-px flex-1 bg-gradient-to-r from-transparent via-indigo-400 to-transparent"}></div>
+                <h3 className={isDarkMode
+                  ? "text-lg font-medium text-indigo-300 px-4 flex items-center"
+                  : "text-lg font-medium text-indigo-600 px-4 flex items-center"}>
+                  Office Address
+                </h3>
+                <div className={isDarkMode
+                  ? "h-px flex-1 bg-gradient-to-r from-purple-400 via-indigo-400 to-transparent"
+                  : "h-px flex-1 bg-gradient-to-r from-indigo-400 via-blue-400 to-transparent"}></div>
+              </div>
+              {renderAddressFields("office_address")}
+            </div>
+
+            <div className="pt-8">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className={`${buttonClass} ${isLoading ? "bg-gray-600 cursor-not-allowed" : ""}`}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin mr-3 h-5 w-5 border-t-2 border-b-2 border-white rounded-full"></div>
+                    Processing...
+                  </div>
+                ) : (
+                  <span className="flex items-center justify-center">
+                    Save and Continue
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </span>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </form>
-  </div>
-);
-};
+    </div>
+  );
+}
 
 export default UserSecondAddress;
