@@ -39,7 +39,6 @@ import UserLoanpage from "./pages/auth/UserLoanPage";
 // Admin & Business Views
 import AdminLogin from "./components/admin-view/AdminLogin";
 import AdminPanel from "./components/admin-view/AdminPanel";
-import BusinessLogin from "./components/business-view/auth/BusinessLogin";
 import B2BDashboard from "./components/business-view/B2BDashboard";
 import TermsAndConditions from "./components/business-view/B2bServicesActivate";
 
@@ -108,7 +107,6 @@ function App() {
             <Route path="/LoginAgent" element={<LoginAgent />} />
             <Route path="/B2BSignup" element={<B2BSignup />} />
             <Route path="/admin-login" element={<AdminLogin />} />
-            <Route path="/business-login" element={<BusinessLogin />} />
             {/* user forgot password */}
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />

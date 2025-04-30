@@ -202,15 +202,7 @@ const Login = ({ updateAuth }) => {
                 Go To Admin Login 👉
               </Link>
             </p>
-            <p className="text-sm text-indigo-200">
-              For Business Purposes?{" "}
-              <Link
-                to="/business-login"
-                className="text-indigo-400 hover:text-white"
-              >
-                Go To Business Login 👉
-              </Link>
-            </p>
+         
           </div>
         </div>
       </div>
