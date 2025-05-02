@@ -27,10 +27,8 @@ const Signup = () => {
 
 
     try {
-      const response = await axios.post(
-        "http://localhost:3001/user/signup",
-        userInfo
-      );
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/user/signup`, userInfo);
+
 
       if (response.data) {
         // Clear form and show success

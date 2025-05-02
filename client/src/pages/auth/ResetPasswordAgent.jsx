@@ -27,7 +27,7 @@ const ResetPasswordAgent = () => {
             return;
         }
         try {
-            const response = await axios.post(`http://localhost:3001/api/agent/reset-password/${token}`, { password });
+            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/agent/reset-password/${token}`, { password });
             setSuccess(true);
             setTimeout(() => {
                 navigate('/LoginAgent'); // Redirect to login after success

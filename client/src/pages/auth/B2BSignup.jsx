@@ -25,7 +25,7 @@ const B2BSignup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:3001/api/SignupRoutes/signup', formData);
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/signup`, formData);
 
       // Create a user object with business type
       const userData = {

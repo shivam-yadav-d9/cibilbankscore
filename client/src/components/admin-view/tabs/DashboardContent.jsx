@@ -12,9 +12,10 @@ const DashboardContent = () => {
       try {
         console.log("Fetching data...");
         const [customersResponse, agentsResponse] = await Promise.all([
-          axios.get('http://localhost:3001/user/users'),
-          axios.get('http://localhost:3001/agent/agents'),
+          axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/users`),
+          axios.get(`${import.meta.env.VITE_BACKEND_URL}/agent/agents`),
         ]);
+        
 
         console.log("Customers response data:", customersResponse.data);
         console.log("Agents response data:", agentsResponse.data);

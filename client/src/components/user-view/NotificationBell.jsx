@@ -3,7 +3,8 @@ import axios from "axios";
 import { io } from "socket.io-client";
 import { Bell, X, Check } from "lucide-react";
 
-const socket = io("http://localhost:3001");
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const socket = io(BACKEND_URL);
 
 function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
@@ -14,12 +15,9 @@ function NotificationBell() {
   const notificationRef = useRef(null);
 
   useEffect(() => {
-    // Fetch notifications from API
     const fetchNotifications = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:3001/api/notifications"
-        );
+        const response = await axios.get(`${BACKEND_URL}/api/notifications`);
         setNotifications(response.data);
         setUnreadCount(response.data.filter((notif) => !notif.read).length);
         setLoading(false);
@@ -31,30 +29,23 @@ function NotificationBell() {
 
     fetchNotifications();
 
-    // Listen for new notifications
     socket.on("notification", (newNotification) => {
       setNotifications((prev) => [newNotification, ...prev]);
       if (!newNotification.read) {
         setUnreadCount((prev) => prev + 1);
-        // Play notification sound
         const audio = new Audio("/notification-sound.mp3");
         audio.play().catch((e) => console.log("Audio play failed:", e));
       }
     });
 
-    // Handle clicks outside the notification panel to close it
     const handleClickOutside = (event) => {
-      if (
-        notificationRef.current &&
-        !notificationRef.current.contains(event.target)
-      ) {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
 
-    // Cleanup
     return () => {
       socket.off("notification");
       document.removeEventListener("mousedown", handleClickOutside);
@@ -68,13 +59,9 @@ function NotificationBell() {
 
   const markAsRead = async (id) => {
     try {
-      await axios.patch(
-        `http://localhost:3001/api/notifications/${id}`
-      );
+      await axios.patch(`${BACKEND_URL}/api/notifications/${id}`);
       setNotifications((prev) =>
-        prev.map((notif) =>
-          notif._id === id ? { ...notif, read: true } : notif
-        )
+        prev.map((notif) => (notif._id === id ? { ...notif, read: true } : notif))
       );
       setUnreadCount((prev) => prev - 1);
     } catch (err) {
@@ -83,14 +70,9 @@ function NotificationBell() {
   };
 
   const deleteNotification = async (id, e) => {
-    // Stop the event from propagating to parent (which would trigger markAsRead)
     e.stopPropagation();
-
     try {
-      await axios.delete(
-        `http://localhost:3001/api/notifications/${id}`
-      );
-      // Remove the deleted notification from state
+      await axios.delete(`${BACKEND_URL}/api/notifications/${id}`);
       const deletedNotif = notifications.find((notif) => notif._id === id);
       setNotifications((prev) => prev.filter((notif) => notif._id !== id));
       if (deletedNotif && !deletedNotif.read) {
@@ -103,12 +85,8 @@ function NotificationBell() {
 
   const markAllAsRead = async () => {
     try {
-      await axios.patch(
-        "http://localhost:3001/api/notifications/mark-all-read"
-      );
-      setNotifications((prev) =>
-        prev.map((notif) => ({ ...notif, read: true }))
-      );
+      await axios.patch(`${BACKEND_URL}/api/notifications/mark-all-read`);
+      setNotifications((prev) => prev.map((notif) => ({ ...notif, read: true })));
       setUnreadCount(0);
     } catch (err) {
       console.error("Error marking all notifications as read:", err);
@@ -117,9 +95,7 @@ function NotificationBell() {
 
   const clearAllNotifications = async () => {
     try {
-      await axios.delete(
-        "http://localhost:3001/api/notifications"
-      );
+      await axios.delete(`${BACKEND_URL}/api/notifications`);
       setNotifications([]);
       setUnreadCount(0);
     } catch (err) {

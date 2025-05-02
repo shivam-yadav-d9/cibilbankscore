@@ -12,7 +12,8 @@ const ForgotPasswordAgent = () => {
     setMessage(''); // Clear previous messages
 
     try {
-      const response = await axios.post('http://localhost:3001/api/agent/forgot-password', { email });
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/agent/forgot-password`, { email });
+
       setMessage(response.data.message); // Display success message
       setEmail(''); // Clear email field on success
     } catch (error) {

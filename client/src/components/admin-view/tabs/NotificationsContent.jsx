@@ -2,10 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 
-// const socket = io('http://localhost:3001//');
-
-// Connect to socket server
-const socket = io("http://localhost:3001", {
+// Connect to socket server using VITE environment variable
+const socket = io(import.meta.env.VITE_BACKEND_URL, {
   transports: ["websocket", "polling"], // ✅ Ensure transport compatibility
   withCredentials: true, // ✅ Fix potential CORS issues
 });
@@ -24,8 +22,8 @@ function NotificationsContent() {
     }
 
     try {
-      // Send to API
-      await axios.post("http://localhost:3001/api/messages", {
+      // Send to API using VITE environment variable
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/messages`, {
         content: message,
         sender,
       });

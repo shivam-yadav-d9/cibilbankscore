@@ -20,48 +20,49 @@ const UsersContent = () => {
         setIsLoading(true);
         setError(null);
         setShowAll(false);
-
+      
         try {
-            let data = [];
-            let apiUrl = '';
-
-            if (userType === 'our-customer') {
-                apiUrl = `http://localhost:3001/user/users?page=${page}&pageSize=${pageSize}`;  // Added page and pageSize
-                if (startDate && endDate) {
-                    apiUrl += `&startDate=${startDate}&endDate=${endDate}`;
-                }
-                const res = await axios.get(apiUrl);
-                data = res.data.users;
-                setTotalPages(res.data.totalPages);      // Update totalPages
-                setCurrentPage(res.data.currentPage);  // Update current page
-            } else if (userType === 'agent-customer') {
-                apiUrl = "http://localhost:3001/api/SignupRoutes/agents";
-                const res = await axios.get(apiUrl);
-                data = res.data;
-            } else if (userType === 'today-customer') {
-                const [ourRes, agentRes] = await Promise.all([
-                    axios.get("http://localhost:3001/user/users"),
-                    axios.get("http://localhost:3001/api/SignupRoutes/agents"),
-                ]);
-                const today = new Date().toISOString().split('T')[0];
-
-                const todayUsers = [
-                    ...ourRes.data.users,
-                    ...agentRes.data
-                ].filter((user) => user.createdAt && user.createdAt.startsWith(today));
-
-                data = todayUsers;
+          let data = [];
+          let apiUrl = '';
+      
+          if (userType === 'our-customer') {
+            apiUrl = `${import.meta.env.VITE_BACKEND_URL}/user/users?page=${page}&pageSize=${pageSize}`;  // Added page and pageSize
+            if (startDate && endDate) {
+              apiUrl += `&startDate=${startDate}&endDate=${endDate}`;
             }
-
-            setUsers(data);
-            setVisibleUsers(data); // No slicing, display all users on the current page
+            const res = await axios.get(apiUrl);
+            data = res.data.users;
+            setTotalPages(res.data.totalPages);      // Update totalPages
+            setCurrentPage(res.data.currentPage);  // Update current page
+          } else if (userType === 'agent-customer') {
+            apiUrl = `${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/agents`;
+            const res = await axios.get(apiUrl);
+            data = res.data;
+          } else if (userType === 'today-customer') {
+            const [ourRes, agentRes] = await Promise.all([
+              axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/users`),
+              axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/agents`),
+            ]);
+            const today = new Date().toISOString().split('T')[0];
+      
+            const todayUsers = [
+              ...ourRes.data.users,
+              ...agentRes.data
+            ].filter((user) => user.createdAt && user.createdAt.startsWith(today));
+      
+            data = todayUsers;
+          }
+      
+          setUsers(data);
+          setVisibleUsers(data); // No slicing, display all users on the current page
         } catch (err) {
-            console.error("Error fetching users:", err);
-            setError(err.message || "An error occurred while fetching data.");
+          console.error("Error fetching users:", err);
+          setError(err.message || "An error occurred while fetching data.");
         } finally {
-            setIsLoading(false);
+          setIsLoading(false);
         }
-    };
+      };
+      
 
     useEffect(() => {
         fetchUsers(activeButton, startDate, endDate, currentPage, pageSize);  // Fetch users with pagination

@@ -83,7 +83,7 @@ function UserBasicData() {
       };
 
       const response = await axios.post(
-        "http://localhost:3001/api/loan/store",
+        `${import.meta.env.VITE_BACKEND_URL}/api/loan/store`,
         formattedData,
         {
           headers: {
@@ -91,6 +91,7 @@ function UserBasicData() {
           },
         }
       );
+      
 
       if (response.data.application_id) {
         localStorage.setItem("userBasicData", JSON.stringify(formattedData));

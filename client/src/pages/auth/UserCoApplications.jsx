@@ -34,11 +34,12 @@ const UserCoApplications = () => {
       try {
         setIsLoading(true);
         const axiosConfig = {
-          baseURL: "http://localhost:3001",
+          baseURL: import.meta.env.VITE_BACKEND_URL,
           headers: {
             "Content-Type": "application/json",
           },
         };
+        
         const response = await axios.get(
           `/api/user-co-app/${applicationId}`,
           axiosConfig

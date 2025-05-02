@@ -36,7 +36,7 @@ const MyProfile = () => {
     // If user is an agent/business, fetch agent details
     if (user.userType === "business" || user.userType === "agent") {
       // If you have a specific endpoint for agent details, use that instead
-      axios.get(`http://localhost:3001/agent/profile/${user._id || user.id}`)
+      axios.get(`${import.meta.env.VITE_BACKEND_URL}/agent/profile/${user._id || user.id}`)
         .then(res => {
           console.log("Agent details:", res.data); // Debug log
           setAgentDetails(res.data);
@@ -52,8 +52,8 @@ const MyProfile = () => {
 
     // Only fetch loan data for customer users
     axios
-      .get(`http://localhost:3001/api/loan/get-by-email/${user.email}`)
-      .then((res) => {
+    axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/loan/get-by-email/${user.email}`)
+    .then((res) => {
         setLoanData(res.data);
         setLoading(false);
       })

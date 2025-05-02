@@ -111,13 +111,14 @@ const UserPreviousData = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3001/api/user-previous-loans/save",
+        `${import.meta.env.VITE_BACKEND_URL}/api/user-previous-loans/save`,
         formData,
         {
           withCredentials: true,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
+      
       setSuccess(true);
       setTimeout(() => {
         navigate("/UserDocuments", {

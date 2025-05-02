@@ -19,7 +19,7 @@ const Login = ({ updateAuth }) => {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:3001/user/login", {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/user/login`, {
         email,
         password,
       });
@@ -166,10 +166,9 @@ const Login = ({ updateAuth }) => {
                 type="submit"
                 disabled={loading}
                 className={`w-full py-3 rounded-lg text-white font-medium 
-                  ${
-                    loading
-                      ? "bg-indigo-600/70 cursor-not-allowed"
-                      : "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-lg transition-transform hover:-translate-y-1"
+                  ${loading
+                    ? "bg-indigo-600/70 cursor-not-allowed"
+                    : "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-lg transition-transform hover:-translate-y-1"
                   }`}
               >
                 {loading ? "Authenticating..." : "Sign in"}
@@ -202,7 +201,7 @@ const Login = ({ updateAuth }) => {
                 Go To Admin Login 👉
               </Link>
             </p>
-         
+
           </div>
         </div>
       </div>

@@ -93,10 +93,8 @@ const UserAddress = () => {
       localStorage.setItem(`formData_${formData.application_id}`, JSON.stringify(formData));
     }
     try {
-      const res = await axios.post(
-        "http://localhost:3001/api/user-address/save-user-address",
-        formData
-      );
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/user-address/save-user-address`, formData);
+
       setSuccess("Submitted successfully");
       navigate("/UserSecondAddress", {
         state: { applicationId: formData.application_id },

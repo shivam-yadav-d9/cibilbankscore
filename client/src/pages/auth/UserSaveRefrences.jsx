@@ -113,13 +113,14 @@ const UserSaveReferences = () => {
     }
     try {
       const response = await axios.post(
-        "http://localhost:3001/api/user-references/save",
+        `${import.meta.env.VITE_BACKEND_URL}/api/user-references/save`,
         formData,
         {
           withCredentials: true,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
+      
       setSuccess("References submitted successfully!");
       setTimeout(() => {
         navigate("/UserPreviousData", {

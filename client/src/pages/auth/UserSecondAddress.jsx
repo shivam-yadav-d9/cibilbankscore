@@ -150,10 +150,13 @@ function UserSecondAddress() {
       );
     }
     try {
-      await axios.post("http://localhost:3001/api/user-second-address/save", formData);
+      await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/user-second-address/save`, 
+        formData
+      );
       setSuccess("Address information saved successfully!");
       navigate("/UserCoApplications", {
-        state: { applicationId: formData.application_id }
+        state: { applicationId: formData.application_id },
       });
     } catch (err) {
       setError("Error submitting form: " + (err.response?.data?.error || err.message));

@@ -12,36 +12,54 @@ const ExpertConnect = ({ onClose }) => {
   const [submissionStatus, setSubmissionStatus] = useState(null);
 
   const supportPhone = "7693004909";
+  const API_ENDPOINT = `${import.meta.env.VITE_BACKEND_URL}/api/expert-connect/submit`;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
 
     try {
-      // Simulate API call with timeout
-      setTimeout(() => {
+      const response = await fetch(API_ENDPOINT, { // Replace with your API endpoint
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, mobile, complaintText }),
+      });
+
+      const data = await response.json(); // Parse the JSON response
+
+      if (response.ok) {
         setSubmissionStatus({
           type: 'success',
           title: 'Complaint Received',
-          message: 'Thank you for reaching out. Our expert team has received your request and will contact you shortly.'
+          message: data.message || 'Thank you for reaching out. Our expert team has received your request and will contact you shortly.'
         });
-        // Clear the form
         setName('');
         setMobile('');
         setComplaintText('');
-        setSubmitting(false);
-      }, 1500);
+
+      } else {
+        // Handle error responses from the server
+        setSubmissionStatus({
+          type: 'error',
+          title: 'Submission Failed',
+          message: data.message || 'An error occurred while submitting. Please try again.',
+        });
+      }
     } catch (err) {
       console.error(err);
-      setSubmissionStatus({ 
-        type: 'error', 
-        message: 'An error occurred while submitting. Please try again.' 
+      setSubmissionStatus({
+        type: 'error',
+        title: 'Network Error',
+        message: 'Failed to connect to the server. Please check your network and try again.',
       });
+    } finally {
       setSubmitting(false);
     }
   };
 
-  // Theme-based classes
+  // Theme-based classes (rest of your component remains the same)
   const bgMain = isDarkMode
     ? "bg-gradient-to-br from-slate-900 to-slate-800"
     : "bg-gradient-to-br from-blue-50 to-indigo-100";

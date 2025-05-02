@@ -34,7 +34,7 @@ const LoanProcessor = () => {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [showForm, setShowForm] = useState(true);
 
-  const BASE_URL = "http://localhost:3001/api/loanProcessor";
+  const BASE_URL = `${import.meta.env.VITE_BACKEND_URL}/api/loanProcessor`;
 
   useEffect(() => {
     if (loanTypeId) {
