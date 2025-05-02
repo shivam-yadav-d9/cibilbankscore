@@ -9,8 +9,8 @@ const generateToken = async () => {
     const response = await axios.post(
       `${process.env.API_BASE_URL || "https://uat-api.evolutosolution.com/v1"}/authentication`,
       {
-        api_key: process.env.EVOLUTO_API_KEY,
-        api_secret: process.env.EVOLUTO_API_SECRET
+        api_key: process.env.API_KEY,
+        api_secret: process.env.API_SECRET
       },
       {
         headers: {

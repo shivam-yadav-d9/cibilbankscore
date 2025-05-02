@@ -22,7 +22,7 @@ const generateResetToken = (userId) => {
 
 // Send email with reset link
 const sendResetEmail = async (email, token) => {
-  const resetLink = `${process.env.CLIENT_URL}/reset-password/${token}`;
+  const resetLink = `${process.env.CLIENT_ORIGIN}/reset-password/${token}`;
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,

@@ -3,15 +3,15 @@ import dotenv from 'dotenv'; // Import dotenv
 
 dotenv.config(); // Load environment variables
 
-const BASE_URL = process.env.BASE_URL || "https://uat-api.evolutosolution.com/v1";  // Use environment variable or default
+const BASE_URL = process.env.API_BASE_URL;  // Use environment variable or default
 
 // Function to get API token
 // Function to get API token
 export const fetchToken = async (req, res) => {
     try {
         // Create the Authorization header using your API key and secret from environment variables
-        const apiKey = process.env.EVOLUTO_API_KEY;
-        const apiSecret = process.env.EVOLUTO_API_SECRET;
+        const apiKey = process.env.API_KEY;
+        const apiSecret = process.env.API_SECRET;
         
         if (!apiKey || !apiSecret) {
             return res.status(400).json({
@@ -30,7 +30,7 @@ export const fetchToken = async (req, res) => {
             headers: {
                 source: "web",
                 package: "10.0.2.215",
-                outletid: process.env.EVOLUTO_REF_CODE || "OUI202590898",
+                outletid: process.env.REF_CODE,
                 "Authorization": `Basic ${basicAuth}`
             },
         });

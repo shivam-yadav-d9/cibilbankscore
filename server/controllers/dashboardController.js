@@ -1,5 +1,4 @@
 import User from "../models/usermodel.js"; // ✅ Import User model
-import Profile from "../models/profilemodel.js"; // ✅ Import Profile model
 
 // Get all registered users
 export const getAllUsers = async (req, res) => {

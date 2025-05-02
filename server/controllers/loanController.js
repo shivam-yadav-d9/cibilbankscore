@@ -2,8 +2,8 @@ import axios from "axios";
 import LoanApplication from "../models/LoanApplication.js"; // Assuming you have this model
 
 // Define URL constants at the top of the file
-const EVOLUTO_AUTH_URL = process.env.EVOLUTO_AUTH_URL || "https://uat-api.evolutosolution.com/v1/authentication";
-const STORE_DETAILS_URL = process.env.STORE_DETAILS_URL || "https://uat-api.evolutosolution.com/v1/loan/storeBasicDetails";
+const EVOLUTO_AUTH_URL = process.env.EVOLUTO_AUTH_URL
+const STORE_DETAILS_URL = process.env.STORE_DETAILS_URL
 
 export const storeLoanDetails = async (req, res) => {
   try {
@@ -15,9 +15,9 @@ export const storeLoanDetails = async (req, res) => {
     }
 
     // Use environment variables or fallback to defaults for development
-    const API_KEY = process.env.EVOLUTO_API_KEY || "47e3b88954003cab3e4f518c597651be73d2d966a41f8aec7f2697b72590d6c5";
-    const API_SECRET = process.env.EVOLUTO_API_SECRET || "BNRq8RMC366ClzU3X5ftP85yKInM/tDEb8gyzwv1/wmfVvpD7GTF5LrIRhSy1PEF97YXu3nsJzC3UhcrUl2TLAQMYrm0QGlQ0damxe2LEPT8sa5GIFGdMVRrC8vODtBSvt+pNjKnuiodXQHwuza1MtqK6E86mRx8K3AcAAO5FykGl4tfze9yeK3fGmgFZJ3z";
-    const REF_CODE = process.env.EVOLUTO_REF_CODE || "OUI202590898";
+    const API_KEY = process.env.API_KEY;
+    const API_SECRET = process.env.API_SECRET;
+    const REF_CODE = process.env.REF_CODE ;
 
     console.log("✅ Environment variables:");
     console.log("🔑 API_KEY:", API_KEY);

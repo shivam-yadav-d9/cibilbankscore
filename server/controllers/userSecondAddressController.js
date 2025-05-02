@@ -9,9 +9,9 @@ export const saveUserSecondAddress = async (req, res) => {
     console.log("Incoming data:", req.body);
 
     // First, ensure we have necessary environment variables
-    const API_KEY = process.env.API_KEY || process.env.EVOLUTO_API_KEY;
-    const API_SECRET = process.env.API_SECRET || process.env.EVOLUTO_API_SECRET;
-    const REF_CODE = req.body.ref_code || process.env.REF_CODE || process.env.EVOLUTO_REF_CODE;
+    const API_KEY = process.env.API_KEY;
+    const API_SECRET = process.env.API_SECRET;
+    const REF_CODE = req.body.ref_code || process.env.REF_CODE;
     
     // Check if we have all required values
     if (!API_KEY || !API_SECRET) {

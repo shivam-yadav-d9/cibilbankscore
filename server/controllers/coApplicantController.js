@@ -5,10 +5,10 @@ import dotenv from "dotenv";
 // Load environment variables
 dotenv.config();
 
-const API_KEY = process.env.EVOLUTO_API_KEY;
-const API_SECRET = process.env.EVOLUTO_API_SECRET;
-const REF_CODE = process.env.EVOLUTO_REF_CODE;
-const API_BASE_URL = process.env.EVOLUTO_API_BASE_URL || "https://uat-api.evolutosolution.com/v1";
+const API_KEY = process.env.API_KEY;
+const API_SECRET = process.env.API_SECRET;
+const REF_CODE = process.env.REF_CODE;
+const API_BASE_URL = process.env.API_BASE_URL || "https://uat-api.evolutosolution.com/v1";
 
 // Validate environment variables
 const validateEnvVariables = () => {
@@ -245,5 +245,3 @@ export const getCoApplicantByApplicationId = async (req, res) => {
   }
 };
 
-// Then add this route in your routes file:
-// router.get("/api/user-co-app/:applicationId", getCoApplicantByApplicationId);

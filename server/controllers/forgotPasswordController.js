@@ -43,7 +43,7 @@ export const forgotPassword = async (req, res) => {
     await token.save();
 
     // Send reset email
-    const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`; // Corrected link
+    const resetLink = `${process.env.CLIENT_ORIGIN}/reset-password?token=${resetToken}`; // Corrected link
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: user.email,
@@ -96,4 +96,3 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-console.log("CLIENT_URL:", process.env.CLIENT_URL);

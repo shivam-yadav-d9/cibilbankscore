@@ -4,7 +4,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import authRoutes from "./routes/authroutes.js";
 import apiRoutes from "./routes/apiRoutes.js";
-import profileRoutes from "./routes/profileRoutes.js";
+
+
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import message from "./routes/messages.js";
 import savedocsRoutes from "./routes/saveDocsRoutes.js"
@@ -23,7 +24,8 @@ import LoanProcessorRoutes from './routes/LoanProcessorRoutes.js'; // Import loa
 import coApplicantRoutes from "./routes/coApplicantRoutes.js";
 import userReferencesRoute from "./routes/userReferences.js";
 import userPreviousLoanRoutes from "./routes/userPreviousLoanRoutes.js";
-import complaintRoutes from "./routes/complaintRoutes.js"
+
+
 import SignupRoutes from './routes/AgentRoute.js';
 import AgentRoutes from "./routes/AgentRoute.js"; // Import agent routes
 
@@ -84,18 +86,16 @@ app.use(express.json());
 
 // Database Connection
 mongoose
-    .connect(process.env.MONGO_URI || "mongodb://localhost:27017/Bankdata")
-    .then(() => console.log("MongoDB Connected"))
+    .connect(process.env.MONGO_URI)
+    .then(() => console.log("MongoDB Connected successfully"))
     .catch((err) => console.error("MongoDB Connection Error:", err));
 
 // Routes
 app.use("/user", authRoutes);
 app.use("/api", apiRoutes);
-app.use("/profile", profileRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/api/messages", message);
 app.use("/api/notifications", notification);
-app.use('/api/complaints', complaintRoutes);
 app.use("/api/loan", loanRoutes); // **CHANGED TO /api/loan**
 app.use("/api/user-address", UserAddress); // ✅ New route to save applicant data
 app.use("/api/user-second-address", userSecondAddressRoutes);
@@ -117,7 +117,6 @@ app.use('/api/expert-connect', expertConnectRoutes);
 
 
 
-console.log("TEST_VARIABLE:", process.env.TEST_VARIABLE);
 
 // Basic route
 app.get("/", (req, res) => {
