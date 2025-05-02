@@ -6,6 +6,8 @@ import { useTheme } from "../../contexts/ThemeContext"; // Adjust path as needed
 function UserBasicData() {
   const location = useLocation();
   const loanTypeId = location.state?.loan_type_id;
+  const [userType, setUserType] = useState(null);
+
   const [formData, setFormData] = useState({
     name: "",
     mobile: "",
@@ -43,6 +45,23 @@ function UserBasicData() {
       return;
     }
 
+    let detectedUserType = null;
+    if (userData) {
+      const user = JSON.parse(userData);
+      detectedUserType = user.userType || null;
+      setUserType(detectedUserType);
+
+      // Only prefill for customers
+      if (detectedUserType !== "business") {
+        setFormData((prev) => ({
+          ...prev,
+          name: user.name || "",
+          email: user.email || "",
+          mobile: user.mobile || "",
+        }));
+      }
+    }
+
     if (previousFormData) {
       const parsedData = JSON.parse(previousFormData);
       setFormData((prev) => ({
@@ -54,16 +73,6 @@ function UserBasicData() {
         pan: parsedData.pan_no || prev.pan,
         aadhaar: parsedData.aadhaar_no || prev.aadhaar,
         loan_amount: parsedData.loan_amount || prev.loan_amount,
-      }));
-    }
-
-    if (userData) {
-      const user = JSON.parse(userData);
-      setFormData((prev) => ({
-        ...prev,
-        name: user.name || "",
-        email: user.email || "",
-        mobile: user.mobile || "",
       }));
     }
   }, [navigate]);
@@ -91,7 +100,6 @@ function UserBasicData() {
           },
         }
       );
-      
 
       if (response.data.application_id) {
         localStorage.setItem("userBasicData", JSON.stringify(formattedData));
@@ -108,7 +116,6 @@ function UserBasicData() {
         );
       }
     } catch (error) {
-      console.error("Error submitting application:", error);
       setError(
         error.response?.data?.message ||
           error.message ||
@@ -244,7 +251,7 @@ function UserBasicData() {
                       onChange={handleChange}
                       required
                       className={inputClass}
-                      readOnly
+                      readOnly={userType !== null && userType !== "business"}
                     />
                     <label className={labelClass}>
                       Full Name
@@ -260,7 +267,7 @@ function UserBasicData() {
                       onChange={handleChange}
                       required
                       className={inputClass}
-                      readOnly
+                      readOnly={userType !== null && userType !== "business"}
                     />
                     <label className={labelClass}>
                       Email Address
@@ -291,7 +298,7 @@ function UserBasicData() {
                       onChange={handleChange}
                       required
                       className={inputClass}
-                      readOnly
+                      readOnly={userType !== null && userType !== "business"}
                     />
                     <label className={isDarkMode
                       ? "absolute left-4 top-0 text-indigo-400 text-xs font-medium"
@@ -345,7 +352,7 @@ function UserBasicData() {
                       onChange={handleChange}
                       required
                       className={inputClass}
-                      readOnly
+                      readOnly={userType !== null && userType !== "business"}
                     />
                     <label className={labelClass}>
                       Pincode
@@ -445,7 +452,7 @@ function UserBasicData() {
                       onChange={handleChange}
                       required
                       className={inputClass}
-                      readOnly
+                      readOnly={userType !== null && userType !== "business"}
                     />
                     <label className={labelClass}>
                       Loan Amount
@@ -482,7 +489,7 @@ function UserBasicData() {
                       onChange={handleChange}
                       required
                       className={inputClass}
-                      readOnly
+                      readOnly={userType !== null && userType !== "business"}
                     />
                     <label className={labelClass}>
                       PAN Number
@@ -497,7 +504,7 @@ function UserBasicData() {
                       onChange={handleChange}
                       required
                       className={inputClass}
-                      readOnly
+                      readOnly={userType !== null && userType !== "business"}
                     />
                     <label className={labelClass}>
                       Aadhaar Number
