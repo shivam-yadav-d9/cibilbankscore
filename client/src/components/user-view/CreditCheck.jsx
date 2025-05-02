@@ -1,385 +1,444 @@
-import React, { useState } from "react";
-import axios from "axios";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useTheme } from "../../contexts/ThemeContext"; // Assuming same folder structure as UserBasicData
 
 const CreditCheck = () => {
-  // Pre-populate with test data for easier testing
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { isDarkMode } = useTheme();
+  
+  const [isLoading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const [result, setResult] = useState(null);
+
   const [formData, setFormData] = useState({
-    ref_code: "OUI202590898", // Default value
     fname: "",
     lname: "",
     phone: "",
     pan_no: "",
-    dob: ""
+    dob: "",
+    ref_code: "OUI202590898" // Default reference code
   });
 
-  const [apiToken, setApiToken] = useState("");
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userData = localStorage.getItem("user");
+    const previousFormData = localStorage.getItem("loanProcessorFormData");
 
-  // Authentication credentials
-  const API_USERNAME = "47e3b88954003cab3e4f518c597651be73d2d966a41f8aec7f2697b72590d6c5";
-  const API_PASSWORD = "BNRq8RMC366ClzU3X5ftP85yKInM/tDEb8gyzwv1/wmfVvpD7GTF5LrIRhSy1PEF97YXu3nsJzC3UhcrUl2TLAQMYrm0QGlQ0damxe2LEPT8sa5GIFGdMVRrC8vODtBSvt+pNjKnuiodXQHwuza1MtqK6E86mRx8K3AcAAO5FykGl4tfze9yeK3fGmgFZJ3z";
-
-  // Base64 encoding is already done in the Authorization header
-
-  
-
-  // Function to get API token
-  const fetchToken = async () => {
-    try {
-      setError("");
-      setIsAuthenticating(true);
-      
-      const response = await axios({
-        method: 'post',
-        maxBodyLength: Infinity,
-        url: 'https://uat-api.evolutosolution.com/v1/authentication',
-        headers: { 
-          'source': 'web', 
-          'package': '10.0.2.215', 
-          'outletid': 'OUI202590898', 
-          'Authorization': 'Basic NDdlM2I4ODk1NDAwM2NhYjNlNGY1MThjNTk3NjUxYmU3M2QyZDk2NmE0MWY4YWVjN2YyNjk3YjcyNTkwZDZjNTpCTlJxOFJNQzM2NkNselUzWDVmdFA4NXlLSW5NL3RERWI4Z3l6d3YxL3dtZlZ2cEQ3R1RGNUxySVJoU3kxUEVGOTdZWHUzbnNKekMzVWhjclVsMlRMQVFNWXJtMFFHbFEwZGFteGUyTEVQVDhzYTVHSUZHZE1WUnJDOHZPRHRCU3Z0K3BOaktudWlvZFhRSHd1emExTXRxSzZFODZtUng4SzNBY0FBTzVGeWtHbDR0ZnplOXllSzNmR21nRlpKM3o='
-        }
-      });
-
-      console.log("Authentication response:", response.data);
-      
-      if (response.data && response.data.data && response.data.data.token) {
-        setApiToken(response.data.data.token);
-        console.log("Token acquired successfully");
-      } else {
-        setError("Failed to get API token: No token in response");
-      }
-    } catch (err) {
-      console.error("Token fetch error:", err);
-      setError(`Authentication failed: ${err.response?.data?.message || err.message}`);
-    } finally {
-      setIsAuthenticating(false);
+    if (!token) {
+      navigate("/login");
+      return;
     }
-  };
+
+    if (previousFormData) {
+      const parsedData = JSON.parse(previousFormData);
+      setFormData(prev => ({
+        ...prev,
+        dob: parsedData.dob || prev.dob,
+        phone: parsedData.mobile || prev.phone,
+        pan_no: parsedData.pan_no || prev.pan_no,
+      }));
+    }
+
+    if (userData) {
+      const user = JSON.parse(userData);
+      // Split the full name into first and last name
+      if (user.name) {
+        const nameParts = user.name.split(' ');
+        setFormData(prev => ({
+          ...prev,
+          fname: nameParts[0] || "",
+          lname: nameParts.slice(1).join(' ') || "",
+          phone: user.mobile || prev.phone
+        }));
+      }
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!apiToken) {
-      setError("API token is required. Please wait for authentication.");
-      return;
-    }
-
-    setError("");
     setLoading(true);
+    setError(null);
     setResult(null);
 
     try {
-      console.log("Submitting with token:", apiToken);
-      console.log("Form data:", formData);
-      
-      // Using the token in the header as required by the API
-      const config = {
-        method: 'post',
-        maxBodyLength: Infinity,
-        url: 'https://uat-api.evolutosolution.com/v1/loan/checkCreditScore',
-        headers: { 
-          'token': apiToken, // This is the correct header name based on your code
-          'Content-Type': 'application/json'
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/credit/check`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        data: formData
-      };
-      
-      const response = await axios.request(config);
-
-      console.log("Credit check response:", response.data);
-      setResult(response.data);
-    } catch (err) {
-      console.error("Credit check error:", err);
-      setError(err.response?.data?.message || "Failed to check credit score");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Function to handle direct test with fixed data
-  const handleDirectTest = async () => {
-    setError("");
-    setLoading(true);
-    setResult(null);
-
-    try {
-      const data = JSON.stringify({
-        "ref_code": "OUI202590898",
-        "fname": "",
-        "lname": "",
-        "phone": "",
-        "pan_no": "",
-        "dob": ""
+        body: JSON.stringify(formData)
       });
 
-      const config = {
-        method: 'post',
-        maxBodyLength: Infinity,
-        url: 'https://uat-api.evolutosolution.com/v1/loan/checkCreditScore',
-        headers: { 
-          'token': apiToken,
-          'Content-Type': 'application/json'
-        },
-        data: data
-      };
+      const data = await response.json();
 
-      const response = await axios.request(config);
-      console.log("Direct test response:", response.data);
-      setResult(response.data);
-    } catch (err) {
-      console.error("Direct test error:", err);
-      setError(err.response?.data?.message || "Failed to perform direct test");
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to check credit score");
+      }
+
+      setResult(data);
+      setSuccess("Credit score check completed successfully!");
+      
+      // Store the credit check result for future reference
+      localStorage.setItem("creditCheckResult", JSON.stringify(data));
+      
+    } catch (error) {
+      console.error("Error checking credit score:", error);
+      setError(error.message || "Failed to check credit score");
     } finally {
       setLoading(false);
     }
   };
 
+  // Theme-based classes from UserBasicData
+  const containerClass = isDarkMode
+    ? "min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center"
+    : "min-h-screen bg-gradient-to-br from-white to-gray-100 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center";
+
+  const cardClass = isDarkMode
+    ? "max-w-4xl w-full bg-white/10 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl border border-white/20 animate-fadeIn"
+    : "max-w-4xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl border border-gray-100 animate-fadeIn";
+
+  const innerClass = isDarkMode
+    ? "p-8 md:p-12"
+    : "p-8 md:p-12";
+
+  const sectionTitleClass = isDarkMode
+    ? "text-4xl font-bold text-white mb-2"
+    : "text-4xl font-bold text-gray-900 mb-2";
+
+  const labelClass = isDarkMode
+    ? "absolute left-4 top-4 transition-all duration-300 transform peer-focus:-translate-y-5 peer-focus:scale-75 peer-focus:text-indigo-400 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:text-gray-400 -translate-y-5 scale-75 text-indigo-400"
+    : "absolute left-4 top-4 transition-all duration-300 transform peer-focus:-translate-y-5 peer-focus:scale-75 peer-focus:text-indigo-600 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:text-gray-400 -translate-y-5 scale-75 text-indigo-600";
+
+  const inputClass = isDarkMode
+    ? "w-full px-4 py-4 bg-slate-800/50 backdrop-blur-sm text-white border border-indigo-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 peer"
+    : "w-full px-4 py-4 bg-white text-gray-800 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-300 peer";
+
+  const buttonClass = isDarkMode
+    ? "w-full font-medium text-lg py-4 px-6 rounded-xl shadow-lg transition-all duration-500 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white hover:shadow-indigo-500/50 transform hover:-translate-y-1"
+    : "w-full font-medium text-lg py-4 px-6 rounded-xl shadow-lg transition-all duration-500 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white hover:shadow-indigo-500/50 transform hover:-translate-y-1";
+
+  const scoreCardClass = isDarkMode
+    ? "bg-slate-800/50 backdrop-blur-sm border border-indigo-500/30 rounded-2xl p-6 mt-8"
+    : "bg-white border border-gray-200 rounded-2xl p-6 mt-8 shadow-lg";
+
   return (
-    <div className="max-w-lg mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-6 text-center">
-        Check Credit Score
-      </h2>
-
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
-
-      {isAuthenticating && !error && (
-        <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4">
-          Authenticating...
-        </div>
-      )}
-
-      {loading && !error && !isAuthenticating && (
-        <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4">
-          Processing request...
-        </div>
-      )}
-
-      {!isAuthenticating && apiToken && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          Ready to check credit score
-        </div>
-      )}
-
-      <div className="flex justify-between mb-4">
-        <button
-          onClick={fetchToken}
-          className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          disabled={isAuthenticating}
-        >
-          Get Fresh Token
-        </button>
-        
-        <button
-          onClick={handleDirectTest}
-          className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          disabled={!apiToken || loading || isAuthenticating}
-        >
-          Run Direct Test
-        </button>
-      </div>
-
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
-      >
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="ref_code"
-          >
-            Reference Code
-          </label>
-          <input
-            id="ref_code"
-            name="ref_code"
-            type="text"
-            value={formData.ref_code}
-            onChange={handleChange}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            readOnly
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Default reference code used
-          </p>
-        </div>
-
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="fname"
-          >
-            First Name
-          </label>
-          <input
-            id="fname"
-            name="fname"
-            type="text"
-            value={formData.fname}
-            onChange={handleChange}
-            required
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="lname"
-          >
-            Last Name
-          </label>
-          <input
-            id="lname"
-            name="lname"
-            type="text"
-            value={formData.lname}
-            onChange={handleChange}
-            required
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="phone"
-          >
-            Phone Number
-          </label>
-          <input
-            id="phone"
-            name="phone"
-            type="text"
-            value={formData.phone}
-            onChange={handleChange}
-            required
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="pan_no"
-          >
-            PAN Number
-          </label>
-          <input
-            id="pan_no"
-            name="pan_no"
-            type="text"
-            value={formData.pan_no}
-            onChange={handleChange}
-            required
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          />
-        </div>
-
-        <div className="mb-6">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="dob"
-          >
-            Date of Birth (YYYY-MM-DD)
-          </label>
-          <input
-            id="dob"
-            name="dob"
-            type="date"
-            value={formData.dob}
-            onChange={handleChange}
-            required
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <button
-            type="submit"
-            className={`font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full ${
-              !apiToken || loading || isAuthenticating
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700 text-white"
-            }`}
-            disabled={!apiToken || loading || isAuthenticating}
-          >
-            {isAuthenticating ? "Authenticating..." : loading ? "Processing..." : "Check Credit Score"}
-          </button>
-        </div>
-      </form>
-
-      {result && (
-        <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-          <h3 className="text-xl font-bold mb-4">Credit Score Result</h3>
-
-          <div className="border-t border-b py-4 mb-4">
-            <div className="flex justify-between mb-2">
-              <span className="font-medium">Success:</span>
-              <span
-                className={result.success ? "text-green-600" : "text-red-600"}
+    <div className={containerClass}>
+      <div className={cardClass}>
+        <div className={innerClass}>
+          {error && (
+            <div className={isDarkMode
+              ? "bg-red-900/20 backdrop-blur-sm border border-red-500/50 text-red-100 p-4 mb-6 rounded-2xl flex items-center animate-pulse"
+              : "bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-xl flex items-center animate-pulse"}>
+              <svg
+                className="h-5 w-5 mr-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                {result.success ? "Yes" : "No"}
-              </span>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <p>{error}</p>
+            </div>
+          )}
+
+          {success && (
+            <div className={isDarkMode
+              ? "bg-emerald-900/20 backdrop-blur-sm border border-emerald-500/50 text-emerald-100 p-4 mb-6 rounded-2xl flex items-center"
+              : "bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-4 mb-6 rounded-xl flex items-center"}>
+              <svg
+                className="h-5 w-5 mr-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              <p>{success}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="text-center mb-12">
+              <div className="flex justify-center mb-4">
+                <div className={isDarkMode
+                  ? "h-2 w-24 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full"
+                  : "h-2 w-24 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-full"}></div>
+              </div>
+              <h2 className={sectionTitleClass}>
+                <span className={isDarkMode
+                  ? "bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400"
+                  : "bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600"}>
+                  Credit Score Check
+                </span>
+              </h2>
+              <p className={isDarkMode ? "text-slate-300" : "text-gray-500"}>
+                Enter your details to check your credit score
+              </p>
             </div>
 
-            {result.message && (
-              <div className="flex justify-between">
-                <span className="font-medium">Message:</span>
-                <span>{result.message}</span>
-              </div>
-            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Personal Information Section */}
+              <div className="space-y-6 md:col-span-2">
+                <div className="flex items-center">
+                  <div className={isDarkMode
+                    ? "h-px flex-1 bg-gradient-to-r from-transparent via-purple-400 to-transparent"
+                    : "h-px flex-1 bg-gradient-to-r from-transparent via-indigo-400 to-transparent"}></div>
+                  <h3 className={isDarkMode
+                    ? "text-lg font-medium text-indigo-300 px-4 flex items-center"
+                    : "text-lg font-medium text-indigo-600 px-4 flex items-center"}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Personal Details
+                  </h3>
+                  <div className={isDarkMode
+                    ? "h-px flex-1 bg-gradient-to-r from-purple-400 via-indigo-400 to-transparent"
+                    : "h-px flex-1 bg-gradient-to-r from-indigo-400 via-blue-400 to-transparent"}></div>
+                </div>
 
-            {result.statusCode && (
-              <div className="flex justify-between">
-                <span className="font-medium">Status Code:</span>
-                <span>{result.statusCode}</span>
-              </div>
-            )}
-
-            {result.data && (
-              <div className="mt-4">
-                <h4 className="font-medium mb-2">Credit Score:</h4>
-                <div className="bg-green-100 p-4 rounded text-center">
-                  <div className="text-3xl font-bold text-green-700">
-                    {result.data.score}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="group relative">
+                    <input
+                      name="fname"
+                      placeholder=" "
+                      value={formData.fname}
+                      onChange={handleChange}
+                      required
+                      className={inputClass}
+                    />
+                    <label className={labelClass}>
+                      First Name
+                    </label>
                   </div>
-                  <div className="mt-2 text-green-800">
-                    {result.data.name}
+
+                  <div className="group relative">
+                    <input
+                      name="lname"
+                      placeholder=" "
+                      value={formData.lname}
+                      onChange={handleChange}
+                      required
+                      className={inputClass}
+                    />
+                    <label className={labelClass}>
+                      Last Name
+                    </label>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="group relative">
+                    <input
+                      name="phone"
+                      placeholder=" "
+                      value={formData.phone}
+                      onChange={handleChange}
+                      required
+                      className={inputClass}
+                    />
+                    <label className={labelClass}>
+                      Phone Number
+                    </label>
+                  </div>
+
+                  <div className="group relative">
+                    <input
+                      name="dob"
+                      type="date"
+                      value={formData.dob}
+                      onChange={handleChange}
+                      required
+                      className={inputClass}
+                    />
+                    <label className={isDarkMode
+                      ? "absolute left-4 top-0 text-indigo-400 text-xs font-medium"
+                      : "absolute left-4 top-0 text-indigo-600 text-xs font-medium"}>
+                      Date of Birth
+                    </label>
                   </div>
                 </div>
               </div>
-            )}
-          </div>
-        </div>
-      )}
 
-      {/* Display current form and token data for debugging */}
-      <div className="mt-8 bg-gray-100 p-4 rounded">
-        <h3 className="text-lg font-semibold mb-2">Debug Information</h3>
-        <div className="mb-2">
-          <strong>API Token:</strong> 
-          <div className="text-xs overflow-auto bg-gray-200 p-2 rounded">
-            {apiToken ? `${apiToken.substring(0, 20)}...` : "No token"}
-          </div>
-        </div>
-        <div>
-          <strong>Current Form Data:</strong>
-          <pre className="text-xs overflow-auto bg-gray-200 p-2 rounded">
-            {JSON.stringify(formData, null, 2)}
-          </pre>
+              {/* ID Information Section */}
+              <div className="space-y-6 md:col-span-2">
+                <div className="flex items-center">
+                  <div className={isDarkMode
+                    ? "h-px flex-1 bg-gradient-to-r from-transparent via-purple-400 to-transparent"
+                    : "h-px flex-1 bg-gradient-to-r from-transparent via-indigo-400 to-transparent"}></div>
+                  <h3 className={isDarkMode
+                    ? "text-lg font-medium text-indigo-300 px-4 flex items-center"
+                    : "text-lg font-medium text-indigo-600 px-4 flex items-center"}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                    </svg>
+                    PAN Details
+                  </h3>
+                  <div className={isDarkMode
+                    ? "h-px flex-1 bg-gradient-to-r from-purple-400 via-indigo-400 to-transparent"
+                    : "h-px flex-1 bg-gradient-to-r from-indigo-400 via-blue-400 to-transparent"}></div>
+                </div>
+
+                <div className="group relative">
+                  <input
+                    name="pan_no"
+                    placeholder=" "
+                    value={formData.pan_no}
+                    onChange={handleChange}
+                    required
+                    className={inputClass}
+                  />
+                  <label className={labelClass}>
+                    PAN Number
+                  </label>
+                </div>
+
+                <div className="group relative opacity-50">
+                  <input
+                    name="ref_code"
+                    placeholder=" "
+                    value={formData.ref_code}
+                    onChange={handleChange}
+                    readOnly
+                    className={inputClass}
+                  />
+                  <label className={labelClass}>
+                    Reference Code (Auto-filled)
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-8">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className={`${buttonClass} ${isLoading ? "bg-gray-600 cursor-not-allowed" : ""}`}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin mr-3 h-5 w-5 border-t-2 border-b-2 border-white rounded-full"></div>
+                    Checking Credit Score...
+                  </div>
+                ) : (
+                  <span className="flex items-center justify-center">
+                    Check Credit Score
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </span>
+                )}
+              </button>
+            </div>
+          </form>
+
+          {/* Credit Score Result */}
+          {result && (
+            <div className={scoreCardClass}>
+              <h3 className={isDarkMode 
+                ? "text-xl font-bold mb-6 text-white text-center" 
+                : "text-xl font-bold mb-6 text-gray-800 text-center"}>
+                Credit Score Result
+              </h3>
+              
+              <div className={isDarkMode
+                ? "bg-gradient-to-br from-indigo-900/40 to-purple-900/40 rounded-xl p-6 border border-indigo-500/30"
+                : "bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-100"}>
+                
+                {result.success === false && (
+                  <div className="text-center">
+                    <div className={isDarkMode ? "text-red-400" : "text-red-600"}>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      <p className="text-lg font-medium">{result.message}</p>
+                    </div>
+                  </div>
+                )}
+                
+                {result.success && result.data && (
+                  <div className="text-center">
+                    <div className={isDarkMode
+                      ? "inline-block rounded-full p-3 bg-green-900/30 border border-green-500/30 mb-4"
+                      : "inline-block rounded-full p-3 bg-green-100 border border-green-200 mb-4"}>
+                      <svg xmlns="http://www.w3.org/2000/svg" className={isDarkMode ? "h-16 w-16 text-green-400" : "h-16 w-16 text-green-500"} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    
+                    <div className={isDarkMode
+                      ? "text-5xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300"
+                      : "text-5xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-500"}>
+                      {result.data.score}
+                    </div>
+                    
+                    <div className={isDarkMode ? "text-xl font-medium text-green-300 mb-6" : "text-xl font-medium text-green-700 mb-6"}>
+                      {result.data.name}
+                    </div>
+                    
+                    <div className={isDarkMode
+                      ? "text-sm text-slate-300 max-w-md mx-auto"
+                      : "text-sm text-gray-600 max-w-md mx-auto"}>
+                      This credit score is provided based on the information you've submitted. A higher score indicates better creditworthiness.
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {result.success && result.data && (
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className={isDarkMode
+                    ? "bg-slate-800/60 rounded-lg p-4 border border-indigo-500/20"
+                    : "bg-white rounded-lg p-4 border border-gray-200 shadow-sm"}>
+                    <h4 className={isDarkMode ? "text-indigo-300 font-medium mb-2" : "text-indigo-600 font-medium mb-2"}>Next Steps</h4>
+                    <p className={isDarkMode ? "text-sm text-slate-300" : "text-sm text-gray-600"}>
+                      Based on your credit score, you may qualify for various loan products. Continue your application to explore options.
+                    </p>
+                  </div>
+                  
+                  <div className={isDarkMode
+                    ? "bg-slate-800/60 rounded-lg p-4 border border-indigo-500/20"
+                    : "bg-white rounded-lg p-4 border border-gray-200 shadow-sm"}>
+                    <h4 className={isDarkMode ? "text-indigo-300 font-medium mb-2" : "text-indigo-600 font-medium mb-2"}>Tips</h4>
+                    <p className={isDarkMode ? "text-sm text-slate-300" : "text-sm text-gray-600"}>
+                      Maintain timely repayments of existing loans and credit cards to improve your credit score over time.
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => navigate("/UserBasicData")}
+                  className={isDarkMode
+                    ? "inline-flex items-center px-4 py-2 rounded-lg bg-indigo-600/40 hover:bg-indigo-600/60 border border-indigo-500/50 text-indigo-200 transition-colors"
+                    : "inline-flex items-center px-4 py-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors"}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                  Continue to Loan Application
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

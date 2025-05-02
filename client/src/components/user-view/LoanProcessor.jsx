@@ -9,6 +9,10 @@ const LoanProcessor = () => {
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
 
+  // Detect userType from localStorage
+  const [userType, setUserType] = useState(null);
+  const [jwtToken, setJwtToken] = useState("");
+
   const [formData, setFormData] = useState({
     ref_code: "OUI202590898",
     name: "",
@@ -53,23 +57,35 @@ const LoanProcessor = () => {
       navigate("/login");
       return;
     }
+    setJwtToken(token);
 
     if (userData) {
       const user = JSON.parse(userData);
-      setFormData((prev) => ({
-        ...prev,
-        name: user.name || "",
-        email: user.email || "",
-      }));
+      setUserType(user.userType || null);
+
+      // Only prefill for customers
+      if (user.userType !== "business") {
+        setFormData((prev) => ({
+          ...prev,
+          name: user.name || "",
+          email: user.email || "",
+        }));
+      }
     }
   }, [navigate]);
 
+  // Fetch API token with JWT if required
   const fetchToken = async () => {
     try {
       setError("");
       setIsAuthenticating(true);
 
-      const response = await axios.post(`${BASE_URL}/getToken`);
+      const config = {};
+      if (jwtToken) {
+        config.headers = { Authorization: `Bearer ${jwtToken}` };
+      }
+
+      const response = await axios.post(`${BASE_URL}/getToken`, {}, config);
 
       if (response.data && response.data.success && response.data.token) {
         setApiToken(response.data.token);
@@ -85,6 +101,11 @@ const LoanProcessor = () => {
       setIsAuthenticating(false);
     }
   };
+
+  useEffect(() => {
+    fetchToken();
+    // eslint-disable-next-line
+  }, [jwtToken]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -193,10 +214,6 @@ const LoanProcessor = () => {
     }
   };
 
-  useEffect(() => {
-    fetchToken();
-  }, []);
-
   const handleImageError = (e) => {
     e.target.onerror = null;
     e.target.src = "/default-bank.png";
@@ -206,10 +223,6 @@ const LoanProcessor = () => {
   const handleResetForm = () => {
     setShowForm(true);
     setEligibilityResult(null);
-  };
-
-  const getReadOnlyClass = (isReadOnly) => {
-    return isReadOnly ? "opacity-75 cursor-not-allowed" : "";
   };
 
   // Theme-based classes
@@ -348,6 +361,7 @@ const LoanProcessor = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Name and Email: Prefilled and readOnly for customers, empty and editable for agents */}
                     <div className="group relative">
                       <input
                         name="name"
@@ -355,8 +369,8 @@ const LoanProcessor = () => {
                         value={formData.name}
                         onChange={handleChange}
                         required
-                        className={`${inputClass} ${getReadOnlyClass(true)}`}
-                        readOnly
+                        className={inputClass}
+                        readOnly={userType !== null && userType !== "business"}
                       />
                       <label className={labelClass}>
                         Full Name
@@ -371,8 +385,8 @@ const LoanProcessor = () => {
                         value={formData.email}
                         onChange={handleChange}
                         required
-                        className={`${inputClass} ${getReadOnlyClass(true)}`}
-                        readOnly
+                        className={inputClass}
+                        readOnly={userType !== null && userType !== "business"}
                       />
                       <label className={labelClass}>
                         Email Address
@@ -414,7 +428,7 @@ const LoanProcessor = () => {
                 </div>
 
                 {/* Location Details */}
-                <div className="space-y-6 md:col-span-2">
+                  <div className="space-y-6 md:col-span-2">
                   <div className="flex items-center">
                     <div className={isDarkMode
                       ? "h-px flex-1 bg-gradient-to-r from-transparent via-purple-400 to-transparent"
