@@ -309,20 +309,6 @@ const CreditCheck = () => {
                     PAN Number
                   </label>
                 </div>
-
-                <div className="group relative opacity-50">
-                  <input
-                    name="ref_code"
-                    placeholder=" "
-                    value={formData.ref_code}
-                    onChange={handleChange}
-                    readOnly
-                    className={inputClass}
-                  />
-                  <label className={labelClass}>
-                    Reference Code (Auto-filled)
-                  </label>
-                </div>
               </div>
             </div>
 

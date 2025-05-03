@@ -1,60 +1,76 @@
 import axios from "axios";
 import CreditCheck from "../models/CreditCheck.js";
 
-const EVOLUTO_AUTH_URL = process.env.EVOLUTO_AUTH_URL // e.g., Evoluto or your provider
-const CREDIT_CHECK_AUTH_URL = process.env.CREDIT_CHECK_AUTH_URL;
-const API_KEY = process.env.API_KEY;
-const API_SECRET = process.env.API_SECRET;
-const REF_CODE = process.env.REF_CODE;
-
 export const checkCredit = async (req, res) => {
   try {
     const { fname, lname, phone, pan_no, dob, ref_code } = req.body;
-    if (!fname || !lname || !phone || !pan_no || !dob) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
 
-    // DEV MODE: Return mock data
-    if (process.env.NODE_ENV === "development" && (!API_KEY || !API_SECRET)) {
-      const mockResult = {
-        success: true,
-        data: {
-          score: Math.floor(Math.random() * 900) + 100,
-          name: `${fname} ${lname}`,
-        },
-        message: "Mock credit score generated (DEV MODE)",
-      };
-      const saved = await CreditCheck.create({ ...req.body, result: mockResult });
-      return res.status(200).json(mockResult);
-    }
-
-    // PRODUCTION: Get token, then check credit
-    const basicAuthToken = Buffer.from(`${API_KEY}:${API_SECRET}`).toString("base64");
-    const tokenResp = await axios.post(
-      CREDIT_CHECK_AUTH_URL,
+    // 1. Get the token from the authentication endpoint
+    const authResponse = await axios.post(
+      "https://uat-api.evolutosolution.com/v1/authentication",
       {},
-      { headers: { Authorization: `Basic ${basicAuthToken}` } }
-    );
-    const token = tokenResp.data?.data?.token;
-    if (!token) throw new Error("Failed to get credit check token");
-
-    // Prepare payload for credit check
-    const payload = {
-      fname, lname, phone, pan_no, dob, ref_code: ref_code || REF_CODE,
-    };
-
-    const creditResp = await axios.post(
-      EVOLUTO_AUTH_URL,
-      payload,
-      { headers: { token, "Content-Type": "application/json" } }
+      {
+        headers: {
+          source: "web",
+          package: "10.0.2.215",
+          outletid: "OUI202590898",
+          Authorization: "Basic NDdlM2I4ODk1NDAwM2NhYjNlNGY1MThjNTk3NjUxYmU3M2QyZDk2NmE0MWY4YWVjN2YyNjk3YjcyNTkwZDZjNTpCTlJxOFJNQzM2NkNselUzWDVmdFA4NXlLSW5NL3RERWI4Z3l6d3YxL3dtZlZ2cEQ3R1RGNUxySVJoU3kxUEVGOTdZWHUzbnNKekMzVWhjclVsMlRMQVFNWXJtMFFHbFEwZGFteGUyTEVQVDhzYTVHSUZHZE1WUnJDOHZPRHRCU3Z0K3BOaktudWlvZFhRSHd1emExTXRxSzZFODZtUng4SzNBY0FBTzVGeWtHbDR0ZnplOXllSzNmR21nRlpKM3o="
+        }
+      }
     );
 
-    const result = creditResp.data;
-    await CreditCheck.create({ ...payload, result });
+    const token = authResponse.data?.data?.token;
+    if (!token) {
+      return res.status(500).json({ success: false, message: "Failed to fetch API token" });
+    }
 
-    res.status(200).json(result);
+    // 2. Call the credit score API with the dynamic token
+    const creditResponse = await axios.post(
+      "https://uat-api.evolutosolution.com/v1/loan/checkCreditScore",
+      {
+        ref_code,
+        fname,
+        lname,
+        phone,
+        pan_no,
+        dob
+      },
+      {
+        headers: {
+          token,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    // 3. Save request and response to the database
+    await CreditCheck.create({
+      fname,
+      lname,
+      phone,
+      pan_no,
+      dob,
+      ref_code,
+      result: creditResponse.data
+    });
+
+    return res.json({ success: true, data: creditResponse.data });
   } catch (error) {
-    console.error("Credit check error:", error);
-    res.status(500).json({ message: error.message || "Credit check failed" });
+    // Save failed requests too, for audit
+    await CreditCheck.create({
+      fname: req.body.fname,
+      lname: req.body.lname,
+      phone: req.body.phone,
+      pan_no: req.body.pan_no,
+      dob: req.body.dob,
+      ref_code: req.body.ref_code,
+      result: error.response?.data || { error: error.message }
+    });
+
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to check credit score";
+    return res.status(500).json({ success: false, message });
   }
 };
