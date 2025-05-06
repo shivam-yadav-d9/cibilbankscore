@@ -1,46 +1,33 @@
 import express from "express";
 import mongoose from "mongoose";
-
-
-
 import dotenv from "dotenv";
-
-const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.local';
-dotenv.config({ path: envFile });
-
 import cors from "cors";
+import http from "http";
+import { Server } from "socket.io";
+
+// Import routes
 import authRoutes from "./routes/authroutes.js";
 import apiRoutes from "./routes/apiRoutes.js";
-
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import message from "./routes/messages.js";
 import savedocsRoutes from "./routes/saveDocsRoutes.js";
 import notification from "./routes/notifications.js";
-import { Server } from "socket.io";
-import http from "http";
-
-// loan journey here
 import loanRoutes from "./routes/loanRoutes.js";
 import UserAddress from "./routes/UserAddress.js";
 import userSecondAddressRoutes from "./routes/userSecondAddress.js";
-
-import LoanProcessorRoutes from "./routes/LoanProcessorRoutes.js"; // Import loan processor routes
-
+import LoanProcessorRoutes from "./routes/LoanProcessorRoutes.js";
 import coApplicantRoutes from "./routes/coApplicantRoutes.js";
 import userReferencesRoute from "./routes/userReferences.js";
 import userPreviousLoanRoutes from "./routes/userPreviousLoanRoutes.js";
-
-import SignupRoutes from "./routes/AgentRoute.js";
-import AgentRoutes from "./routes/AgentRoute.js"; // Import agent routes
+import AgentRoutes from "./routes/AgentRoute.js";
 import creditCheckRoutes from "./routes/creditCheck.js";
-
-import forgetpassword from "./routes/forgotPassword.js"; // Import the auth routes
-
+import forgetpassword from "./routes/forgotPassword.js";
 import forgotPasswordAgentRoutes from "./routes/forgotPasswordAgentroute.js";
-
 import expertConnectRoutes from "./routes/expertConnect.js";
 
-dotenv.config();
+const envFile =
+  process.env.NODE_ENV === "production" ? ".env.production" : ".env.local";
+dotenv.config({ path: envFile });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -48,13 +35,48 @@ const PORT = process.env.PORT || 3001;
 // Create HTTP server
 const server = http.createServer(app);
 
-// Initialize Socket.io with correct CORS settings
+// Define allowed origins
+const allowedOrigins = [
+  process.env.CLIENT_ORIGIN,
+  "http://13.234.67.70",
+  // Add additional origins as needed for different environments
+];
+
+// Comprehensive CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl requests)
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+  maxAge: 86400 // 24 hours
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Initialize Socket.io with matching CORS settings
 const io = new Server(server, {
   cors: {
-    origin: [process.env.CLIENT_ORIGIN, 'http://13.234.67.70'],// ✅ Allow frontend
-    methods: ["GET", "POST"],
-    credentials: true, // ✅ Allow credentials
-  },
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+    credentials: true
+  }
 });
 
 // Socket.io connection
@@ -76,14 +98,8 @@ io.on("connection", (socket) => {
 });
 
 // Middleware
-app.use(
-  cors({
-    origin:[process.env.CLIENT_ORIGIN, 'http://13.234.67.70'],// ✅ Ensure this matches frontend origin
-    methods: ["GET", "POST"],
-    credentials: true, // ✅ Allow credentials
-  })
-);
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Database Connection
 mongoose
@@ -97,27 +113,24 @@ app.use("/api", apiRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/api/messages", message);
 app.use("/api/notifications", notification);
-app.use("/api/loan", loanRoutes); // **CHANGED TO /api/loan**
-app.use("/api/user-address", UserAddress); // ✅ New route to save applicant data
+app.use("/api/loan", loanRoutes);
+app.use("/api/user-address", UserAddress);
 app.use("/api/user-second-address", userSecondAddressRoutes);
 app.use("/api/user-co-app", coApplicantRoutes);
 app.use("/api/user-references", userReferencesRoute);
 app.use("/api/user-previous-loans", userPreviousLoanRoutes);
 app.use("/api/loan/docs", savedocsRoutes);
-app.use("/api/SignupRoutes", SignupRoutes);
-app.use("/agent", AgentRoutes); // Mount agent routes
-app.use("/api/loanProcessor", LoanProcessorRoutes); // Mount loan processor routes
+app.use("/api/SignupRoutes", AgentRoutes);
+app.use("/agent", AgentRoutes);
+app.use("/api/loanProcessor", LoanProcessorRoutes);
 app.use("/api/credit", creditCheckRoutes);
-
-// Add the forgot password and reset password routes
 app.use("/api/auth", forgetpassword);
 app.use("/api/agent", forgotPasswordAgentRoutes);
-
 app.use("/api/expert-connect", expertConnectRoutes);
 
 // Basic route
 app.get("/", (req, res) => {
-  res.send("Notification API is running");
+  res.send("API is running");
 });
 
 // Start Server
