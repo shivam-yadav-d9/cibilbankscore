@@ -34,7 +34,7 @@ import CareerPage from "./components/user-view/CareerPage";
 import Dashboard from "./components/user-view/Dashboard";
 import CreditCheck from "./components/user-view/CreditCheck";
 import LoanProcessor from "./components/user-view/LoanProcessor";
-import UserLoanpage from "./pages/auth/UserLoanPage";
+import UserLoanPage from "./pages/auth/UserLoanPage";
 
 // Admin & Business Views
 import AdminLogin from "./components/admin-view/AdminLogin";
@@ -192,7 +192,7 @@ function App() {
               path="/UserLoanpage"
               element={
                 <ProtectedRoute allowedTypes={["customer", "business"]}>
-                  <UserLoanpage />
+                  <UserLoanPage />
                 </ProtectedRoute>
               }
             />
