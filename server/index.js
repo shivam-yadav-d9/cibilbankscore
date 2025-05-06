@@ -1,12 +1,13 @@
 import express from "express";
 import mongoose from "mongoose";
 
-// import dotenvFlow from 'dotenv-flow';
-// dotenvFlow.config();
-// dotenv.config({ path: '.env.local' }); // or use '.env.production' in production
 
 
 import dotenv from "dotenv";
+
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.local';
+dotenv.config({ path: envFile });
+
 import cors from "cors";
 import authRoutes from "./routes/authroutes.js";
 import apiRoutes from "./routes/apiRoutes.js";
@@ -50,7 +51,7 @@ const server = http.createServer(app);
 // Initialize Socket.io with correct CORS settings
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_ORIGIN,// ✅ Allow frontend
+    origin: [process.env.CLIENT_ORIGIN, 'http://13.234.67.70'],// ✅ Allow frontend
     methods: ["GET", "POST"],
     credentials: true, // ✅ Allow credentials
   },
@@ -77,7 +78,7 @@ io.on("connection", (socket) => {
 // Middleware
 app.use(
   cors({
-    origin: process.env.CLIENT_ORIGIN,// ✅ Ensure this matches frontend origin
+    origin:[process.env.CLIENT_ORIGIN, 'http://13.234.67.70'],// ✅ Ensure this matches frontend origin
     methods: ["GET", "POST"],
     credentials: true, // ✅ Allow credentials
   })

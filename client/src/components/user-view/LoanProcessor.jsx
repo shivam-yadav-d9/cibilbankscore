@@ -126,11 +126,11 @@ const LoanProcessor = () => {
       bank_id: bankId
     };
     localStorage.setItem("loanProcessorFormData", JSON.stringify(dataToStore));
-    navigate("/UserBasicData", { 
-      state: { 
+    navigate("/UserBasicData", {
+      state: {
         loan_type_id: loanTypeId,
-        bank_id: bankId 
-      } 
+        bank_id: bankId
+      }
     });
   };
 
@@ -219,7 +219,7 @@ const LoanProcessor = () => {
     e.target.src = "/default-bank.png";
     e.target.alt = "Bank logo not available";
   };
-  
+
   const handleResetForm = () => {
     setShowForm(true);
     setEligibilityResult(null);
@@ -428,7 +428,7 @@ const LoanProcessor = () => {
                 </div>
 
                 {/* Location Details */}
-                  <div className="space-y-6 md:col-span-2">
+                <div className="space-y-6 md:col-span-2">
                   <div className="flex items-center">
                     <div className={isDarkMode
                       ? "h-px flex-1 bg-gradient-to-r from-transparent via-purple-400 to-transparent"
@@ -590,7 +590,7 @@ const LoanProcessor = () => {
                       </label>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="group relative">
                       <input
@@ -637,7 +637,7 @@ const LoanProcessor = () => {
             </form>
           )}
 
-{eligibilityResult && (
+          {eligibilityResult && (
             <div className="animate-fadeIn">
               <div className="text-center mb-10">
                 <h2 className="text-4xl font-bold text-white mb-2">
@@ -658,7 +658,7 @@ const LoanProcessor = () => {
                     </svg>
                     <h3 className="text-2xl font-bold text-red-100 mb-2">Not Eligible</h3>
                     <p className="text-red-200">{eligibilityResult.message || "We're sorry, but you're not eligible for this loan at this time."}</p>
-                    
+
                     <button
                       onClick={handleResetForm}
                       className="mt-6 px-6 py-3 bg-red-700 hover:bg-red-600 rounded-xl text-white font-medium shadow-lg transition-all duration-300"
@@ -677,16 +677,16 @@ const LoanProcessor = () => {
                   {Array.isArray(eligibilityResult.data) && eligibilityResult.data.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {eligibilityResult.data.map((bank, index) => (
-                        <div 
+                        <div
                           key={bank.id || bank.bank_id || index}
                           className="bg-slate-800/50 backdrop-blur-sm border border-indigo-500/30 rounded-2xl p-6 shadow-xl hover:shadow-indigo-500/20 transition-all duration-300 hover:translate-y-[-5px] cursor-pointer"
                           onClick={() => handleNext(bank.id || bank.bank_id)}
                         >
                           <div className="flex items-center justify-between mb-4">
                             <div className="h-16 w-16 flex items-center justify-center bg-white rounded-xl overflow-hidden">
-                              <img 
-                                src={`/banks/${bank.bank.replace(/\s+/g, "").toLowerCase()}.png`}
-                                alt={`${bank.bank} Logo`}  
+                              <img
+                                src={`/banks/${(bank.bank || "defaultbank").replace(/\s+/g, "").toLowerCase()}.png`}
+                                alt={`${bank.bank} Logo`}
                                 className="h-12 w-auto object-contain"
                                 onError={handleImageError}
                               />
@@ -698,17 +698,17 @@ const LoanProcessor = () => {
                               Eligible
                             </div>
                           </div>
-                          
+
                           <h3 className="text-xl font-bold text-white mb-1">
                             {bank.name || bank.bank || "Bank Offer"}
                           </h3>
-                          
+
                           <div className="mb-4 text-slate-300">
                             {bank.description || bank.bank_description ? (
                               <p className="text-sm">{bank.description || bank.bank_description}</p>
                             ) : null}
                           </div>
-                          
+
                           <div className="grid grid-cols-2 gap-4 mb-6">
                             <div className="bg-slate-900/50 p-3 rounded-xl">
                               <p className="text-xs text-slate-400 mb-1">Interest Rate</p>
@@ -727,8 +727,8 @@ const LoanProcessor = () => {
                               <p className="text-lg font-bold text-white">₹{Number(bank.emi || 0).toLocaleString()}</p>
                             </div>
                           </div>
-                          
-                          <button 
+
+                          <button
                             className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl text-white font-medium shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 focus:outline-none transition-all duration-300 hover:scale-105"
                             onClick={() => handleNext(bank.id || bank.bank_id)}
                           >
@@ -750,7 +750,7 @@ const LoanProcessor = () => {
                         </svg>
                         <h3 className="text-2xl font-bold text-amber-100 mb-2">No Results Found</h3>
                         <p className="text-amber-200">No eligible loan options were found for your criteria.</p>
-                        
+
                         <button
                           onClick={handleResetForm}
                           className="mt-6 px-6 py-3 bg-amber-700 hover:bg-amber-600 rounded-xl text-white font-medium shadow-lg transition-all duration-300"
@@ -765,7 +765,7 @@ const LoanProcessor = () => {
                       </div>
                     </div>
                   )}
-                  
+
                   <div className="mt-8 text-center">
                     <button
                       onClick={handleResetForm}
@@ -783,7 +783,7 @@ const LoanProcessor = () => {
           )}
 
           <div className="flex justify-center mt-10">
-            <Link 
+            <Link
               to="/"
               className={isDarkMode
                 ? "text-indigo-400 hover:text-indigo-300 font-medium flex items-center transition-all duration-300"
