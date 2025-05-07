@@ -11,7 +11,7 @@ export const submitComplaint = async (req, res) => {
     const complaint = new ExpertConnect({ name, mobile, complaintText });
     await complaint.save();
 
-    res.status(201).json({ message: 'Complaint submitted successfully' });
+    res.status(200).json({ message: 'Complaint submitted successfully' });
   } catch (error) {
     console.error('Error submitting complaint:', error);
     res.status(500).json({ message: 'Server error' });

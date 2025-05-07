@@ -73,7 +73,7 @@ export const signup = async (req, res) => {
             { expiresIn: "7d" }
         );
 
-        res.status(201).json({
+        res.status(200).json({
             message: "User created successfully",
             token,
             user: {

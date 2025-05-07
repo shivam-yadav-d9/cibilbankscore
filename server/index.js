@@ -39,29 +39,30 @@ const server = http.createServer(app);
 const allowedOrigins = [
   process.env.CLIENT_ORIGIN,
   "http://13.234.67.70",
+  "*"
   // Add additional origins as needed for different environments
 ];
 
 // Comprehensive CORS configuration
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl requests)
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-  credentials: true,
-  preflightContinue: false,
-  optionsSuccessStatus: 204,
-  maxAge: 86400 // 24 hours
-};
+// const corsOptions = {
+//   origin: function (origin, callback) {
+//     // Allow requests with no origin (like mobile apps, curl requests)
+//     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+//   credentials: true,
+//   preflightContinue: false,
+//   optionsSuccessStatus: 204,
+//   maxAge: 86400 // 24 hours
+// };
 
 // Apply CORS middleware
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
 
 // Initialize Socket.io with matching CORS settings
 const io = new Server(server, {
@@ -103,7 +104,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Database Connection
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect('mongodb+srv://cibiluser7:cibiluser%407@cibilbankscorecluster.arvti.mongodb.net/cibilDB?retryWrites=true&w=majority&appName=CibilBankScoreCluster') // Replace with your MongoDB URI
   .then(() => console.log("MongoDB Connected successfully"))
   .catch((err) => console.error("MongoDB Connection Error:", err));
 
