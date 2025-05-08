@@ -40,7 +40,7 @@ const B2BSignup = () => {
       login(userData);
       
       setError('');  // Clear any previous error messages
-      navigate('/business-dashboard');
+      navigate('/LoginAgent');
     } catch (err) {
       // Check if the error message is from the backend (email or phone already exists)
       if (err.response && err.response.data && err.response.data.message) {

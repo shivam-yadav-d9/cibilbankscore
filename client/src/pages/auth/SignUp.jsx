@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
+import { FaMobileRetro } from "react-icons/fa6";
+
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -60,7 +62,7 @@ const Signup = () => {
 
           <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-white">
             {" "}
-            Welcome to DBNPAY! 👋
+            Welcome to DBNPEY! 👋
           </h1>
         </div>
 
@@ -165,6 +167,8 @@ const Signup = () => {
                 </div>
 
                 {/* Mobile Number */}
+
+                {/* Mobile Number */}
                 <div>
                   <label
                     htmlFor="mobile"
@@ -174,20 +178,8 @@ const Signup = () => {
                   </label>
                   <div className="group relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <svg
-                        className="h-5 w-5 text-indigo-300 group-focus-within:text-white transition-colors duration-200"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 5h2l3 7-1.5 2.5M16 7h4m-2 0v6M5 20h14"
-                        />
-                      </svg>
+                      {/* FaMobileRetro Icon */}
+                      <FaMobileRetro className="h-5 w-5 text-indigo-300 group-focus-within:text-white transition-colors duration-200" />
                     </div>
                     <input
                       id="mobile"
@@ -201,6 +193,7 @@ const Signup = () => {
                     />
                   </div>
                 </div>
+
 
 
                 {/* Password */}

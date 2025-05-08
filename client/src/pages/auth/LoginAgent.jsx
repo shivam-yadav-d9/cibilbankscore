@@ -77,7 +77,7 @@ const LoginAgent = ({ updateAuth }) => {
         <div className="w-full md:w-1/2 p-8">
           {/* Title */}
           <h1 className="text-center mt-6 text-3xl font-extrabold tracking-tight text-white">
-            Welcome to DBNPAY! (Agent)
+            Welcome to DBNPEY!👋 (Agent)
           </h1>
 
           {/* Error Message */}
