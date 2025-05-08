@@ -5,7 +5,7 @@ function Footer() {
           
           {/* Company Info */}
           <div>
-            <h2 className="text-xl font-semibold text-white">DBNPAY!</h2>
+            <h2 className="text-xl font-semibold text-white">DBNPEY🤵</h2>
             <p className="mt-2 text-sm">
               Secure and trusted banking solutions to help you manage your financial future.
             </p>
@@ -37,8 +37,8 @@ function Footer() {
           <div>
             <h3 className="text-lg font-semibold text-white">Customer Support</h3>
             <p className="mt-2 text-sm">Need help? Contact us 24/7.</p>
-            <p className="mt-1">📞 <span className="font-semibold">1800-123-4567</span></p>
-            <p className="mt-1">✉️ support@bankcorp.com</p>
+            <p className="mt-1">📞7693004909 <span className="font-semibold"></span></p>
+            <p className="mt-1">✉️info@dbnpe.in</p>
           </div>
         </div>
   

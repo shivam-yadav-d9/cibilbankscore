@@ -102,7 +102,7 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-full">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link to="/dashboard" className="inline-flex items-center">
+            <Link to="/" className="inline-flex items-center">
               <img 
                 src="/logo2.png" 
                 alt="Logo" 

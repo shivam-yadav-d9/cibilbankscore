@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import {Link } from "react-router-dom";
+
 import {
   FaUser,
   FaEnvelope,
@@ -53,7 +55,7 @@ const MyProfile = () => {
     // Only fetch loan data for customer users
     axios
     axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/loan/get-by-email/${user.email}`)
-    .then((res) => {
+      .then((res) => {
         setLoanData(res.data);
         setLoading(false);
       })
@@ -99,12 +101,12 @@ const MyProfile = () => {
       if (userData.phoneNumber) return userData.phoneNumber;
       if (userData.mobileNumber) return userData.mobileNumber;
       if (userData.contactNumber) return userData.contactNumber;
-      
+
       // If nested within contact object
       if (userData.contact && userData.contact.phone) return userData.contact.phone;
       if (userData.contact && userData.contact.mobile) return userData.contact.mobile;
     }
-    
+
     // Then check in agentDetails from API
     if (agentDetails) {
       // Direct properties on agentDetails
@@ -113,12 +115,12 @@ const MyProfile = () => {
       if (agentDetails.phoneNumber) return agentDetails.phoneNumber;
       if (agentDetails.mobileNumber) return agentDetails.mobileNumber;
       if (agentDetails.contactNumber) return agentDetails.contactNumber;
-      
+
       // If nested within contact object
       if (agentDetails.contact && agentDetails.contact.phone) return agentDetails.contact.phone;
       if (agentDetails.contact && agentDetails.contact.mobile) return agentDetails.contact.mobile;
     }
-    
+
     return "N/A";
   };
 
@@ -129,22 +131,22 @@ const MyProfile = () => {
       for (const field of companyFields) {
         if (agentDetails[field]) return agentDetails[field];
       }
-      
+
       // If nested within business or company object
       if (agentDetails.business && agentDetails.business.name) return agentDetails.business.name;
       if (agentDetails.company && agentDetails.company.name) return agentDetails.company.name;
     }
-    
+
     // Then check in userData
     const userCompanyFields = ['company', 'companyName', 'businessName', 'agencyName', 'organization', 'firm'];
     for (const field of userCompanyFields) {
       if (userData[field]) return userData[field];
     }
-    
+
     // Check if nested
     if (userData.business && userData.business.name) return userData.business.name;
     if (userData.company && userData.company.name) return userData.company.name;
-    
+
     return "N/A";
   };
 
@@ -158,42 +160,47 @@ const MyProfile = () => {
 
         {/* User Basic Info - Always shown */}
         <div className="px-6 py-8">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Basic Information</h3>
+
+         <Link to="/dashboard"><button className="text-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg shadow-md transition duration-300 mb-4">
+            Your Dashboard
+          </button>
+          </Link>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {[
-              { 
-                label: "Name", 
-                value: userData?.name || userData?.fullName || userData?.username || agentDetails?.name || agentDetails?.fullName || "N/A", 
-                icon: <FaUser /> 
+              {
+                label: "Name",
+                value: userData?.name || userData?.fullName || userData?.username || agentDetails?.name || agentDetails?.fullName || "N/A",
+                icon: <FaUser />
               },
-              { 
-                label: "Email", 
-                value: userData?.email || agentDetails?.email || "N/A", 
-                icon: <FaEnvelope /> 
+              {
+                label: "Email",
+                value: userData?.email || agentDetails?.email || "N/A",
+                icon: <FaEnvelope />
               },
-              { 
-                label: "User Type", 
-                value: (userData?.userType === "business" ? "Agent" : userData?.userType) || "N/A", 
-                icon: <FaIdCard /> 
+              {
+                label: "User Type",
+                value: (userData?.userType === "business" ? "Agent" : userData?.userType) || "N/A",
+                icon: <FaIdCard />
               },
-              { 
-                label: "Phone Number", 
+              {
+                label: "Phone Number",
                 value: getUserPhone(), // Use the getUserPhone function instead of direct properties
-                icon: <FaMobile /> 
+                icon: <FaMobile />
               },
               // Add more fields for agent if needed
               ...(userData?.userType === "business" || userData?.userType === "agent" ? [
-                { 
-                  label: "Company", 
-                  value: getCompanyName(), 
-                  icon: <FaBuilding /> 
+                {
+                  label: "Company",
+                  value: getCompanyName(),
+                  icon: <FaBuilding />
                 },
-                { 
-                  label: "Location", 
-                  value: agentDetails?.location || userData?.location || agentDetails?.city || userData?.city || 
-                         (agentDetails?.address ? (typeof agentDetails.address === 'string' ? agentDetails.address : 
-                         `${agentDetails.address.city || ''} ${agentDetails.address.state || ''}`.trim()) : "N/A"), 
-                  icon: <FaMapMarkerAlt /> 
+                {
+                  label: "Location",
+                  value: agentDetails?.location || userData?.location || agentDetails?.city || userData?.city ||
+                    (agentDetails?.address ? (typeof agentDetails.address === 'string' ? agentDetails.address :
+                      `${agentDetails.address.city || ''} ${agentDetails.address.state || ''}`.trim()) : "N/A"),
+                  icon: <FaMapMarkerAlt />
                 }
               ] : [])
             ].map((item, index) => (
