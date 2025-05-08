@@ -69,6 +69,7 @@ const LoanProcessor = () => {
           ...prev,
           name: user.name || "",
           email: user.email || "",
+          mobile: user.mobile || "",
         }));
       }
     }
@@ -403,6 +404,7 @@ const LoanProcessor = () => {
                         onChange={handleChange}
                         required
                         className={inputClass}
+                        readOnly={userType !== null && userType !== "business"}
                       />
                       <label className={labelClass}>
                         Mobile Number
