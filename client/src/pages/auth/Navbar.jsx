@@ -14,6 +14,7 @@ export default function Navbar() {
   const location = useLocation();
   const dropdownRef = useRef(null);
 
+  // NavLinks will only show for non-logged in users
   const NavLinks = [
     { name: "Business", path: "/services/b2b-systems", icon: "far fa-building" },
     { name: "About Us", path: "/aboutus", icon: "far fa-address-card" },
@@ -101,7 +102,7 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-full">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link to="/" className="inline-flex items-center">
+            <Link to="/dashboard" className="inline-flex items-center">
               <img 
                 src="/logo2.png" 
                 alt="Logo" 
@@ -112,31 +113,36 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
-            <div className="group relative">
-              <button className="text-white group-hover:text-blue-200 transition-colors duration-300 flex items-center font-medium">
-                <span className="relative z-10">Services</span>
-                <svg className="w-4 h-4 ml-1 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 group-hover:w-full transition-all duration-300"></span>
-              </button>
-              <div className="absolute hidden group-hover:block top-full left-0 bg-gradient-to-b from-blue-900 to-indigo-900 bg-opacity-95 backdrop-blur-md rounded-xl shadow-2xl p-4 w-72 mt-2 transition-all duration-300 border border-blue-700/30 transform origin-top scale-95 group-hover:scale-100 opacity-0 group-hover:opacity-100">
-                <div className="p-2">
-                  <ServicesDropdown />
+            {/* Only show Services and NavLinks if user is not logged in */}
+            {!user && (
+              <>
+                <div className="group relative">
+                  <button className="text-white group-hover:text-blue-200 transition-colors duration-300 flex items-center font-medium">
+                    <span className="relative z-10">Services</span>
+                    <svg className="w-4 h-4 ml-1 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 group-hover:w-full transition-all duration-300"></span>
+                  </button>
+                  <div className="absolute hidden group-hover:block top-full left-0 bg-gradient-to-b from-blue-900 to-indigo-900 bg-opacity-95 backdrop-blur-md rounded-xl shadow-2xl p-4 w-72 mt-2 transition-all duration-300 border border-blue-700/30 transform origin-top scale-95 group-hover:scale-100 opacity-0 group-hover:opacity-100">
+                    <div className="p-2">
+                      <ServicesDropdown />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {NavLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`text-white hover:text-blue-200 transition-colors duration-300 relative font-medium flex items-center ${isActive(link.path) ? 'text-blue-200' : ''}`}
-              >
-                <span className="relative z-10">{link.name}</span>
-                <span className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 transition-all duration-300 ${isActive(link.path) ? 'w-full' : 'w-0'}`}></span>
-              </Link>
-            ))}
+                {NavLinks.map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className={`text-white hover:text-blue-200 transition-colors duration-300 relative font-medium flex items-center ${isActive(link.path) ? 'text-blue-200' : ''}`}
+                  >
+                    <span className="relative z-10">{link.name}</span>
+                    <span className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 transition-all duration-300 ${isActive(link.path) ? 'w-full' : 'w-0'}`}></span>
+                  </Link>
+                ))}
+              </>
+            )}
 
             {/* Theme Toggle Button */}
             <button
@@ -393,193 +399,194 @@ export default function Navbar() {
               </div>
             </div>
 
-            <div className="text-lg font-medium text-white mb-4 px-4 flex items-center">
-              <svg className="w-5 h-5 mr-2 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7"></path>
-              </svg>
-              Services
-            </div>
-            <div className="bg-blue-800/20 rounded-xl mb-6 p-4">
-              <ServicesDropdown />
-            </div>
-
-            {/* Navigation Links - Mobile */}
-            <div className="space-y-4 mb-8">
-              {NavLinks.map((link) => (
-                <button
-                  key={link.path}
-                  onClick={() => handleNavigation(link.path)}
-                  className={`w-full flex items-center text-white py-3 px-4 rounded-lg text-lg font-medium ${
-                    isActive(link.path) 
-                      ? 'bg-gradient-to-r from-blue-600/40 to-indigo-600/40 border border-blue-500/30' 
-                      : 'hover:bg-blue-800/30'
-                  }`}
-                >
-                  <i className={`${link.icon} mr-3`}></i>
-                  <span>{link.name}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Profile or Login Options - Mobile */}
-            {!user ? (
-              <div className="space-y-4 px-4">
-                <div className="text-lg font-medium text-white mb-4 flex items-center">
-                  <svg className="w-5 h-5 mr-2 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+            {/* Only show services section if user is not logged in */}
+            {!user && (
+              <>
+                <div className="text-lg font-medium text-white mb-4 px-4 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                   </svg>
-                  Account
+                  Our Services
                 </div>
-                <button
-                  onClick={() => handleNavigation("/login")}
-                  className="w-full bg-blue-800/30 border border-blue-700/30 rounded-lg py-3 px-4 text-white text-left flex items-center justify-between hover:bg-blue-700/40 transition-all duration-300"
-                >
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 mr-3 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
-                    </svg>
-                    <span className="text-lg">Customer Login</span>
-                  </div>
-                  <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                  </svg>
-                </button>
-                <button
-                  onClick={() => handleNavigation("/LoginAgent")}
-                  className="w-full bg-blue-800/30 border border-blue-700/30 rounded-lg py-3 px-4 text-white text-left flex items-center justify-between hover:bg-blue-700/40 transition-all duration-300"
-                >
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 mr-3 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                    </svg>
-                    <span className="text-lg">Agent Login</span>
-                  </div>
-                  <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                  </svg>
-                </button>
-                <button
-                  onClick={() => handleNavigation("/signup")}
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg py-3 px-4 text-white text-center font-medium text-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-md shadow-blue-700/20"
-                >
-                  Sign Up
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4 px-4">
-                {/* User Profile - Mobile */}
-                <div className="bg-blue-800/30 border border-blue-700/30 rounded-lg p-4 mb-6">
-                  <div className="flex items-center space-x-4 mb-4">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xl font-semibold shadow-md">
-                      {getInitials(user.name)}
-                    </div>
-                    <div>
-                      <h3 className="text-white text-lg font-medium">{user.name}</h3>
-                      <p className="text-blue-200 text-sm">{user.email}</p>
-                    </div>
+
+                {/* Mobile Services Menu */}
+                <div className="mb-6 bg-blue-800/20 rounded-xl border border-blue-700/30 overflow-hidden">
+                  <div className="px-4 py-3">
+                    <ServicesDropdown />
                   </div>
                 </div>
 
-                {/* User Navigation - Mobile */}
-                <div className="space-y-2">
-                  <button
-                    onClick={() => handleNavigation("/my-profile")}
-                    className="w-full bg-blue-800/30 border border-blue-700/30 rounded-lg py-3 px-4 text-white text-left flex items-center justify-between hover:bg-blue-700/40 transition-all duration-300"
-                  >
-                    <div className="flex items-center">
-                      <svg className="w-5 h-5 mr-3 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                      </svg>
-                      <span className="text-lg">My Profile</span>
-                    </div>
-                    <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleNavigation("/refer-earn")}
-                    className="w-full bg-blue-800/30 border border-blue-700/30 rounded-lg py-3 px-4 text-white text-left flex items-center justify-between hover:bg-blue-700/40 transition-all duration-300"
-                  >
-                    <div className="flex items-center">
-                      <svg className="w-5 h-5 mr-3 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                      </svg>
-                      <span className="text-lg">Refer & Earn</span>
-                    </div>
-                    <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleNavigation("/reedem")}
-                    className="w-full bg-blue-800/30 border border-blue-700/30 rounded-lg py-3 px-4 text-white text-left flex items-center justify-between hover:bg-blue-700/40 transition-all duration-300"
-                  >
-                    <div className="flex items-center">
-                      <svg className="w-5 h-5 mr-3 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
-                      </svg>
-                      <span className="text-lg">Redeem Voucher</span>
-                    </div>
-                    <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleNavigation("/payment-history")}
-                    className="w-full bg-blue-800/30 border border-blue-700/30 rounded-lg py-3 px-4 text-white text-left flex items-center justify-between hover:bg-blue-700/40 transition-all duration-300"
-                  >
-                    <div className="flex items-center">
-                      <svg className="w-5 h-5 mr-3 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                      </svg>
-                      <span className="text-lg">Payment History</span>
-                    </div>
-                    <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleNavigation("/wallet")}
-                    className="w-full bg-blue-800/30 border border-blue-700/30 rounded-lg py-3 px-4 text-white text-left flex items-center justify-between hover:bg-blue-700/40 transition-all duration-300"
-                  >
-                    <div className="flex items-center">
-                      <svg className="w-5 h-5 mr-3 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                      </svg>
-                      <span className="text-lg">Wallet</span>
-                    </div>
-                    <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                  </button>
+                {/* Mobile Navigation Links */}
+                <div className="mb-8">
+                  <ul className="space-y-2">
+                    {NavLinks.map((link) => (
+                      <li key={link.path}>
+                        <Link
+                          to={link.path}
+                          className={`flex items-center px-4 py-3 rounded-lg ${
+                            isActive(link.path)
+                              ? "bg-blue-600/40 text-white"
+                              : "text-blue-100 hover:bg-blue-800/30"
+                          } transition-colors duration-200`}
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          <i className={`${link.icon} w-5 h-5 mr-3`}></i>
+                          <span>{link.name}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-
-                {/* Sign Out - Mobile */}
-                <div className="pt-4 border-t border-blue-700/30 mt-4">
-                  <button
-                    onClick={handleLogout}
-                    className="w-full bg-blue-800/30 border border-blue-700/30 rounded-lg py-3 px-4 text-red-300 text-left flex items-center hover:bg-blue-700/40 transition-all duration-300"
-                  >
-                    <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                    </svg>
-                    <span className="text-lg">Sign out</span>
-                  </button>
-                </div>
-              </div>
+              </>
             )}
 
-            {/* Close Button - Mobile */}
-            <div className="absolute top-6 right-6">
-              <button
-                onClick={() => setMenuOpen(false)}
-                className="h-10 w-10 rounded-full bg-blue-800/40 flex items-center justify-center text-white hover:bg-blue-700/60 transition-colors duration-300 focus:outline-none"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
+            {/* User or Auth Section */}
+            <div className="mt-auto px-4">
+              {user ? (
+                <div className="space-y-4">
+                  {/* User Profile Section */}
+                  <div className="bg-blue-800/30 border border-blue-700/30 rounded-xl p-4">
+                    <div className="flex items-center mb-4">
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xl font-semibold shadow-md relative overflow-hidden border-2 border-blue-400">
+                        <span className="relative z-10">{getInitials(user.name)}</span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-500 opacity-80"></div>
+                      </div>
+                      <div className="ml-4">
+                        <p className="font-medium text-white text-lg">{user.name}</p>
+                        <p className="text-blue-200 text-sm">{user.email}</p>
+                      </div>
+                    </div>
+
+                    {/* User Menu Links */}
+                    <div className="space-y-2">
+                      <Link
+                        to="/my-profile"
+                        className="flex items-center py-2 text-blue-100 hover:text-white transition-colors duration-200"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        My Profile
+                      </Link>
+                      <Link
+                        to="/refer-earn"
+                        className="flex items-center py-2 text-blue-100 hover:text-white transition-colors duration-200"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        Refer & Earn
+                      </Link>
+                      <Link
+                        to="/reedem"
+                        className="flex items-center py-2 text-blue-100 hover:text-white transition-colors duration-200"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
+                        </svg>
+                        Redeem Voucher
+                      </Link>
+                      <Link
+                        to="/payment-history"
+                        className="flex items-center py-2 text-blue-100 hover:text-white transition-colors duration-200"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Payment History
+                      </Link>
+                      <Link
+                        to="/wallet"
+                        className="flex items-center py-2 text-blue-100 hover:text-white transition-colors duration-200"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        Wallet
+                      </Link>
+                    </div>
+
+                    {/* Sign Out Button */}
+                    <button
+                      onClick={handleLogout}
+                      className="w-full mt-4 flex items-center justify-center py-3 bg-red-600/30 hover:bg-red-600/50 text-red-100 rounded-lg transition-colors duration-200 border border-red-500/30"
+                    >
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                      </svg>
+                      Sign out
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* Login Button */}
+                  <button
+                    onClick={() => handleNavigation("/login")}
+                    className="w-full bg-blue-800/40 hover:bg-blue-800/60 text-white py-3 px-4 rounded-lg font-medium transition-all duration-300 border border-blue-700/30 flex items-center justify-center"
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                    </svg>
+                    Customer Login
+                  </button>
+                  <button
+                    onClick={() => handleNavigation("/LoginAgent")}
+                    className="w-full bg-blue-800/40 hover:bg-blue-800/60 text-white py-3 px-4 rounded-lg font-medium transition-all duration-300 border border-blue-700/30 flex items-center justify-center"
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    Agent Login
+                  </button>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-blue-700/30"></div>
+                    </div>
+                    <div className="relative flex justify-center">
+                      <span className="px-4 bg-gradient-to-br from-blue-900 to-indigo-950 text-blue-300 text-sm">OR</span>
+                    </div>
+                  </div>
+
+                  {/* Sign Up Button */}
+                  <button
+                    onClick={() => handleNavigation("/signup")}
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 px-4 rounded-lg font-medium transition-all duration-300 shadow-md hover:shadow-blue-500/30 border border-indigo-500/30 flex items-center justify-center"
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                    </svg>
+                    Create an account
+                  </button>
+                  <button
+                    onClick={() => handleNavigation("/B2BSignup")}
+                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3 px-4 rounded-lg font-medium transition-all duration-300 shadow-md hover:shadow-indigo-500/30 border border-purple-500/30 flex items-center justify-center"
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                    Agent Sign up
+                  </button>
+                </div>
+              )}
             </div>
+
+            {/* Close Button */}
+            <button 
+              onClick={() => setMenuOpen(false)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-blue-800/40 hover:bg-blue-700/60 text-white transition-colors duration-200"
+              aria-label="Close menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
           </div>
         </div>
       )}
