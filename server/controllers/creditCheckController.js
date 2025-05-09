@@ -1,76 +1,71 @@
+// controllers/creditScoreController.js
 import axios from "axios";
-import CreditCheck from "../models/CreditCheck.js";
+import dotenv from "dotenv";
+import CreditScore from "../models/CreditCheck.js";
 
-export const checkCredit = async (req, res) => {
+dotenv.config();
+
+export const checkCreditScore = async (req, res) => {
+  const { fname, lname, phone, pan_no, dob, ref_code } = req.body;
+
   try {
-    const { fname, lname, phone, pan_no, dob, ref_code } = req.body;
-
-    // 1. Get the token from the authentication endpoint
+    // Step 1: Get Auth Token
     const authResponse = await axios.post(
-      "https://uat-api.evolutosolution.com/v1/authentication",
+      process.env.EVOLUTO_AUTH_URL,
       {},
       {
         headers: {
-          source: "web",
-          package: "10.0.2.215",
-          outletid: "OUI202590898",
-          Authorization: "Basic NDdlM2I4ODk1NDAwM2NhYjNlNGY1MThjNTk3NjUxYmU3M2QyZDk2NmE0MWY4YWVjN2YyNjk3YjcyNTkwZDZjNTpCTlJxOFJNQzM2NkNselUzWDVmdFA4NXlLSW5NL3RERWI4Z3l6d3YxL3dtZlZ2cEQ3R1RGNUxySVJoU3kxUEVGOTdZWHUzbnNKekMzVWhjclVsMlRMQVFNWXJtMFFHbFEwZGFteGUyTEVQVDhzYTVHSUZHZE1WUnJDOHZPRHRCU3Z0K3BOaktudWlvZFhRSHd1emExTXRxSzZFODZtUng4SzNBY0FBTzVGeWtHbDR0ZnplOXllSzNmR21nRlpKM3o="
+          'source': 'web',
+          'package': '10.0.2.215',
+          'outletid': process.env.REF_CODE,
+          'Authorization': `Basic ${process.env.EVOLUTO_AUTH_BASIC}`
         }
       }
     );
 
-    const token = authResponse.data?.data?.token;
-    if (!token) {
-      return res.status(500).json({ success: false, message: "Failed to fetch API token" });
-    }
+    const token = authResponse.data.token;
 
-    // 2. Call the credit score API with the dynamic token
+    // Step 2: Call Credit Score API
     const creditResponse = await axios.post(
-      "https://uat-api.evolutosolution.com/v1/loan/checkCreditScore",
-      {
-        ref_code,
-        fname,
-        lname,
-        phone,
-        pan_no,
-        dob
-      },
+      `${process.env.API_BASE_URL}/loan/checkCreditScore`,
+      { ref_code, fname, lname, phone, pan_no, dob },
       {
         headers: {
-          token,
-          "Content-Type": "application/json"
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       }
     );
 
-    // 3. Save request and response to the database
-    await CreditCheck.create({
+    const responseData = creditResponse.data;
+
+    // Step 3: Save to MongoDB
+    const saved = new CreditScore({
+      ref_code,
       fname,
       lname,
       phone,
       pan_no,
       dob,
-      ref_code,
-      result: creditResponse.data
+      credit_score: responseData?.data?.credit_score || null,
+      status: responseData?.status,
+      message: responseData?.message
     });
 
-    return res.json({ success: true, data: creditResponse.data });
+    await saved.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Credit score fetched successfully",
+      data: responseData.data
+    });
+
   } catch (error) {
-    // Save failed requests too, for audit
-    await CreditCheck.create({
-      fname: req.body.fname,
-      lname: req.body.lname,
-      phone: req.body.phone,
-      pan_no: req.body.pan_no,
-      dob: req.body.dob,
-      ref_code: req.body.ref_code,
-      result: error.response?.data || { error: error.message }
+    console.error("Credit Score Error:", error.response?.data || error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch credit score",
+      error: error.response?.data || error.message
     });
-
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Failed to check credit score";
-    return res.status(500).json({ success: false, message });
   }
 };

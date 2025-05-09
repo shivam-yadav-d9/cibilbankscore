@@ -1,7 +1,9 @@
+// routes/creditScoreRoutes.js
 import express from "express";
-import { checkCredit } from "../controllers/creditCheckController.js";
+import {checkCreditScore } from "../controllers/creditCheckController.js";
+
 const router = express.Router();
 
-router.post("/check", checkCredit);
+router.post("/check",checkCreditScore);
 
 export default router;

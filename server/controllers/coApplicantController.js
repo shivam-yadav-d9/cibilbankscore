@@ -12,7 +12,7 @@ const API_BASE_URL = process.env.API_BASE_URL || "https://uat-api.evolutosolutio
 
 // Validate environment variables
 const validateEnvVariables = () => {
-  const requiredEnvVars = ['EVOLUTO_API_KEY', 'EVOLUTO_API_SECRET', 'EVOLUTO_REF_CODE'];
+  const requiredEnvVars = ['API_KEY', 'API_SECRET', 'REF_CODE'];
   const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
   
   if (missingVars.length > 0) {

@@ -1,14 +1,18 @@
+// models/CreditScore.js
 import mongoose from "mongoose";
 
-const CreditCheckSchema = new mongoose.Schema({
-  fname: String,
-  lname: String,
-  phone: String,
-  pan_no: String,
-  dob: String,
-  ref_code: String,
-  result: mongoose.Schema.Types.Mixed, // Store the API response/result
+const creditScoreSchema = new mongoose.Schema({
+  ref_code: { type: String, required: true },
+  fname: { type: String, required: true },
+  lname: { type: String, required: true },
+  phone: { type: String, required: true },
+  pan_no: { type: String, required: true },
+  dob: { type: String, required: true },
+  credit_score: { type: Number },
+  status: { type: String },
+  message: { type: String },
   createdAt: { type: Date, default: Date.now }
 });
 
-export default mongoose.model("CreditCheck", CreditCheckSchema);
+const CreditScore = mongoose.model("CreditScore", creditScoreSchema);
+export default CreditScore;

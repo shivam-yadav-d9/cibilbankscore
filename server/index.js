@@ -25,9 +25,8 @@ import forgetpassword from "./routes/forgotPassword.js";
 import forgotPasswordAgentRoutes from "./routes/forgotPasswordAgentroute.js";
 import expertConnectRoutes from "./routes/expertConnect.js";
 
-const envFile =
-  process.env.NODE_ENV === "production" ? ".env.production" : ".env.local";
-dotenv.config({ path: envFile });
+// Load environment variables
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -35,57 +34,47 @@ const PORT = process.env.PORT || 3001;
 // Create HTTP server
 const server = http.createServer(app);
 
-// Define allowed origins
+// Allowed client origin
 const allowedOrigins = [
-  process.env.CLIENT_ORIGIN,
-  "http://13.234.67.70",
-  "*"
-  // Add additional origins as needed for different environments
+  process.env.CLIENT_ORIGIN || "http://localhost:5173",
+  "http://13.234.67.80"
 ];
 
-// Comprehensive CORS configuration
-// const corsOptions = {
-//   origin: function (origin, callback) {
-//     // Allow requests with no origin (like mobile apps, curl requests)
-//     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error('Not allowed by CORS'));
-//     }
-//   },
-//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-//   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-//   credentials: true,
-//   preflightContinue: false,
-//   optionsSuccessStatus: 204,
-//   maxAge: 86400 // 24 hours
-// };
+// ✅ Corrected CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+    "Origin",
+    "token" // ✅ Add 'token' header to allow your custom request
+  ],
+};
 
-// Apply CORS middleware
-// app.use(cors(corsOptions));
+// Apply middlewares
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Initialize Socket.io with matching CORS settings
+// Socket.io initialization
 const io = new Server(server, {
-  cors: {
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-    credentials: true
-  }
+  cors: corsOptions
 });
 
-// Socket.io connection
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
 
   socket.on("new_message", (message) => {
-    // Broadcast to all clients except sender
     socket.broadcast.emit("notification", {
       message: message.content,
       sender: message.sender,
@@ -98,13 +87,9 @@ io.on("connection", (socket) => {
   });
 });
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Database Connection
+// Database connection
 mongoose
-  .connect('mongodb+srv://cibiluser7:cibiluser%407@cibilbankscorecluster.arvti.mongodb.net/cibilDB?retryWrites=true&w=majority&appName=CibilBankScoreCluster') // Replace with your MongoDB URI
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected successfully"))
   .catch((err) => console.error("MongoDB Connection Error:", err));
 
@@ -129,12 +114,12 @@ app.use("/api/auth", forgetpassword);
 app.use("/api/agent", forgotPasswordAgentRoutes);
 app.use("/api/expert-connect", expertConnectRoutes);
 
-// Basic route
+// Root route
 app.get("/", (req, res) => {
   res.send("API is running");
 });
 
-// Start Server
-server.listen(PORT, () =>
-  console.log(`Server running on http://localhost:${PORT}`)
-);
+// Start server
+server.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
