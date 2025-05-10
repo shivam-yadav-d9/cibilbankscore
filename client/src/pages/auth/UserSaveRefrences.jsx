@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useTheme } from "../../contexts/ThemeContext"; // Adjust path as needed
+import { useTheme } from "../../contexts/ThemeContext";
 
 const UserSaveReferences = () => {
   const navigate = useNavigate();
@@ -15,6 +15,8 @@ const UserSaveReferences = () => {
   const [formData, setFormData] = useState({
     application_id: "",
     ref_code: "OUI202590898",
+    userId: "",
+    userType: "",
     reference1: {
       name: "",
       relationship: "",
@@ -32,23 +34,29 @@ const UserSaveReferences = () => {
   });
 
   useEffect(() => {
-    let applicationId = "";
-    if (location.state?.applicationId) {
-      applicationId = location.state.applicationId;
-    } else {
-      applicationId = localStorage.getItem("applicationId") || "";
-    }
+    let applicationId = location.state?.applicationId || localStorage.getItem("applicationId") || "";
+    let userId = location.state?.userId || localStorage.getItem("userId") || "";
+    let userType = location.state?.userType || localStorage.getItem("userType") || "";
+
+    // Save to localStorage for persistence
+    if (userId) localStorage.setItem("userId", userId);
+    if (userType) localStorage.setItem("userType", userType);
+
     const savedFormData = localStorage.getItem(`references_${applicationId}`);
     if (savedFormData) {
       const parsedData = JSON.parse(savedFormData);
       setFormData({
         ...parsedData,
         application_id: applicationId,
+        userId,
+        userType
       });
     } else {
       setFormData((prev) => ({
         ...prev,
         application_id: applicationId,
+        userId,
+        userType
       }));
     }
   }, [location]);
@@ -62,12 +70,14 @@ const UserSaveReferences = () => {
       }
     };
     setFormData(updatedFormData);
+
     if (updatedFormData.application_id) {
       localStorage.setItem(
         `references_${updatedFormData.application_id}`,
         JSON.stringify(updatedFormData)
       );
     }
+
     setError("");
   };
 
@@ -81,7 +91,10 @@ const UserSaveReferences = () => {
       setError("Please fill all required fields for Reference 2");
       return false;
     }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^\d{10,}$/;
+
     if (!emailRegex.test(reference1.email)) {
       setError("Please provide a valid email address for Reference 1");
       return false;
@@ -90,7 +103,6 @@ const UserSaveReferences = () => {
       setError("Please provide a valid email address for Reference 2");
       return false;
     }
-    const phoneRegex = /^\d{10,}$/;
     if (!phoneRegex.test(reference1.phone.replace(/\D/g, ''))) {
       setError("Please provide a valid phone number for Reference 1 (at least 10 digits)");
       return false;
@@ -99,6 +111,7 @@ const UserSaveReferences = () => {
       setError("Please provide a valid phone number for Reference 2 (at least 10 digits)");
       return false;
     }
+
     return true;
   };
 
@@ -106,11 +119,16 @@ const UserSaveReferences = () => {
     e.preventDefault();
     setError("");
     setSuccess("");
+
     if (!validateForm()) return;
+
     setIsLoading(true);
+
+    // Save current form state to localStorage
     if (formData.application_id) {
       localStorage.setItem(`references_${formData.application_id}`, JSON.stringify(formData));
     }
+
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/user-references/save`,
@@ -120,13 +138,19 @@ const UserSaveReferences = () => {
           headers: { 'Content-Type': 'application/json' },
         }
       );
-      
+
       setSuccess("References submitted successfully!");
+
       setTimeout(() => {
         navigate("/UserPreviousData", {
-          state: { applicationId: formData.application_id }
+          state: {
+            applicationId: formData.application_id,
+            userId: formData.userId,
+            userType: formData.userType
+          }
         });
       }, 1500);
+
     } catch (err) {
       setError(
         err.response?.data?.error ||

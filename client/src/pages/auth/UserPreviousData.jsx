@@ -15,6 +15,8 @@ const UserPreviousData = () => {
   const [formData, setFormData] = useState({
     ref_code: "OUI202590898",
     application_id: "",
+    userId: "",
+    userType: "",
     loan_data: [
       {
         loan_account_no: "",
@@ -29,22 +31,42 @@ const UserPreviousData = () => {
 
   useEffect(() => {
     let applicationId = "";
+    let userId = "";
+    let userType = "";
+
     if (location.state?.applicationId) {
       applicationId = location.state.applicationId;
     } else {
       applicationId = localStorage.getItem("applicationId") || "";
     }
+
+    if (location.state?.userId) {
+      userId = location.state.userId;
+    } else {
+      userId = localStorage.getItem("userId") || "";
+    }
+
+    if (location.state?.userType) {
+      userType = location.state.userType;
+    } else {
+      userType = localStorage.getItem("userType") || "";
+    }
+
     const savedFormData = localStorage.getItem(`previousLoans_${applicationId}`);
     if (savedFormData) {
       const parsedData = JSON.parse(savedFormData);
       setFormData({
         ...parsedData,
         application_id: applicationId,
+        userId,
+        userType,
       });
     } else {
       setFormData((prev) => ({
         ...prev,
         application_id: applicationId,
+        userId,
+        userType,
       }));
     }
   }, [location]);
@@ -70,14 +92,17 @@ const UserPreviousData = () => {
   const addLoan = () => {
     const updatedFormData = {
       ...formData,
-      loan_data: [...formData.loan_data, {
-        loan_account_no: "",
-        loan_year: "",
-        loan_amount: "",
-        emi_amount: "",
-        product: "",
-        bank_name: ""
-      }]
+      loan_data: [
+        ...formData.loan_data,
+        {
+          loan_account_no: "",
+          loan_year: "",
+          loan_amount: "",
+          emi_amount: "",
+          product: "",
+          bank_name: ""
+        }
+      ]
     };
     setFormData(updatedFormData);
     saveToLocalStorage(updatedFormData);
@@ -106,6 +131,7 @@ const UserPreviousData = () => {
       window.scrollTo(0, 0);
       return;
     }
+
     saveToLocalStorage(formData);
     setLoading(true);
 
@@ -118,11 +144,15 @@ const UserPreviousData = () => {
           headers: { 'Content-Type': 'application/json' },
         }
       );
-      
+
       setSuccess(true);
       setTimeout(() => {
         navigate("/UserDocuments", {
-          state: { applicationId: formData.application_id }
+          state: {
+            applicationId: formData.application_id,
+            userId: formData.userId,
+            userType: formData.userType,
+          }
         });
       }, 1500);
     } catch (err) {

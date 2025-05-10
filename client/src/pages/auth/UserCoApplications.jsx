@@ -27,6 +27,8 @@ const UserCoApplications = () => {
     alternate_no: "",
     occupation: "",
     ref_code: "OUI202590898",
+    userId: "",
+    userType: "",
   });
 
   useEffect(() => {
@@ -39,7 +41,7 @@ const UserCoApplications = () => {
             "Content-Type": "application/json",
           },
         };
-        
+
         const response = await axios.get(
           `/api/user-co-app/${applicationId}`,
           axiosConfig
@@ -72,13 +74,29 @@ const UserCoApplications = () => {
 
     if (applicationId) {
       localStorage.setItem("applicationId", applicationId);
-      const savedFormData = localStorage.getItem(`coAppFormData_${applicationId}`);
+
+      const savedFormData = localStorage.getItem(
+        `coAppFormData_${applicationId}`
+      );
+
+      const userId =
+      location.state?.userId || localStorage.getItem("userId") || "";
+    const userType =
+      location.state?.userType || localStorage.getItem("userType") || "";
+    
+
       if (savedFormData) {
-        setFormData(JSON.parse(savedFormData));
+        setFormData({
+          ...JSON.parse(savedFormData),
+          userId,
+          userType,
+        });
       } else {
         setFormData((prev) => ({
           ...prev,
           application_id: applicationId,
+          userId,
+          userType,
         }));
         fetchCoApplicantData(applicationId);
       }
@@ -107,12 +125,14 @@ const UserCoApplications = () => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+
     if (formData.application_id) {
       localStorage.setItem(
         `coAppFormData_${formData.application_id}`,
         JSON.stringify(formData)
       );
     }
+
     const requiredFields = {
       name: "Name",
       relationship: "Relationship",
@@ -124,51 +144,60 @@ const UserCoApplications = () => {
       city: "City",
       occupation: "Occupation",
     };
+
     const missingFields = Object.entries(requiredFields)
       .filter(([key]) => !formData[key])
       .map(([_, label]) => label);
+
     if (missingFields.length > 0) {
       alert(
-        `Please fill in the following required fields: ${missingFields.join(
-          ", "
-        )}`
+        `Please fill in the following required fields: ${missingFields.join(", ")}`
       );
       setIsLoading(false);
       return;
     }
+
     if (!/^\d{10}$/.test(formData.phone)) {
       alert("Phone number must be exactly 10 digits");
       setIsLoading(false);
       return;
     }
+
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       alert("Please enter a valid email address");
       setIsLoading(false);
       return;
     }
+
     if (!/^\d{6}$/.test(formData.pincode)) {
       alert("Pincode must be exactly 6 digits");
       setIsLoading(false);
       return;
     }
+
     try {
       const axiosConfig = {
-        baseURL: "http://localhost:3001",
+        baseURL: import.meta.env.VITE_BACKEND_URL,
         headers: {
           "Content-Type": "application/json",
         },
       };
+
       const res = await axios.post(
         "/api/user-co-app/save",
         formData,
         axiosConfig
       );
+
       if (res.data && res.data.success) {
-        setSuccess(
-          res.data.message || "Co-applicant information saved successfully"
-        );
+        setSuccess(res.data.message || "Co-applicant information saved successfully");
+
         navigate("/UserSaveRefrences", {
-          state: { applicationId: formData.application_id },
+          state: {
+            applicationId: formData.application_id,
+            userId: formData.userId,
+            userType: formData.userType,
+          },
         });
       } else {
         throw new Error(

@@ -1,11 +1,12 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useTheme } from "../../contexts/ThemeContext"; // Adjust path as needed
+import { useTheme } from "../../contexts/ThemeContext";
 
 function UserBasicData() {
   const location = useLocation();
   const loanTypeId = location.state?.loan_type_id;
+  const [userData, setUserData] = useState(null); // ✅ Local state for user info
   const [userType, setUserType] = useState(null);
 
   const [formData, setFormData] = useState({
@@ -30,14 +31,16 @@ function UserBasicData() {
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
 
+  // ✅ Update form on input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // ✅ Load user data and previous form data
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const userData = localStorage.getItem("user");
+    const storedUser = localStorage.getItem("user");
     const previousFormData = localStorage.getItem("loanProcessorFormData");
 
     if (!token) {
@@ -45,21 +48,15 @@ function UserBasicData() {
       return;
     }
 
-    let detectedUserType = null;
-    if (userData) {
-      const user = JSON.parse(userData);
-      detectedUserType = user.userType || null;
-      setUserType(detectedUserType);
-
-      // Only prefill for customers
-      if (detectedUserType !== "business") {
-        setFormData((prev) => ({
-          ...prev,
-          name: user.name || "",
-          email: user.email || "",
-          mobile: user.mobile || "",
-        }));
-      }
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUserData(parsedUser);
+      setFormData((prev) => ({
+        ...prev,
+        name: parsedUser.name || "",
+        email: parsedUser.email || "",
+        mobile: parsedUser.mobile || "",
+      }));
     }
 
     if (previousFormData) {
@@ -83,12 +80,16 @@ function UserBasicData() {
     setError(null);
 
     try {
+      if (!userData) throw new Error("User not logged in.");
+
       const formattedData = {
         ...formData,
         preferred_banks:
           typeof formData.preferred_banks === "string"
             ? JSON.parse(formData.preferred_banks)
             : formData.preferred_banks,
+        userId: userData._id,      // ✅ Add user ID from localStorage
+        userType: userData.userType, // ✅ Add userType (agent/customer)
       };
 
       const response = await axios.post(
@@ -104,16 +105,18 @@ function UserBasicData() {
       if (response.data.application_id) {
         localStorage.setItem("userBasicData", JSON.stringify(formattedData));
         localStorage.setItem("applicationId", response.data.application_id);
-
+        
         navigate("/UserAddress", {
-          state: { applicationId: response.data.application_id },
+          state: {
+            applicationId: response.data.application_id,
+            userId: userData._id,
+            userType: userData.userType,
+          },
         });
-
+        
         setSuccess("Application submitted successfully!");
       } else {
-        throw new Error(
-          response.data.message || "Failed to submit application"
-        );
+        throw new Error(response.data.message || "Failed to submit application");
       }
     } catch (error) {
       setError(

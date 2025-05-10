@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useTheme } from "../../contexts/ThemeContext"; // Adjust path as needed
+import { useTheme } from "../../contexts/ThemeContext";
 
 function UserSecondAddress() {
   const location = useLocation();
@@ -10,6 +10,13 @@ function UserSecondAddress() {
 
   const [formData, setFormData] = useState({
     application_id: "",
+    userId: "",
+    userType: "",
+    ref_code: "OUI202590898", // Get ref_code from location or default
+    years_of_residence: "",
+    residential_status: "Resident", // Add this field
+    residence_type: "1", // Add this field with a default value
+    monthly_rent: "",
     present_address: {
       address_line1: "",
       address_line2: "",
@@ -19,7 +26,7 @@ function UserSecondAddress() {
       city: "",
       landmark: "",
       email: "",
-      phone: ""
+      phone: "",
     },
     permanent_address: {
       address_line1: "",
@@ -30,7 +37,7 @@ function UserSecondAddress() {
       city: "",
       landmark: "",
       email: "",
-      phone: ""
+      phone: "",
     },
     office_address: {
       address_line1: "",
@@ -41,58 +48,44 @@ function UserSecondAddress() {
       city: "",
       landmark: "",
       email: "",
-      phone: ""
-    }
+      phone: "",
+    },
   });
+
 
   const [isLoading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState(null);
   const [sameAsPresent, setSameAsPresent] = useState(false);
 
-  // Theme-based classes (copied from UserBasicData)
-  const containerClass = isDarkMode
-    ? "min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center"
-    : "min-h-screen bg-gradient-to-br from-white to-gray-100 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center";
-
-  const cardClass = isDarkMode
-    ? "max-w-4xl w-full bg-white/10 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl border border-white/20 animate-fadeIn"
-    : "max-w-4xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl border border-gray-100 animate-fadeIn";
-
-  const innerClass = isDarkMode
-    ? "p-8 md:p-12"
-    : "p-8 md:p-12";
-
-  const sectionTitleClass = isDarkMode
-    ? "text-4xl font-bold text-white mb-2"
-    : "text-4xl font-bold text-gray-900 mb-2";
-
-  const labelClass = isDarkMode
-    ? "absolute left-4 top-4 transition-all duration-300 transform peer-focus:-translate-y-5 peer-focus:scale-75 peer-focus:text-indigo-400 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:text-gray-400 -translate-y-5 scale-75 text-indigo-400"
-    : "absolute left-4 top-4 transition-all duration-300 transform peer-focus:-translate-y-5 peer-focus:scale-75 peer-focus:text-indigo-600 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:text-gray-400 -translate-y-5 scale-75 text-indigo-600";
-
-  const inputClass = isDarkMode
-    ? "w-full px-4 py-4 bg-slate-800/50 backdrop-blur-sm text-white border border-indigo-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 peer"
-    : "w-full px-4 py-4 bg-white text-gray-800 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-300 peer";
-
-  const buttonClass = isDarkMode
-    ? "w-full font-medium text-lg py-4 px-6 rounded-xl shadow-lg transition-all duration-500 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white hover:shadow-indigo-500/50 transform hover:-translate-y-1"
-    : "w-full font-medium text-lg py-4 px-6 rounded-xl shadow-lg transition-all duration-500 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white hover:shadow-indigo-500/50 transform hover:-translate-y-1";
-
   useEffect(() => {
-    let applicationId = "";
-    if (location.state?.applicationId) {
-      applicationId = location.state.applicationId;
-    } else {
-      applicationId = localStorage.getItem("applicationId") || "";
-    }
-    const savedFormData = localStorage.getItem(`secondFormData_${applicationId}`);
+    const applicationId =
+      location.state?.applicationId ||
+      localStorage.getItem("applicationId") ||
+      "";
+    const userId = location.state?.userId || "";
+    const userType = location.state?.userType || "";
+    const refCode = location.state?.ref_code || "OUI202590898";
+
+    const savedFormData = localStorage.getItem(
+      `secondFormData_${applicationId}`
+    );
     if (savedFormData) {
-      setFormData(JSON.parse(savedFormData));
+      const parsedData = JSON.parse(savedFormData);
+      setFormData({
+        ...parsedData,
+        application_id: applicationId,
+        userId,
+        userType,
+        ref_code: refCode, // Ensure ref_code is set
+      });
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        application_id: applicationId
+        application_id: applicationId,
+        userId,
+        userType,
+        ref_code: refCode, // Ensure ref_code is set
       }));
     }
   }, [location]);
@@ -104,8 +97,8 @@ function UserSecondAddress() {
         ...formData,
         [addressType]: {
           ...formData[addressType],
-          [field]: e.target.value
-        }
+          [field]: e.target.value,
+        },
       };
     } else {
       updatedFormData = { ...formData, [e.target.name]: e.target.value };
@@ -126,8 +119,8 @@ function UserSecondAddress() {
       const updatedFormData = {
         ...formData,
         permanent_address: {
-          ...formData.present_address
-        }
+          ...formData.present_address,
+        },
       };
       setFormData(updatedFormData);
       if (updatedFormData.application_id) {
@@ -138,41 +131,78 @@ function UserSecondAddress() {
       }
     }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(null);
+
     if (formData.application_id) {
       localStorage.setItem(
         `secondFormData_${formData.application_id}`,
         JSON.stringify(formData)
       );
     }
+
     try {
       await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/user-second-address/save`, 
+        `${import.meta.env.VITE_BACKEND_URL}/api/user-second-address/save`,
         formData
       );
+
       setSuccess("Address information saved successfully!");
+
       navigate("/UserCoApplications", {
-        state: { applicationId: formData.application_id },
+        state: {
+          applicationId: formData.application_id,
+          userId: formData.userId,
+          userType: formData.userType,
+        },
       });
+
     } catch (err) {
-      setError("Error submitting form: " + (err.response?.data?.error || err.message));
+      setError(
+        "Error submitting form: " +
+        (err.response?.data?.error || err.message)
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // Helper to render address fields
+  const containerClass = isDarkMode
+    ? "min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center"
+    : "min-h-screen bg-gradient-to-br from-white to-gray-100 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center";
+
+  const cardClass = isDarkMode
+    ? "max-w-4xl w-full bg-white/10 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl border border-white/20 animate-fadeIn"
+    : "max-w-4xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl border border-gray-100 animate-fadeIn";
+
+  const innerClass = isDarkMode ? "p-8 md:p-12" : "p-8 md:p-12";
+
+  const sectionTitleClass = isDarkMode
+    ? "text-4xl font-bold text-white mb-2"
+    : "text-4xl font-bold text-gray-900 mb-2";
+
+  const labelClass = isDarkMode
+    ? "absolute left-4 top-4 transition-all duration-300 transform peer-focus:-translate-y-5 peer-focus:scale-75 peer-focus:text-indigo-400 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:text-gray-400 -translate-y-5 scale-75 text-indigo-400"
+    : "absolute left-4 top-4 transition-all duration-300 transform peer-focus:-translate-y-5 peer-focus:scale-75 peer-focus:text-indigo-600 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:text-gray-400 -translate-y-5 scale-75 text-indigo-600";
+
+  const inputClass = isDarkMode
+    ? "w-full px-4 py-4 bg-slate-800/50 backdrop-blur-sm text-white border border-indigo-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 peer"
+    : "w-full px-4 py-4 bg-white text-gray-800 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-300 peer";
+
+  const buttonClass = isDarkMode
+    ? "w-full font-medium text-lg py-4 px-6 rounded-xl shadow-lg transition-all duration-500 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white hover:shadow-indigo-500/50 transform hover:-translate-y-1"
+    : "w-full font-medium text-lg py-4 px-6 rounded-xl shadow-lg transition-all duration-500 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white hover:shadow-indigo-500/50 transform hover:-translate-y-1";
+
   const renderAddressFields = (type, disabled = false) => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="group relative">
         <input
           placeholder=" "
           value={formData[type].address_line1}
-          onChange={e => handleChange(e, type, "address_line1")}
+          onChange={(e) => handleChange(e, type, "address_line1")}
           className={inputClass}
           required
           disabled={disabled}
@@ -183,8 +213,9 @@ function UserSecondAddress() {
         <input
           placeholder=" "
           value={formData[type].address_line2}
-          onChange={e => handleChange(e, type, "address_line2")}
+          onChange={(e) => handleChange(e, type, "address_line2")}
           className={inputClass}
+          required // Make address_line2 required
           disabled={disabled}
         />
         <label className={labelClass}>Address Line 2</label>
@@ -193,7 +224,7 @@ function UserSecondAddress() {
         <input
           placeholder=" "
           value={formData[type].address_line3}
-          onChange={e => handleChange(e, type, "address_line3")}
+          onChange={(e) => handleChange(e, type, "address_line3")}
           className={inputClass}
           disabled={disabled}
         />
@@ -203,7 +234,7 @@ function UserSecondAddress() {
         <input
           placeholder=" "
           value={formData[type].pincode}
-          onChange={e => handleChange(e, type, "pincode")}
+          onChange={(e) => handleChange(e, type, "pincode")}
           className={inputClass}
           required
           disabled={disabled}
@@ -214,7 +245,7 @@ function UserSecondAddress() {
         <input
           placeholder=" "
           value={formData[type].city}
-          onChange={e => handleChange(e, type, "city")}
+          onChange={(e) => handleChange(e, type, "city")}
           className={inputClass}
           required
           disabled={disabled}
@@ -225,7 +256,7 @@ function UserSecondAddress() {
         <input
           placeholder=" "
           value={formData[type].state}
-          onChange={e => handleChange(e, type, "state")}
+          onChange={(e) => handleChange(e, type, "state")}
           className={inputClass}
           required
           disabled={disabled}
@@ -236,7 +267,7 @@ function UserSecondAddress() {
         <input
           placeholder=" "
           value={formData[type].landmark}
-          onChange={e => handleChange(e, type, "landmark")}
+          onChange={(e) => handleChange(e, type, "landmark")}
           className={inputClass}
           disabled={disabled}
         />
@@ -246,7 +277,7 @@ function UserSecondAddress() {
         <input
           placeholder=" "
           value={formData[type].email}
-          onChange={e => handleChange(e, type, "email")}
+          onChange={(e) => handleChange(e, type, "email")}
           className={inputClass}
           required
           disabled={disabled}
@@ -257,7 +288,7 @@ function UserSecondAddress() {
         <input
           placeholder=" "
           value={formData[type].phone}
-          onChange={e => handleChange(e, type, "phone")}
+          onChange={(e) => handleChange(e, type, "phone")}
           className={inputClass}
           required
           disabled={disabled}
@@ -342,6 +373,62 @@ function UserSecondAddress() {
                 readOnly
               />
               <label className={labelClass}>Application ID</label>
+            </div>
+
+            {/* Years of Residence Field */}
+            <div className="group relative mb-8">
+              <input
+                type="text"  // Or "number" if you want only numbers
+                name="years_of_residence"
+                placeholder=" "
+                value={formData.years_of_residence}
+                onChange={handleChange}
+                required
+                className={inputClass}
+              />
+              <label className={labelClass}>Years of Residence</label>
+            </div>
+
+            {/* residential_status Field */}
+            <div className="group relative mb-8">
+              <input
+                type="text"
+                name="residential_status"
+                placeholder=" "
+                value={formData.residential_status}
+                onChange={handleChange}
+                required
+                className={inputClass}
+              />
+              <label className={labelClass}>Residential Status</label>
+            </div>
+
+            {/* residence_type Field */}
+            <div className="group relative mb-8">
+              <input
+                type="text"
+                name="residence_type"
+                placeholder=" "
+                value={formData.residence_type}
+                onChange={handleChange}
+                required
+                className={inputClass}
+              />
+              <label className={labelClass}>Residence Type</label>
+            </div>
+
+            {/* monthly_rent Field */}
+            <div className="group relative mb-8">
+              <input
+                type="text"
+                name="monthly_rent"
+                placeholder=" "
+                value={formData.monthly_rent}
+                onChange={handleChange}
+                required
+                className={inputClass}
+              />
+              <label className={labelClass}>Monthly rent</label>
             </div>
 
             {/* Present Address */}

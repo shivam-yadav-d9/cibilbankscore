@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useTheme } from "../../contexts/ThemeContext"; // Adjust path as needed
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useTheme } from "../../contexts/ThemeContext";
 
 const UserAddress = () => {
   const [error, setError] = useState("");
@@ -14,6 +14,8 @@ const UserAddress = () => {
   const [formData, setFormData] = useState({
     ref_code: "OUI202590898",
     application_id: "",
+    userId: "",
+    userType: "",
     first_name: "",
     middle_name: "",
     sur_name: "",
@@ -53,23 +55,25 @@ const UserAddress = () => {
   });
 
   useEffect(() => {
-    let applicationId = "";
-    if (location.state?.applicationId) {
-      applicationId = location.state.applicationId;
-    } else {
-      applicationId = localStorage.getItem("applicationId") || "";
-    }
+    const applicationId = location.state?.applicationId || localStorage.getItem("applicationId") || "";
+    const userId = location.state?.userId || "";
+    const userType = location.state?.userType || "";
+
     const savedFormData = localStorage.getItem(`formData_${applicationId}`);
     if (savedFormData) {
       const parsedData = JSON.parse(savedFormData);
       setFormData({
         ...parsedData,
         application_id: applicationId,
+        userId,
+        userType,
       });
     } else {
       setFormData((prev) => ({
         ...prev,
         application_id: applicationId,
+        userId,
+        userType,
       }));
     }
   }, [location]);
@@ -89,17 +93,26 @@ const UserAddress = () => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+
     if (formData.application_id) {
       localStorage.setItem(`formData_${formData.application_id}`, JSON.stringify(formData));
     }
+
     try {
-      await axios.post(
+      const res = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/user-address/save-user-address`,
         formData
       );
+
       setSuccess("Submitted successfully");
+
+      // ✅ Forward userId and userType
       navigate("/UserSecondAddress", {
-        state: { applicationId: formData.application_id },
+        state: {
+          applicationId: formData.application_id,
+          userId: formData.userId,
+          userType: formData.userType,
+        },
       });
     } catch (err) {
       setError("Error submitting form: " + (err.response?.data?.message || err.message));
