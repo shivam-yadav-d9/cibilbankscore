@@ -66,7 +66,7 @@ export const loginAgent = async (req, res) => {
         const user = await B2BSignup.findOne({ email });
 
         if (!user) {
-            return res.status(400).json({ message: "Invalid credentials" });
+            return res.status(400).json({ message: "Invalid credentials type agin" });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
