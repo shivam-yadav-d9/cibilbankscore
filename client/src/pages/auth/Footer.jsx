@@ -5,7 +5,7 @@ function Footer() {
 
         {/* Company Info */}
         <div>
-          <h2 className="text-xl font-semibold text-white">DBNPEY🤵</h2>
+          <h2 className="text-xl font-semibold text-white">DBNPEY Bank</h2>
           <p className="mt-2 text-sm">
             Secure and trusted banking solutions to help you manage your financial future.
           </p>
@@ -40,7 +40,7 @@ function Footer() {
           <p className="mt-1">📞+91 8062179504<span className="font-semibold"></span></p>
           <p className="mt-1">✉️ care@dbnpe.in
           </p>
-          <p className="mt-1">addresh- 20/1, Indira Nagar
+          <p className="mt-1">addresh- 20/1,Indira Nagar
             Bangalore- 560038,
             Karnataka, India
           </p>
