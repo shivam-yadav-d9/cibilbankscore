@@ -7,7 +7,7 @@ const STORE_DETAILS_URL = process.env.STORE_DETAILS_URL
 
 export const storeLoanDetails = async (req, res) => {
   try {
-    const requiredFields = ["name", "mobile", "email", "dob", "pan", "loan_type_id", "income_source", "monthly_income", "loan_amount"];
+    const requiredFields = ["name", "mobile", "email", "dob", "pan", "loan_type_id", "income_source", "monthly_income", "loan_amount","userId", "userType"];
     for (const field of requiredFields) {
       if (!req.body[field]) {
         return res.status(400).json({ message: `Missing required field: ${field}` });
@@ -63,6 +63,10 @@ export const storeLoanDetails = async (req, res) => {
         ...userData,
         application_id: mockApplicationId,
         preferred_banks: preferredBanks,
+        appliedBy: {
+          userId: req.body.userId,
+          userType: req.body.userType
+        }
       });
       await savedData.save();
 
@@ -138,6 +142,10 @@ export const storeLoanDetails = async (req, res) => {
       ...userData,
       application_id: applicationId,
       preferred_banks: preferredBanks,
+      appliedBy: {
+        userId: req.body.userId,
+        userType: req.body.userType
+      }
     });
     await savedData.save();
 

@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
 
 const userAddressSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, required: true },
+  userType: { type: String, required: true, enum: ['customer', 'agent', 'business'] },
+
   ref_code: String,
   application_id: String,
   first_name: String,
@@ -42,5 +45,4 @@ const userAddressSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const UserAddressModel = mongoose.model("UserAddress", userAddressSchema);
-
 export default UserAddressModel;

@@ -3,7 +3,7 @@ import UserPreviousLoan from "../models/UserPreviousLoan.js";
 import dotenv from "dotenv";
 dotenv.config();
 
-// Function to generate authorization token
+// Generate Evoluto token
 const generateToken = async () => {
   try {
     const response = await axios.post(
@@ -14,111 +14,135 @@ const generateToken = async () => {
       },
       {
         headers: {
-          'source': 'web',
-          'package': '10.0.2.215',
-          'outletid': process.env.OUTLET_ID || 'OUI202590898',
-          'Authorization': `Basic ${process.env.EVOLUTO_AUTH_BASIC}`
+          source: "web",
+          package: "10.0.2.215",
+          outletid: process.env.OUTLET_ID || "OUI202590898",
+          Authorization: `Basic ${process.env.EVOLUTO_AUTH_BASIC}`
         }
       }
     );
-    
-    console.log("Authentication successful");
     return response.data.data.token;
   } catch (error) {
-    console.error("Authentication error:", error.response?.data || error.message);
+    console.error("Auth error:", error.response?.data || error.message);
     throw new Error("Failed to authenticate with Evoluto API");
   }
 };
 
 export const saveUserPreviousLoans = async (req, res) => {
   try {
-    // Validate request body
-    const { application_id, ref_code, loan_data } = req.body;
-    
-    if (!application_id || !ref_code || !loan_data || !Array.isArray(loan_data)) {
-      return res.status(400).json({ error: "Invalid request data format" });
+    const {
+      application_id,
+      ref_code,
+      loan_data,
+      userId,
+      userType
+    } = req.body;
+
+    if (
+      !application_id ||
+      !ref_code ||
+      !loan_data ||
+      !userId ||
+      !userType ||
+      !Array.isArray(loan_data)
+    ) {
+      return res.status(400).json({ error: "Missing or invalid request fields" });
     }
-    
-    // Validate each loan entry
+
+    // Validate loan entries
     for (const loan of loan_data) {
-      if (!loan.loan_account_no || !loan.loan_year || !loan.loan_amount || 
-          !loan.emi_amount || !loan.product || !loan.bank_name) {
+      if (
+        !loan.loan_account_no ||
+        !loan.loan_year ||
+        !loan.loan_amount ||
+        !loan.emi_amount ||
+        !loan.product ||
+        !loan.bank_name
+      ) {
         return res.status(400).json({ error: "Missing required loan information" });
       }
     }
-    
-    console.log("Saving/updating user previous loans:", req.body);
-    
-    // Find and update if exists, or create if it doesn't
-    const savedData = await UserPreviousLoan.findOneAndUpdate(
+
+    // Strip _id if present in loan_data
+    const cleanedLoanData = loan_data.map(({ loan_account_no, loan_year, loan_amount, emi_amount, product, bank_name }) => ({
+      loan_account_no,
+      loan_year,
+      loan_amount,
+      emi_amount,
+      product,
+      bank_name
+    }));
+
+    // Save/update to DB without evolutoResponse
+    const updatedDoc = await UserPreviousLoan.findOneAndUpdate(
       { application_id },
-      req.body,
-      { new: true, upsert: true }
-    );
-    
-    console.log("Data saved to MongoDB:", savedData._id);
-    
+      {
+        application_id,
+        ref_code,
+        loan_data: cleanedLoanData,
+        userId,
+        userType
+      },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    ).lean();
+
+    // Call Evoluto API
     try {
-      // Generate authentication token
       const token = await generateToken();
-      
-      // Make request to Evoluto API
+
       const evoResponse = await axios.post(
         `${process.env.API_BASE_URL || "https://uat-api.evolutosolution.com/v1"}/loan/previousLoans`,
-        req.body,
-        { 
-          headers: { 
-            'token': token,
-            'Content-Type': 'application/json'
-          } 
+        {
+          application_id,
+          ref_code,
+          loan_data: cleanedLoanData
+        },
+        {
+          headers: {
+            token,
+            "Content-Type": "application/json"
+          }
         }
       );
-      
-      console.log("Data saved to Evoluto API:", evoResponse.data);
-      
-      // Update MongoDB document with Evoluto response
-      savedData.evolutoResponse = evoResponse.data;
-      await savedData.save();
-      
-      return res.status(200).json({ 
-        message: "Previous loans saved successfully to database and external API",
-        mongoData: savedData,
+
+      return res.status(200).json({
+        message: "Previous loans saved to DB and sent to external API",
+        mongoData: updatedDoc,
         apiResponse: evoResponse.data
       });
     } catch (apiError) {
-      console.error("Error saving to Evoluto API:", apiError.response?.data || apiError.message);
-      
-      // Even if external API fails, we return success since we saved to MongoDB
+      console.error("Evoluto API error:", apiError.response?.data || apiError.message);
+
       return res.status(200).json({
-        message: "Previous loans saved successfully to database, but external API save failed",
-        mongoData: savedData,
+        message: "Saved to DB, but Evoluto API call failed",
+        mongoData: updatedDoc,
         apiError: apiError.response?.data || apiError.message
       });
     }
   } catch (err) {
-    console.error("Error in saveUserPreviousLoans:", err.message);
-    return res.status(500).json({ error: "Failed to save previous loans", details: err.message });
+    console.error("saveUserPreviousLoans error:", err.message);
+    return res.status(500).json({ error: "Internal server error", details: err.message });
   }
 };
 
-// Get user previous loans by application_id
+// Get previous loans by application ID
 export const getUserPreviousLoansByApplicationId = async (req, res) => {
   try {
     const { application_id } = req.params;
-    
+
     if (!application_id) {
       return res.status(400).json({ error: "Application ID is required" });
     }
-    
-    const userPreviousLoans = await UserPreviousLoan.findOne({ application_id });
-    
-    if (!userPreviousLoans) {
-      return res.status(404).json({ error: "No previous loans found for this application ID" });
+
+    const previousLoans = await UserPreviousLoan.findOne({ application_id }).lean();
+
+    if (!previousLoans) {
+      return res.status(404).json({ error: "No data found for this Application ID" });
     }
-    
-    return res.status(200).json({ data: userPreviousLoans });
+
+    return res.status(200).json({ data: previousLoans });
   } catch (err) {
-    console.error("Error fetching user previous loans:", err.message);
-    return res.status(500).json({ error: "Failed to fetch user previous loans" });
+    console.error("Fetch error:", err.message);
+    return res.status(500).json({ error: "Failed to fetch previous loan data" });
   }
 };

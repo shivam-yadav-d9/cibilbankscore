@@ -2,6 +2,16 @@ import mongoose from "mongoose";
 
 const coApplicantSchema = new mongoose.Schema({
   application_id: String,
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",  // Reference to the user model
+    required: true
+  },
+  userType: {
+    type: String,
+    enum: ['customer', 'agent','business'],  // Add more user types if necessary
+    required: true
+  },
   name: {
     type: String,
     required: [true, "Name is required"]
@@ -47,6 +57,7 @@ const coApplicantSchema = new mongoose.Schema({
   },
   ref_code: String,
   evoluto_response: Object,
+ 
   created_at: {
     type: Date,
     default: Date.now

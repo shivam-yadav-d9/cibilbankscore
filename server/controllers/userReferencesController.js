@@ -16,7 +16,7 @@ const generateToken = async () => {
         headers: {
           'source': 'web',
           'package': '10.0.2.215',
-          'outletid': process.env.OUTLET_ID || 'OUI202590898',
+          'outletid': process.env.REF_CODE || 'OUI202590898',
           'Authorization': `Basic ${process.env.EVOLUTO_AUTH_BASIC}`
         }
       }
@@ -33,11 +33,12 @@ const generateToken = async () => {
 export const saveUserReferences = async (req, res) => {
   try {
     // Validate request body
-    const { application_id, ref_code, reference1, reference2 } = req.body;
+    const { application_id, ref_code, reference1, reference2, userId, userType } = req.body;
     
     if (!reference1?.name || !reference1?.relationship || !reference1?.email || !reference1?.phone ||
-        !reference2?.name || !reference2?.relationship || !reference2?.email || !reference2?.phone) {
-      return res.status(400).json({ error: "Missing required reference information" });
+        !reference2?.name || !reference2?.relationship || !reference2?.email || !reference2?.phone ||
+        !userId || !userType) {
+      return res.status(400).json({ error: "Missing required information" });
     }
     
     console.log("Saving user references:", req.body);
@@ -45,7 +46,11 @@ export const saveUserReferences = async (req, res) => {
     // Use findOneAndUpdate with upsert option instead of create
     const savedData = await UserReference.findOneAndUpdate(
       { application_id }, // filter criteria
-      req.body, // update data
+      { 
+        ...req.body,  // spread to include userId and userType along with references
+        userId,
+        userType
+      }, 
       { 
         new: true, // return the updated document
         upsert: true, // create if it doesn't exist
@@ -93,6 +98,7 @@ export const saveUserReferences = async (req, res) => {
     return res.status(500).json({ error: "Failed to save user references", details: err.message });
   }
 };
+
 // Get user references by application_id
 export const getUserReferencesByApplicationId = async (req, res) => {
   try {

@@ -64,7 +64,7 @@ export const saveCoApplicant = async (req, res) => {
     console.log("Processing co-applicant request:", req.body);
     
     // Validate required fields
-    const requiredFields = ['name', 'relationship', 'email', 'phone', 'address_line1', 'pincode', 'state', 'city', 'occupation'];
+    const requiredFields = ['name', 'relationship', 'email', 'phone', 'address_line1', 'pincode', 'state', 'city', 'occupation','userId','userType'];
     const missingFields = requiredFields.filter(field => !req.body[field]);
     
     if (missingFields.length > 0) {
@@ -158,8 +158,8 @@ export const saveCoApplicant = async (req, res) => {
 
         // Update MongoDB record with Evoluto response
         await CoApplicant.findByIdAndUpdate(coApplicant._id, {
-          evoluto_response: evolutoResponse.data,
-          updated_at: new Date()
+          // evoluto_response: evolutoResponse.data,
+          // updated_at: new Date()
         });
 
         // Return success response
@@ -209,8 +209,9 @@ export const saveCoApplicant = async (req, res) => {
   }
 };
 
-// Add this function to your controller file
-
+/**
+ * Get co-applicant data by application ID
+ */
 export const getCoApplicantByApplicationId = async (req, res) => {
   try {
     const { applicationId } = req.params;
@@ -244,4 +245,3 @@ export const getCoApplicantByApplicationId = async (req, res) => {
     });
   }
 };
-
