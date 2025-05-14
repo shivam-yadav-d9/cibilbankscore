@@ -24,6 +24,7 @@ import creditCheckRoutes from "./routes/creditCheck.js";
 import forgetpassword from "./routes/forgotPassword.js";
 import forgotPasswordAgentRoutes from "./routes/forgotPasswordAgentroute.js";
 import expertConnectRoutes from "./routes/expertConnect.js";
+import applicationRoutes from "./routes/applicationRoutes.js";
 
 // Load environment variables
 dotenv.config();
@@ -96,6 +97,7 @@ mongoose
 // Routes
 app.use("/user", authRoutes);
 app.use("/api", apiRoutes);
+app.use("/api/applications", applicationRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/api/messages", message);
 app.use("/api/notifications", notification);
