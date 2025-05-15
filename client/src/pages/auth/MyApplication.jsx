@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext'; // Adjust path as needed
+import { useAuth } from '../../contexts/AuthContext'; // Import useAuth hook
 
 const MyApplication = () => {
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
+  const { user, isAuthenticated } = useAuth(); // Get the current user
   const [applications, setApplications] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -24,8 +26,8 @@ const MyApplication = () => {
     : 'px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg text-white font-medium shadow-lg hover:shadow-blue-500/50 transition-all duration-300 hover:scale-105';
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
+    // Redirect to login if not authenticated
+    if (!isAuthenticated) {
       navigate('/login');
       return;
     }
@@ -45,7 +47,7 @@ const MyApplication = () => {
       }
 
       // Map document entries to applications
-      const applicationsData = documentKeys.map((key) => {
+      const allApplications = documentKeys.map((key) => {
         const applicationId = key.replace('documents_', '');
         const documents = JSON.parse(localStorage.getItem(key)) || [];
         
@@ -60,6 +62,7 @@ const MyApplication = () => {
         let name = 'N/A';
         let email = 'N/A';
         let mobile = 'N/A';
+        let user_id = null; // Track the user ID for filtering
 
         if (formDataStr) {
           try {
@@ -70,6 +73,7 @@ const MyApplication = () => {
             name = parsedFormData.name || 'N/A';
             email = parsedFormData.email || 'N/A';
             mobile = parsedFormData.mobile || 'N/A';
+            user_id = parsedFormData.user_id || null; // Store user_id if available
           } catch (err) {
             console.error('Error parsing form data:', err);
           }
@@ -86,17 +90,36 @@ const MyApplication = () => {
           documents,
           status: 'Pending', // Default status, can be updated if you have status info
           created_at: new Date().toISOString(), // Default date if not available
+          user_id // Include user_id for filtering
         };
       });
 
-      setApplications(applicationsData);
+      // Filter applications to only show those belonging to the current user
+      // We can filter based on user ID or email if user ID is not available
+      const userApplications = allApplications.filter(app => {
+        // If the application has a user_id, check if it matches the current user's ID
+        if (app.user_id && user && user.id) {
+          return app.user_id === user.id;
+        }
+        
+        // If no user_id but we have email, check if email matches
+        if (user && user.email && app.email) {
+          return app.email === user.email;
+        }
+        
+        // If neither matching method works, this might be an application created by the user in the current session
+        // We can include it if the email is the same as the current user's email
+        return false;
+      });
+
+      setApplications(userApplications);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching applications:', err);
       setError('Failed to load applications. Please try again.');
       setLoading(false);
     }
-  }, [navigate]);
+  }, [navigate, isAuthenticated, user]);
 
   const handleImageError = (e) => {
     e.target.onerror = null;
@@ -138,6 +161,33 @@ const MyApplication = () => {
             </p>
           </div>
 
+          {/* User Info Banner */}
+          {user && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
+              className={isDarkMode
+                ? 'bg-indigo-900/30 backdrop-blur-sm border border-indigo-500/30 rounded-xl p-4 mb-6 flex items-center'
+                : 'bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-6 flex items-center'}
+            >
+              <div className={isDarkMode
+                ? 'w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg mr-4'
+                : 'w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg mr-4'
+              }>
+                {user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <p className={isDarkMode ? 'font-medium text-white' : 'font-medium text-gray-800'}>
+                  {user.name || 'Welcome back!'}
+                </p>
+                <p className={isDarkMode ? 'text-sm text-indigo-300' : 'text-sm text-indigo-600'}>
+                  {user.email}
+                </p>
+              </div>
+            </motion.div>
+          )}
+
           {/* Error Notification */}
           {error && (
             <motion.div
@@ -172,7 +222,7 @@ const MyApplication = () => {
               : 'bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded-xl flex items-center'}
             >
               <div className="animate-spin mr-3 h-5 w-5 border-t-2 border-b-2 border-indigo-400 rounded-full"></div>
-              <p>Loading applications...</p>
+              <p>Loading your applications...</p>
             </div>
           )}
 
@@ -196,7 +246,7 @@ const MyApplication = () => {
               </svg>
               <h3 className="text-2xl font-bold mb-2">No Applications Found</h3>
               <p className="mb-4">You haven't submitted any loan applications yet.</p>
-              <Link to="/loan-processor" className={buttonClass}>
+              <Link to="/UserLoanPage" className={buttonClass}>
                 Start New Application
               </Link>
             </motion.div>
@@ -245,7 +295,7 @@ const MyApplication = () => {
                             app.status === 'Approved' 
                               ? isDarkMode ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'
                               : app.status === 'Rejected'
-                              ? isDarkMode ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-600'
+                              ? isDarkMode ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-600' 
                               : isDarkMode ? 'bg-yellow-500/20 text-yellow-400' : 'bg-yellow-100 text-yellow-600'
                           }`}>
                             {app.status}

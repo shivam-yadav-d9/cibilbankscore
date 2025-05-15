@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { BellIcon, UserIcon, CreditCardIcon, ChartBarIcon, LogOutIcon, PlusIcon, UsersIcon, TrashIcon, EditIcon, BellRingIcon } from 'lucide-react';
+import { BellIcon, UserIcon, CreditCardIcon, ChartBarIcon, LogOutIcon, PlusIcon, UsersIcon, FileTextIcon } from 'lucide-react';
 import SidebarLink from './SideBarLink.jsx';
 import DashboardContent from './tabs/DashboardContent';
 import UsersContent from './tabs/UsersContent';
 import SubscriptionsContent from './tabs/SubscriptionsContent';
 import NotificationsContent from './tabs/NotificationsContent';
+import LoanApplicationContent from './tabs/LoanApplicationContent.jsx';
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -39,6 +40,8 @@ const AdminPanel = () => {
         return <SubscriptionsContent subscriptions={subscriptions} />;
       case 'notifications':
         return <NotificationsContent />;
+      case 'applications':
+        return <LoanApplicationContent />;
       default:
         return <DashboardContent stats={stats} />;
     }
@@ -63,6 +66,12 @@ const AdminPanel = () => {
             title="Users Management" 
             active={activeTab === 'users'} 
             onClick={() => setActiveTab('users')} 
+          />
+          <SidebarLink 
+            icon={<FileTextIcon size={20} />} 
+            title="Loan Applications" 
+            active={activeTab === 'applications'} 
+            onClick={() => setActiveTab('applications')} 
           />
           <SidebarLink 
             icon={<CreditCardIcon size={20} />} 
