@@ -189,3 +189,29 @@ export const getLoanDetailsByEmail = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+
+
+
+// Get loan details by userType and userId
+export const getLoanDetailsByUser = async (req, res) => {
+  const { userType, userId } = req.query;
+
+  try {
+    if (!userType || !userId) {
+      return res.status(400).json({ message: "Both userType and userId are required." });
+    }
+
+    const loanData = await LoanApplication.find({ userType, userId });
+
+    if (!loanData || loanData.length === 0) {
+      return res.status(404).json({ message: "No loan data found for the given userType and userId." });
+    }
+
+    res.status(200).json(loanData);
+  } catch (error) {
+    console.error("Error fetching loan data by userType and userId:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+

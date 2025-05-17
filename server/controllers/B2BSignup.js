@@ -42,7 +42,7 @@ export const signupB2BUser = async (req, res) => {
             email,
             phone,
             password: hashedPassword,
-            userType: 'agent',
+            userType: 'business'
         });
 
         // Save the new user to the database
@@ -100,7 +100,7 @@ export const loginAgent = async (req, res) => {
 // Get all agents for admin
 export const getAllAgents = async (req, res) => {
     try {
-        const agents = await B2BSignup.find({ userType: 'agent' });
+        const agents = await B2BSignup.find({ userType: 'business' });
         res.status(200).json(agents);
     } catch (error) {
         console.error("Fetch Agents Error:", error.message);

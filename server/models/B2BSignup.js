@@ -10,7 +10,7 @@ const B2BSignupSchema = new mongoose.Schema({
     password: String,
     userType: {
         type: String,
-        default: "agent"
+        default:  "business"
     }
 }, { timestamps: true }); // 👈 This adds createdAt and updatedAt fields automatically
 
