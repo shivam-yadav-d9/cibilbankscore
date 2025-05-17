@@ -210,7 +210,7 @@ export const saveCoApplicant = async (req, res) => {
 };
 
 /**
- * Get co-applicant data by application ID
+ * Get co-applicant data by application ID ok 
  */
 export const getCoApplicantByApplicationId = async (req, res) => {
   try {
