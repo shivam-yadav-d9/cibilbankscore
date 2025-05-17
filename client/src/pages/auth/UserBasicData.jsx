@@ -53,9 +53,9 @@ function UserBasicData() {
       setUserData(parsedUser);
       setFormData((prev) => ({
         ...prev,
-        name: parsedUser.name || "",
-        email: parsedUser.email || "",
-        mobile: parsedUser.mobile || "",
+        name:"",
+        email:"",
+        mobile:"",
       }));
     }
 

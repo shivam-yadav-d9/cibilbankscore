@@ -12,90 +12,90 @@ const UsersContent = () => {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
 
-    const [currentPage, setCurrentPage] = useState(1);  // Current page number
-    const [totalPages, setTotalPages] = useState(1);    // Total number of pages
-    const [pageSize, setPageSize] = useState(10);        // Number of records per page
+    const [loanDetails, setLoanDetails] = useState(null);
+    const [selectedUserId, setSelectedUserId] = useState(null);
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
     const fetchUsers = async (userType, startDate = '', endDate = '', page = 1, pageSize = 10) => {
         setIsLoading(true);
         setError(null);
         setShowAll(false);
-      
+
         try {
-          let data = [];
-          let apiUrl = '';
-      
-          if (userType === 'our-customer') {
-            apiUrl = `${import.meta.env.VITE_BACKEND_URL}/user/users?page=${page}&pageSize=${pageSize}`;  // Added page and pageSize
-            if (startDate && endDate) {
-              apiUrl += `&startDate=${startDate}&endDate=${endDate}`;
+            let data = [];
+            let apiUrl = '';
+
+            if (userType === 'our-customer') {
+                apiUrl = `${import.meta.env.VITE_BACKEND_URL}/user/users?page=${page}&pageSize=${pageSize}`;
+                if (startDate && endDate) {
+                    apiUrl += `&startDate=${startDate}&endDate=${endDate}`;
+                }
+                const res = await axios.get(apiUrl);
+                data = res.data.users;
+                setTotalPages(res.data.totalPages);
+                setCurrentPage(res.data.currentPage);
+            } else if (userType === 'agent-customer') {
+                apiUrl = `${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/agents`;
+                const res = await axios.get(apiUrl);
+                data = res.data;
+                setTotalPages(1);
+            } else if (userType === 'today-customer') {
+                const [ourRes, agentRes] = await Promise.all([
+                    axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/users`),
+                    axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/agents`),
+                ]);
+                const today = new Date().toISOString().split('T')[0];
+                const todayUsers = [...ourRes.data.users, ...agentRes.data].filter(
+                    (user) => user.createdAt && user.createdAt.startsWith(today)
+                );
+                data = todayUsers;
+                setTotalPages(1);
             }
-            const res = await axios.get(apiUrl);
-            data = res.data.users;
-            setTotalPages(res.data.totalPages);      // Update totalPages
-            setCurrentPage(res.data.currentPage);  // Update current page
-          } else if (userType === 'agent-customer') {
-            apiUrl = `${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/agents`;
-            const res = await axios.get(apiUrl);
-            data = res.data;
-          } else if (userType === 'today-customer') {
-            const [ourRes, agentRes] = await Promise.all([
-              axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/users`),
-              axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/agents`),
-            ]);
-            const today = new Date().toISOString().split('T')[0];
-      
-            const todayUsers = [
-              ...ourRes.data.users,
-              ...agentRes.data
-            ].filter((user) => user.createdAt && user.createdAt.startsWith(today));
-      
-            data = todayUsers;
-          }
-      
-          setUsers(data);
-          setVisibleUsers(data); // No slicing, display all users on the current page
+
+            setUsers(data);
+            setVisibleUsers(data);
         } catch (err) {
-          console.error("Error fetching users:", err);
-          setError(err.message || "An error occurred while fetching data.");
+            console.error("Error fetching users:", err);
+            setError(err.message || "An error occurred while fetching data.");
         } finally {
-          setIsLoading(false);
+            setIsLoading(false);
         }
-      };
-      
+    };
 
     useEffect(() => {
-        fetchUsers(activeButton, startDate, endDate, currentPage, pageSize);  // Fetch users with pagination
-    }, [activeButton, startDate, endDate, currentPage, pageSize]);  // Refetch when these change
+        fetchUsers(activeButton, startDate, endDate, currentPage, pageSize);
+    }, [activeButton, startDate, endDate, currentPage, pageSize]);
 
     const handleButtonClick = (type) => {
         setActiveButton(type);
-        setCurrentPage(1);  // Reset to page 1 when the button changes
+        setCurrentPage(1);
+        setLoanDetails(null);
+        setSelectedUserId(null);
     };
 
     const handleViewAll = () => {
-        setShowAll(true); // Show all users (if you still want this functionality)
+        setShowAll(true);
         setVisibleUsers(users);
     };
 
     const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString(); // Format date
+        return new Date(dateString).toLocaleDateString();
     };
 
-    const getMobile = (user) => {
-        return (
-            user.mobile ||
-            user.mobileNumber ||
-            user.contactNumber ||
-            user.phone ||
-            user.phoneNumber ||
-            '—' // Default if no mobile info
-        );
-    };
+    const getMobile = (user) =>
+        user.mobile ||
+        user.mobileNumber ||
+        user.contactNumber ||
+        user.phone ||
+        user.phoneNumber ||
+        '—';
 
     const handleDateSearch = () => {
         if (startDate && endDate) {
-            setCurrentPage(1);  // Reset to page 1 when a new date search is performed
+            setCurrentPage(1);
             fetchUsers('our-customer', startDate, endDate, currentPage, pageSize);
         } else {
             alert('Please enter both start and end dates.');
@@ -104,11 +104,35 @@ const UsersContent = () => {
 
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
+        setLoanDetails(null);
+        setSelectedUserId(null);
     };
+
+    const fetchLoanDetails = async (userId, userType) => {
+        try {
+            const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/loan/details`, {
+                params: { userId, userType },
+            });
+            console.log("API Response:", res.data); // Print the response here
+
+            // Assuming the API returns an array with a single object.
+            if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+                setLoanDetails(res.data[0]);  // Set the loan details to the first element of the array.
+            } else {
+                setLoanDetails(null);  // Handle the case where the API returns an empty array or invalid data.
+            }
+            setSelectedUserId(userId);
+        } catch (error) {
+            console.error("Failed to fetch loan details:", error);
+            setLoanDetails(null);
+            setSelectedUserId(null);
+        }
+    };
+
 
     return (
         <div className="p-6 space-y-6">
-            {/* Date Range Search */}
+            {/* Date Filter */}
             <div className="bg-white rounded-lg shadow-md p-4 flex items-center justify-center gap-4">
                 <label htmlFor="startDate" className="text-gray-700">Start Date:</label>
                 <input
@@ -136,26 +160,21 @@ const UsersContent = () => {
                 </button>
             </div>
 
-            {/* Button Group */}
+            {/* Buttons */}
             <div className="bg-white rounded-lg shadow-md p-4 flex justify-center gap-4">
                 {['our-customer', 'agent-customer', 'today-customer'].map((type) => (
                     <button
                         key={type}
-                        className={`bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded ${activeButton === type ? 'opacity-100' : 'opacity-70'
-                            }`}
+                        className={`bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded ${activeButton === type ? 'opacity-100' : 'opacity-70'}`}
                         onClick={() => handleButtonClick(type)}
                         disabled={isLoading}
                     >
-                        {type === 'our-customer'
-                            ? 'Our Customer'
-                            : type === 'agent-customer'
-                                ? 'Agent Customer'
-                                : 'Today Customer'}
+                        {type.replace('-', ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
                     </button>
                 ))}
             </div>
 
-            {/* Loading/Error */}
+            {/* Loading & Errors */}
             {isLoading && <div className="text-center text-lg">Loading users...</div>}
             {error && <div className="text-center text-red-600">Error: {error}</div>}
 
@@ -168,69 +187,89 @@ const UsersContent = () => {
                             <th className="px-6 py-3 text-sm font-semibold">Email</th>
                             <th className="px-6 py-3 text-sm font-semibold">Mobile</th>
                             <th className="px-6 py-3 text-sm font-semibold">Created At</th>
+                            <th className="px-6 py-3 text-sm font-semibold">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         {visibleUsers.length === 0 ? (
                             <tr>
-                                <td colSpan="4" className="text-center px-6 py-4 text-gray-500">
+                                <td colSpan="5" className="text-center px-6 py-4 text-gray-500">
                                     No users found.
                                 </td>
                             </tr>
                         ) : (
                             visibleUsers.map((user, index) => (
-                                <tr key={index} className="border-b hover:bg-gray-50">
-                                    <td className="px-6 py-4">{user.name || user.fullName || '—'}</td>
-                                    <td className="px-6 py-4">{user.email || '—'}</td>
-                                    <td className="px-6 py-4">{getMobile(user)}</td>
-                                    <td className="px-6 py-4">
-                                        {user.createdAt ? formatDate(user.createdAt) : '—'}
-                                    </td>
-                                </tr>
+                                <React.Fragment key={user._id || index}>
+                                    <tr className="border-b hover:bg-gray-50">
+                                        <td className="px-6 py-4">{user.name || user.fullName || '—'}</td>
+                                        <td className="px-6 py-4">{user.email || '—'}</td>
+                                        <td className="px-6 py-4">{getMobile(user)}</td>
+                                        <td className="px-6 py-4">{user.createdAt ? formatDate(user.createdAt) : '—'}</td>
+                                        <td className="px-6 py-4">
+                                            <button
+                                                className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition"
+                                                onClick={() => fetchLoanDetails(user._id, user.userType || activeButton)}
+                                            >
+                                                Loan Details
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {selectedUserId === user._id && loanDetails && (
+                                        <tr className="bg-gray-50 border-t">
+                                            <td colSpan="5" className="px-6 py-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-6 text-sm text-gray-700">
+                                                    <div><span className="font-semibold">Customer Name:</span> {loanDetails.name || '—'}</div>
+
+                                                    <div><span className="font-semibold">Application ID:</span> {loanDetails.application_id || '—'}</div>
+                                                    <div><span className="font-semibold">City:</span> {loanDetails.city || '—'}</div>
+                                                    <div><span className="font-semibold">PAN:</span> {loanDetails.pan || '—'}</div>
+                                                    <div><span className="font-semibold">Monthly Income:</span> ₹{loanDetails.monthly_income || '—'}</div>
+                                                    <div><span className="font-semibold">Loan Amount:</span> ₹{loanDetails.loan_amount || '—'}</div>
+                                                    <div><span className="font-semibold">Aadhaar:</span> {loanDetails.aadhaar || '—'}</div>
+                                                    <div><span className="font-semibold">Loan Type ID:</span> {loanDetails.loan_type_id || '—'}</div>
+                                                    <div><span className="font-semibold">Pin code:</span> {loanDetails.pincode || '—'}</div>
+
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+
+
+
+                                </React.Fragment>
                             ))
                         )}
                     </tbody>
                 </table>
             </div>
 
-            {/* Pagination Controls */}
-            <div className="flex justify-center items-center mt-4">
-                <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1 || isLoading}
-                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l"
-                >
-                    Previous
-                </button>
-
-                {/* Display page numbers */}
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            {/* Pagination */}
+            {activeButton === 'our-customer' && totalPages > 1 && (
+                <div className="flex justify-center items-center mt-4 gap-1 flex-wrap">
                     <button
-                        key={page}
-                        onClick={() => handlePageChange(page)}
-                        className={`bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 ${currentPage === page ? 'bg-blue-200' : ''}`}
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1 || isLoading}
+                        className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l"
                     >
-                        {page}
+                        Previous
                     </button>
-                ))}
 
-                <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages || isLoading}
-                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r"
-                >
-                    Next
-                </button>
-            </div>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <button
+                            key={page}
+                            onClick={() => handlePageChange(page)}
+                            className={`py-2 px-4 font-bold ${currentPage === page ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+                        >
+                            {page}
+                        </button>
+                    ))}
 
-            {/* View All Button (Consider Removing or Adapting) */}
-            {!showAll && users.length > 5 && (
-                <div className="flex justify-center">
                     <button
-                        onClick={handleViewAll}
-                        className="mt-4 bg-gray-800 hover:bg-gray-900 text-white py-2 px-6 rounded-lg"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages || isLoading}
+                        className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r"
                     >
-                        View All
+                        Next
                     </button>
                 </div>
             )}
