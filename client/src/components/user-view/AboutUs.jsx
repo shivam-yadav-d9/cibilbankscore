@@ -7,7 +7,7 @@ import {
   TreePine, 
   Users 
 } from 'lucide-react';
-
+// this is about us page
 const AboutUs = () => {
   const values = [
     {
