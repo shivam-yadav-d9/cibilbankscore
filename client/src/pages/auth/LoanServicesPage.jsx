@@ -106,7 +106,6 @@ const LoanServicesPage = () => {
             {activeService === 'business' && <DollarSign size={48} className="text-purple-500" />}
           </div>
 
-          {/* Loan Details Grid */}
           <div className="grid md:grid-cols-2 gap-6">
             {/* Loan Specifics */}
             <div className="bg-gray-50 p-6 rounded-lg">
