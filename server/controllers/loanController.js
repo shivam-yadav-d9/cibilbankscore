@@ -38,7 +38,6 @@ export const storeLoanDetails = async (req, res) => {
 
     console.log("✅ User Data to send:", userData);
 
-    // DEVELOPMENT MODE CHECK
     // For development without Evoluto API access, bypass the actual API call
     // and create a mock application ID
     if (process.env.NODE_ENV === 'development' && (!process.env.EVOLUTO_API_KEY || !process.env.EVOLUTO_API_SECRET)) {
