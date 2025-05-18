@@ -12,7 +12,7 @@ const UsersContent = () => {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
 
-    const [loanDetails, setLoanDetails] = useState(null);
+    const [loanDetails, setLoanDetails] = useState([]);
     const [selectedUserId, setSelectedUserId] = useState(null);
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -41,6 +41,7 @@ const UsersContent = () => {
                 apiUrl = `${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/agents`;
                 const res = await axios.get(apiUrl);
                 data = res.data;
+                console.log(data)
                 setTotalPages(1);
             } else if (userType === 'today-customer') {
                 const [ourRes, agentRes] = await Promise.all([
@@ -113,13 +114,13 @@ const UsersContent = () => {
             const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/loan/details`, {
                 params: { userId, userType },
             });
-            console.log("API Response:", res.data); // Print the response here
+            // console.log("API Response:", res.data); // Print the response here
 
             // Assuming the API returns an array with a single object.
             if (res.data && Array.isArray(res.data) && res.data.length > 0) {
-                setLoanDetails(res.data[0]);  // Set the loan details to the first element of the array.
+                setLoanDetails(res.data);  // Set the loan details to the first element of the array.
             } else {
-                setLoanDetails(null);  // Handle the case where the API returns an empty array or invalid data.
+                setLoanDetails([]);  // Handle the case where the API returns an empty array or invalid data.
             }
             setSelectedUserId(userId);
         } catch (error) {
@@ -214,28 +215,25 @@ const UsersContent = () => {
                                             </button>
                                         </td>
                                     </tr>
-                                    {selectedUserId === user._id && loanDetails && (
-                                        <tr className="bg-gray-50 border-t">
-                                            <td colSpan="5" className="px-6 py-4">
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-6 text-sm text-gray-700">
-                                                    <div><span className="font-semibold">Customer Name:</span> {loanDetails.name || '—'}</div>
-
-                                                    <div><span className="font-semibold">Application ID:</span> {loanDetails.application_id || '—'}</div>
-                                                    <div><span className="font-semibold">City:</span> {loanDetails.city || '—'}</div>
-                                                    <div><span className="font-semibold">PAN:</span> {loanDetails.pan || '—'}</div>
-                                                    <div><span className="font-semibold">Monthly Income:</span> ₹{loanDetails.monthly_income || '—'}</div>
-                                                    <div><span className="font-semibold">Loan Amount:</span> ₹{loanDetails.loan_amount || '—'}</div>
-                                                    <div><span className="font-semibold">Aadhaar:</span> {loanDetails.aadhaar || '—'}</div>
-                                                    <div><span className="font-semibold">Loan Type ID:</span> {loanDetails.loan_type_id || '—'}</div>
-                                                    <div><span className="font-semibold">Pin code:</span> {loanDetails.pincode || '—'}</div>
-
-                                                </div>
-                                            </td>
-                                        </tr>
+                                    {selectedUserId === user._id && Array.isArray(loanDetails) && loanDetails.length > 0 && (
+                                        loanDetails.map((loan, idx) => (
+                                            <tr key={idx} className="bg-gray-50 border-t">
+                                                <td colSpan="5" className="px-6 py-4">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-6 text-sm text-gray-700">
+                                                        <div><span className="font-semibold">Customer Name:</span> {loan.name || '—'}</div>
+                                                        <div><span className="font-semibold">Application ID:</span> {loan.application_id || '—'}</div>
+                                                        <div><span className="font-semibold">City:</span> {loan.city || '—'}</div>
+                                                        <div><span className="font-semibold">PAN:</span> {loan.pan || '—'}</div>
+                                                        <div><span className="font-semibold">Monthly Income:</span> ₹{loan.monthly_income || '—'}</div>
+                                                        <div><span className="font-semibold">Loan Amount:</span> ₹{loan.loan_amount || '—'}</div>
+                                                        <div><span className="font-semibold">Aadhaar:</span> {loan.aadhaar || '—'}</div>
+                                                        <div><span className="font-semibold">Loan Type ID:</span> {loan.loan_type_id || '—'}</div>
+                                                        <div><span className="font-semibold">Pin code:</span> {loan.pincode || '—'}</div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
                                     )}
-
-
-
                                 </React.Fragment>
                             ))
                         )}

@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
-import { BellIcon, UserIcon, CreditCardIcon, ChartBarIcon, LogOutIcon, PlusIcon, UsersIcon, FileTextIcon } from 'lucide-react';
+import {
+  BellIcon,
+  UserIcon,
+  CreditCardIcon,
+  ChartBarIcon,
+  LogOutIcon,
+  UsersIcon,
+  ShieldCheckIcon,
+} from 'lucide-react';
 import SidebarLink from './SideBarLink.jsx';
 import DashboardContent from './tabs/DashboardContent';
 import UsersContent from './tabs/UsersContent';
 import SubscriptionsContent from './tabs/SubscriptionsContent';
 import NotificationsContent from './tabs/NotificationsContent';
-import LoanApplicationContent from './tabs/LoanApplicationContent.jsx';
+import AgentApprove from './tabs/Agentapprove.jsx';
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -40,8 +48,8 @@ const AdminPanel = () => {
         return <SubscriptionsContent subscriptions={subscriptions} />;
       case 'notifications':
         return <NotificationsContent />;
-      case 'applications':
-        return <LoanApplicationContent />;
+      case 'approveAgents':
+        return <AgentApprove/>;
       default:
         return <DashboardContent stats={stats} />;
     }
@@ -68,12 +76,6 @@ const AdminPanel = () => {
             onClick={() => setActiveTab('users')} 
           />
           <SidebarLink 
-            icon={<FileTextIcon size={20} />} 
-            title="Loan Applications" 
-            active={activeTab === 'applications'} 
-            onClick={() => setActiveTab('applications')} 
-          />
-          <SidebarLink 
             icon={<CreditCardIcon size={20} />} 
             title="Subscription List" 
             active={activeTab === 'subscriptions'} 
@@ -85,6 +87,13 @@ const AdminPanel = () => {
             active={activeTab === 'notifications'} 
             onClick={() => setActiveTab('notifications')} 
           />
+          <SidebarLink 
+            icon={<ShieldCheckIcon size={20} />} 
+            title="Agent Approve" 
+            active={activeTab === 'approveAgents'} 
+            onClick={() => setActiveTab('approveAgents')} 
+          />
+
           <div className="mt-8 p-4 border-t border-gray-700">
             <SidebarLink 
               icon={<LogOutIcon size={20} />} 

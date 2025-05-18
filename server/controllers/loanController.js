@@ -7,22 +7,26 @@ const STORE_DETAILS_URL = process.env.STORE_DETAILS_URL
 
 export const storeLoanDetails = async (req, res) => {
   try {
-    const requiredFields = ["name", "mobile", "email", "dob", "pan", "loan_type_id", "income_source", "monthly_income", "loan_amount","userId", "userType"];
+    const requiredFields = ["name", "mobile", "email", "dob", "pan", "loan_type_id", "income_source", "monthly_income", "loan_amount", "userId", "userType"];
     for (const field of requiredFields) {
       if (!req.body[field]) {
         return res.status(400).json({ message: `Missing required field: ${field}` });
       }
     }
+    const existingApplication = await LoanApplication.findOne({ mobile: req.body.mobile });
+    if (existingApplication) {
+      return res.status(409).json({ message: "This mobile number is already registered for a loan application." });
+    }
 
     // Use environment variables or fallback to defaults for development
     const API_KEY = process.env.API_KEY;
     const API_SECRET = process.env.API_SECRET;
-    const REF_CODE = process.env.REF_CODE ;
+    const REF_CODE = process.env.REF_CODE;
 
-    console.log("✅ Environment variables:");
-    console.log("🔑 API_KEY:", API_KEY);
-    console.log("🔐 API_SECRET:", API_SECRET);
-    console.log("🏬 REF_CODE:", REF_CODE);
+    // console.log("✅ Environment variables:");
+    // console.log("🔑 API_KEY:", API_KEY);
+    // console.log("🔐 API_SECRET:", API_SECRET);
+    // console.log("🏬 REF_CODE:", REF_CODE);
 
     // Create Basic Auth token by encoding API_KEY:API_SECRET in base64
     const basicAuthToken = Buffer.from(`${API_KEY}:${API_SECRET}`).toString('base64');
@@ -39,10 +43,10 @@ export const storeLoanDetails = async (req, res) => {
     // and create a mock application ID
     if (process.env.NODE_ENV === 'development' && (!process.env.EVOLUTO_API_KEY || !process.env.EVOLUTO_API_SECRET)) {
       console.log("⚠️ Running in development mode with mock data");
-      
+
       // Create a mock application ID
       const mockApplicationId = "DEV-" + Math.floor(Math.random() * 100000);
-      
+
       // Handle preferred_banks - convert to array of numbers if necessary
       let preferredBanks = userData.preferred_banks;
       if (typeof userData.preferred_banks === 'string') {
@@ -189,9 +193,6 @@ export const getLoanDetailsByEmail = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
-
-
 
 // Get loan details by userType and userId
 export const getLoanDetailsByUser = async (req, res) => {
