@@ -107,3 +107,22 @@ export const getAllAgents = async (req, res) => {
         res.status(500).json({ message: "Failed to fetch agents" });
     }
 };
+
+
+// Delete agent by ID
+export const deleteAgent = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const deletedAgent = await B2BSignup.findByIdAndDelete(id);
+
+        if (!deletedAgent) {
+            return res.status(404).json({ message: "Agent not found" });
+        }
+
+        res.status(200).json({ message: "Agent deleted successfully" });
+    } catch (error) {
+        console.error("Delete Agent Error:", error.message);
+        res.status(500).json({ message: "Failed to delete agent" });
+    }
+};
