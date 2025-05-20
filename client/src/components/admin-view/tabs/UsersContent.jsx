@@ -41,7 +41,7 @@ const UsersContent = () => {
                 apiUrl = `${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/agents`;
                 const res = await axios.get(apiUrl);
                 data = res.data;
-                console.log(data)
+                // console.log(data)
                 setTotalPages(1);
             } else if (userType === 'today-customer') {
                 const [ourRes, agentRes] = await Promise.all([
@@ -130,6 +130,31 @@ const UsersContent = () => {
         }
     };
 
+    const handleDeleteAgent = async (agentId) => {
+        if (!window.confirm("Are you sure you want to delete this agent?")) return;
+
+        try {
+            await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/agents/${agentId}`);
+            fetchUsers('agent-customer'); // Refresh agent list
+        } catch (error) {
+            console.error("Failed to delete agent:", error);
+        }
+    };
+
+    const handleDeleteCustomer = async (userId) => {
+        if (!window.confirm("Are you sure you want to delete this customer?")) return;
+
+        try {
+            await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/user/users/${userId}`);
+            fetchUsers('our-customer', startDate, endDate, currentPage, pageSize); // Refresh
+        } catch (error) {
+            console.error("Failed to delete customer:", error);
+            alert("Error deleting customer.");
+        }
+    };
+
+
+
 
     return (
         <div className="p-6 space-y-6">
@@ -213,6 +238,29 @@ const UsersContent = () => {
                                             >
                                                 Loan Details
                                             </button>
+
+                                            {(activeButton === 'agent-customer' || activeButton === 'our-customer' || activeButton === 'today-customer') && (
+                                                <button
+                                                    className="ml-2 px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition"
+                                                    onClick={() => {
+                                                        // For today-customer, decide the delete type by userType or available fields
+                                                        if (activeButton === 'today-customer') {
+                                                            if (user.userType === 'agent' || user.companyName) {
+                                                                handleDeleteAgent(user._id);
+                                                            } else {
+                                                                handleDeleteCustomer(user._id);
+                                                            }
+                                                        } else if (activeButton === 'agent-customer') {
+                                                            handleDeleteAgent(user._id);
+                                                        } else {
+                                                            handleDeleteCustomer(user._id);
+                                                        }
+                                                    }}
+                                                >
+                                                    Delete
+                                                </button>
+                                            )}
+
                                         </td>
                                     </tr>
                                     {selectedUserId === user._id && Array.isArray(loanDetails) && loanDetails.length > 0 && (
