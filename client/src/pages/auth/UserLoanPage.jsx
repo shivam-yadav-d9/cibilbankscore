@@ -33,13 +33,13 @@ const UserLoanPage = () => {
     try {
       const config = {
         method: "post",
-        url: "https://uat-api.evolutosolution.com/v1/authentication",
+        url: `${import.meta.env.VITE_API_BASE_URL}/authentication`,
         headers: {
           source: "web",
           package: "10.0.2.215",
-          outletid: "OUI202590898",
+          outletid: import.meta.env.VITE_REF_CODE,
           Authorization:
-            "Basic NDdlM2I4ODk1NDAwM2NhYjNlNGY1MThjNTk3NjUxYmU3M2QyZDk2NmE0MWY4YWVjN2YyNjk3YjcyNTkwZDZjNTpCTlJxOFJNQzM2NkNselUzWDVmdFA4NXlLSW5NL3RERWI4Z3l6d3YxL3dtZlZ2cEQ3R1RGNUxySVJoU3kxUEVGOTdZWHUzbnNKekMzVWhjclVsMlRMQVFNWXJtMFFHbFEwZGFteGUyTEVQVDhzYTVHSUZHZE1WUnJDOHZPRHRCU3Z0K3BOaktudWlvZFhRSHd1emExTXRxSzZFODZtUng4SzNBY0FBTzVGeWtHbDR0ZnplOXllSzNmR21nRlpKM3o=",
+            `Basic ${import.meta.env.VITE_AUTH_BASIC}`,
         },
       };
 
@@ -60,7 +60,7 @@ const UserLoanPage = () => {
     const fetchLoanTypes = async () => {
       try {
         const response = await fetch(
-          "https://uat-api.evolutosolution.com/v1/loan/getLoanTypes"
+          `${import.meta.env.VITE_API_BASE_URL}/loan/getLoanTypes`
         );
         const data = await response.json();
         if (data.success) {
@@ -95,13 +95,13 @@ const UserLoanPage = () => {
 
       const response = await axios({
         method: "get",
-        url: `https://uat-api.evolutosolution.com/v1/loan/getRequiredDocs?ref_code=OUI202590898&loan_type_id=${loanId}`,
+        url: `${import.meta.env.VITE_API_BASE_URL}/loan/getRequiredDocs?ref_code=${import.meta.env.VITE_REF_CODE}&loan_type_id=${loanId}`,
         headers: {
           token: token,
           "Content-Type": "application/json",
           source: "web",
           package: "10.0.2.215",
-          outletid: "OUI202590898",
+          outletid: import.meta.env.VITE_REF_CODE,
         },
       });
 
