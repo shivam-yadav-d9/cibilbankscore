@@ -25,6 +25,10 @@ import forgetpassword from "./routes/forgotPassword.js";
 import forgotPasswordAgentRoutes from "./routes/forgotPasswordAgentroute.js";
 import expertConnectRoutes from "./routes/expertConnect.js";
 
+import walletRoutes from './routes/walletRoutes.js';
+
+import loanStatusRoutes from './routes/loanStatusRoutes.js';
+
 // Load environment variables
 dotenv.config();
 
@@ -37,7 +41,6 @@ const server = http.createServer(app);
 // Allowed client origin
 const allowedOrigins = [
   process.env.CLIENT_ORIGIN || "http://localhost:5173",
-  "http://13.234.67.80"
 ];
 
 // ✅ Corrected CORS configuration
@@ -113,6 +116,12 @@ app.use("/api/credit", creditCheckRoutes);
 app.use("/api/auth", forgetpassword);
 app.use("/api/agent", forgotPasswordAgentRoutes);
 app.use("/api/expert-connect", expertConnectRoutes);
+
+
+app.use('/uploads', express.static('uploads'));
+app.use('/api/wallet', walletRoutes);
+app.use('/api/loan',loanStatusRoutes );
+
 
 // Root route
 app.get("/", (req, res) => {
