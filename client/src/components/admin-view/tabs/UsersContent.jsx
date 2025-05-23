@@ -119,6 +119,7 @@ const UsersContent = () => {
             // Assuming the API returns an array with a single object.
             if (res.data && Array.isArray(res.data) && res.data.length > 0) {
                 setLoanDetails(res.data);  // Set the loan details to the first element of the array.
+                // console.log(res.data);
             } else {
                 setLoanDetails([]);  // Handle the case where the API returns an empty array or invalid data.
             }
@@ -152,8 +153,26 @@ const UsersContent = () => {
             alert("Error deleting customer.");
         }
     };
+    // loan status
+    const handleCheckLoanStatus = async (applicationId, refCode) => {
+        if (!applicationId || !refCode) {
+            alert("Missing Application ID or Ref Code.");
+            return;
+        }
 
+        try {
+            const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/loan/check-loan-status`, {
+                loan_application_id: applicationId,
+                ref_code: refCode,
+            });
 
+            const status = res.data.status || "No status found.";
+            alert(`Loan Status: ${status}`);
+        } catch (err) {
+            console.error("Failed to fetch loan status:", err.response?.data || err.message);
+            alert("Error fetching loan status.");
+        }
+    };
 
 
     return (
@@ -277,6 +296,14 @@ const UsersContent = () => {
                                                         <div><span className="font-semibold">Aadhaar:</span> {loan.aadhaar || '—'}</div>
                                                         <div><span className="font-semibold">Loan Type ID:</span> {loan.loan_type_id || '—'}</div>
                                                         <div><span className="font-semibold">Pin code:</span> {loan.pincode || '—'}</div>
+
+                                                        <button
+                                                            onClick={() => handleCheckLoanStatus(loan.application_id, loan.ref_code)}
+                                                            className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-md hover:bg-blue-700 transition-all"
+                                                        >
+                                                            Check Loan Status
+                                                        </button>
+
                                                     </div>
                                                 </td>
                                             </tr>

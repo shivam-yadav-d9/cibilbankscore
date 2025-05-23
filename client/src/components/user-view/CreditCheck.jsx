@@ -6,7 +6,7 @@ const CreditCheck = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
-  
+
   const [isLoading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -18,7 +18,7 @@ const CreditCheck = () => {
     phone: "",
     pan_no: "",
     dob: "",
-    ref_code: "OUI202590898" // Default reference code
+    ref_code: import.meta.env.VITE_REF_CODE, // ✅ Correct way to use Vite env var
   });
 
   useEffect(() => {
@@ -84,10 +84,10 @@ const CreditCheck = () => {
 
       setResult(data);
       setSuccess("Credit score check completed successfully!");
-      
+
       // Store the credit check result for future reference
       localStorage.setItem("creditCheckResult", JSON.stringify(data));
-      
+
     } catch (error) {
       console.error("Error checking credit score:", error);
       setError(error.message || "Failed to check credit score");
@@ -338,16 +338,16 @@ const CreditCheck = () => {
           {/* Credit Score Result */}
           {result && (
             <div className={scoreCardClass}>
-              <h3 className={isDarkMode 
-                ? "text-xl font-bold mb-6 text-white text-center" 
+              <h3 className={isDarkMode
+                ? "text-xl font-bold mb-6 text-white text-center"
                 : "text-xl font-bold mb-6 text-gray-800 text-center"}>
                 Credit Score Result
               </h3>
-              
+
               <div className={isDarkMode
                 ? "bg-gradient-to-br from-indigo-900/40 to-purple-900/40 rounded-xl p-6 border border-indigo-500/30"
                 : "bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-100"}>
-                
+
                 {result.success === false && (
                   <div className="text-center">
                     <div className={isDarkMode ? "text-red-400" : "text-red-600"}>
@@ -358,7 +358,7 @@ const CreditCheck = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {result.success && result.data && (
                   <div className="text-center">
                     <div className={isDarkMode
@@ -368,17 +368,17 @@ const CreditCheck = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
-                    
+
                     <div className={isDarkMode
                       ? "text-5xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300"
                       : "text-5xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-500"}>
                       {result.data.score}
                     </div>
-                    
+
                     <div className={isDarkMode ? "text-xl font-medium text-green-300 mb-6" : "text-xl font-medium text-green-700 mb-6"}>
                       {result.data.name}
                     </div>
-                    
+
                     <div className={isDarkMode
                       ? "text-sm text-slate-300 max-w-md mx-auto"
                       : "text-sm text-gray-600 max-w-md mx-auto"}>
@@ -387,7 +387,7 @@ const CreditCheck = () => {
                   </div>
                 )}
               </div>
-              
+
               {result.success && result.data && (
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className={isDarkMode
@@ -398,7 +398,7 @@ const CreditCheck = () => {
                       Based on your credit score, you may qualify for various loan products. Continue your application to explore options.
                     </p>
                   </div>
-                  
+
                   <div className={isDarkMode
                     ? "bg-slate-800/60 rounded-lg p-4 border border-indigo-500/20"
                     : "bg-white rounded-lg p-4 border border-gray-200 shadow-sm"}>
@@ -409,7 +409,7 @@ const CreditCheck = () => {
                   </div>
                 </div>
               )}
-              
+
               <div className="mt-6 text-center">
                 <button
                   onClick={() => navigate("/UserLoanpage")}

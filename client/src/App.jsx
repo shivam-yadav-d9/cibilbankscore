@@ -246,14 +246,14 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route
+            {/* <Route
               path="/LoanReportDetail"
               element={
                 <ProtectedRoute allowedTypes={["customer", "business"]}>
                   <LoanReportDetail />
                 </ProtectedRoute>
               }
-            />
+            /> */}
 
             <Route
               path="/UserDocuments"
