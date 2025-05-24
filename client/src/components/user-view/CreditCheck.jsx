@@ -1,16 +1,23 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useTheme } from "../../contexts/ThemeContext"; // Assuming same folder structure as UserBasicData
+import { useTheme } from "../../contexts/ThemeContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 const CreditCheck = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
+  const { user, isAuthenticated } = useAuth();
 
   const [isLoading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [result, setResult] = useState(null);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+
+  const CREDIT_CHECK_COST = 50; // Cost in rupees
 
   const [formData, setFormData] = useState({
     fname: "",
@@ -18,7 +25,7 @@ const CreditCheck = () => {
     phone: "",
     pan_no: "",
     dob: "",
-    ref_code: import.meta.env.VITE_REF_CODE, // ✅ Correct way to use Vite env var
+    ref_code: import.meta.env.VITE_REF_CODE,
   });
 
   useEffect(() => {
@@ -26,10 +33,13 @@ const CreditCheck = () => {
     const userData = localStorage.getItem("user");
     const previousFormData = localStorage.getItem("loanProcessorFormData");
 
-    if (!token) {
+    if (!token || !isAuthenticated) {
       navigate("/login");
       return;
     }
+
+    // Fetch wallet balance
+    fetchWalletBalance();
 
     if (previousFormData) {
       const parsedData = JSON.parse(previousFormData);
@@ -42,19 +52,35 @@ const CreditCheck = () => {
     }
 
     if (userData) {
-      const user = JSON.parse(userData);
-      // Split the full name into first and last name
-      if (user.name) {
-        const nameParts = user.name.split(' ');
+      const userObj = JSON.parse(userData);
+      if (userObj.name) {
+        const nameParts = userObj.name.split(' ');
         setFormData(prev => ({
           ...prev,
           fname: nameParts[0] || "",
           lname: nameParts.slice(1).join(' ') || "",
-          phone: user.mobile || prev.phone
+          phone: userObj.mobile || prev.phone
         }));
       }
     }
-  }, [navigate]);
+  }, [navigate, isAuthenticated]);
+
+  const fetchWalletBalance = async () => {
+    if (!user?.email) return;
+    
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/wallet/balance?email=${encodeURIComponent(user.email)}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setWalletBalance(data.balance || 0);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching wallet balance:", error);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -63,11 +89,42 @@ const CreditCheck = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
     setResult(null);
 
+    // Check if user has sufficient wallet balance
+    if (walletBalance < CREDIT_CHECK_COST) {
+      setError(`Insufficient wallet balance! You need ₹${CREDIT_CHECK_COST} to check your credit score. Current balance: ₹${walletBalance.toFixed(2)}`);
+      return;
+    }
+
+    setShowPayment(true);
+  };
+
+  const handlePayment = async () => {
+    setPaymentLoading(true);
+    setError(null);
+
     try {
+      // First, deduct money from wallet
+      const paymentResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/wallet/spend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user.email,
+          amount: CREDIT_CHECK_COST,
+          description: 'Credit Score Check'
+        }),
+      });
+
+      const paymentData = await paymentResponse.json();
+
+      if (!paymentResponse.ok || !paymentData.success) {
+        throw new Error(paymentData.message || "Payment failed");
+      }
+
+      // If payment successful, proceed with credit check
+      setLoading(true);
       const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/credit/check`, {
         method: 'POST',
         headers: {
@@ -79,24 +136,37 @@ const CreditCheck = () => {
       const data = await response.json();
 
       if (!response.ok) {
+        // If credit check fails, we should ideally refund the money
+        // For now, we'll just show the error
         throw new Error(data.message || "Failed to check credit score");
       }
 
       setResult(data);
       setSuccess("Credit score check completed successfully!");
+      setShowPayment(false);
+
+      // Update wallet balance
+      await fetchWalletBalance();
 
       // Store the credit check result for future reference
       localStorage.setItem("creditCheckResult", JSON.stringify(data));
 
     } catch (error) {
-      console.error("Error checking credit score:", error);
-      setError(error.message || "Failed to check credit score");
+      console.error("Error processing payment or checking credit score:", error);
+      setError(error.message || "Failed to process payment or check credit score");
+      setShowPayment(false);
     } finally {
       setLoading(false);
+      setPaymentLoading(false);
     }
   };
 
-  // Theme-based classes from UserBasicData
+  const cancelPayment = () => {
+    setShowPayment(false);
+    setError(null);
+  };
+
+  // Theme-based classes
   const containerClass = isDarkMode
     ? "min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center"
     : "min-h-screen bg-gradient-to-br from-white to-gray-100 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center";
@@ -133,6 +203,38 @@ const CreditCheck = () => {
     <div className={containerClass}>
       <div className={cardClass}>
         <div className={innerClass}>
+          {/* Wallet Balance Display */}
+          <div className={isDarkMode
+            ? "bg-gradient-to-r from-indigo-600/20 to-purple-600/20 border border-indigo-500/30 rounded-2xl p-4 mb-6"
+            : "bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-4 mb-6"}>
+            <div className="flex justify-between items-center">
+              <div>
+                <p className={isDarkMode ? "text-indigo-300 text-sm" : "text-indigo-600 text-sm"}>
+                  Your Wallet Balance
+                </p>
+                <p className={isDarkMode ? "text-white text-xl font-bold" : "text-gray-900 text-xl font-bold"}>
+                  ₹{walletBalance.toFixed(2)}
+                </p>
+              </div>
+              <div className="text-center">
+                <p className={isDarkMode ? "text-purple-300 text-sm" : "text-purple-600 text-sm"}>
+                  Credit Check Cost
+                </p>
+                <p className={isDarkMode ? "text-white text-xl font-bold" : "text-gray-900 text-xl font-bold"}>
+                  ₹{CREDIT_CHECK_COST}
+                </p>
+              </div>
+              <button
+                onClick={() => navigate("/wallet")}
+                className={isDarkMode
+                  ? "px-4 py-2 bg-indigo-600/40 hover:bg-indigo-600/60 border border-indigo-500/50 text-indigo-200 rounded-lg transition-colors"
+                  : "px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg transition-colors"}
+              >
+                Add Money
+              </button>
+            </div>
+          </div>
+
           {error && (
             <div className={isDarkMode
               ? "bg-red-900/20 backdrop-blur-sm border border-red-500/50 text-red-100 p-4 mb-6 rounded-2xl flex items-center animate-pulse"
@@ -175,6 +277,72 @@ const CreditCheck = () => {
             </div>
           )}
 
+          {/* Payment Confirmation Modal */}
+          {showPayment && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+              <div className={isDarkMode
+                ? "bg-slate-800 border border-indigo-500/30 rounded-2xl p-8 max-w-md w-full mx-4"
+                : "bg-white border border-gray-200 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl"}>
+                <div className="text-center">
+                  <div className={isDarkMode
+                    ? "w-16 h-16 bg-indigo-600/20 rounded-full flex items-center justify-center mx-auto mb-4"
+                    : "w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4"}>
+                    <svg className={isDarkMode ? "w-8 h-8 text-indigo-400" : "w-8 h-8 text-indigo-600"} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                    </svg>
+                  </div>
+                  
+                  <h3 className={isDarkMode ? "text-xl font-bold text-white mb-2" : "text-xl font-bold text-gray-900 mb-2"}>
+                    Confirm Payment
+                  </h3>
+                  
+                  <p className={isDarkMode ? "text-slate-300 mb-6" : "text-gray-600 mb-6"}>
+                    You will be charged ₹{CREDIT_CHECK_COST} from your wallet to check your credit score.
+                  </p>
+                  
+                  <div className={isDarkMode
+                    ? "bg-slate-700/50 rounded-lg p-4 mb-6"
+                    : "bg-gray-50 rounded-lg p-4 mb-6"}>
+                    <div className="flex justify-between items-center">
+                      <span className={isDarkMode ? "text-slate-300" : "text-gray-600"}>Current Balance:</span>
+                      <span className={isDarkMode ? "text-white font-medium" : "text-gray-900 font-medium"}>₹{walletBalance.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center mt-2">
+                      <span className={isDarkMode ? "text-slate-300" : "text-gray-600"}>After Payment:</span>
+                      <span className={isDarkMode ? "text-white font-medium" : "text-gray-900 font-medium"}>₹{(walletBalance - CREDIT_CHECK_COST).toFixed(2)}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <button
+                      onClick={cancelPayment}
+                      disabled={paymentLoading}
+                      className={isDarkMode
+                        ? "flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-colors disabled:opacity-50"
+                        : "flex-1 px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors disabled:opacity-50"}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handlePayment}
+                      disabled={paymentLoading}
+                      className="flex-1 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      {paymentLoading ? (
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin mr-2 h-4 w-4 border-t-2 border-b-2 border-white rounded-full"></div>
+                          Processing...
+                        </div>
+                      ) : (
+                        'Pay & Check Score'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="text-center mb-12">
               <div className="flex justify-center mb-4">
@@ -190,7 +358,7 @@ const CreditCheck = () => {
                 </span>
               </h2>
               <p className={isDarkMode ? "text-slate-300" : "text-gray-500"}>
-                Enter your details to check your credit score
+                Enter your details to check your credit score for ₹{CREDIT_CHECK_COST}
               </p>
             </div>
 
@@ -315,17 +483,21 @@ const CreditCheck = () => {
             <div className="pt-8">
               <button
                 type="submit"
-                disabled={isLoading}
-                className={`${buttonClass} ${isLoading ? "bg-gray-600 cursor-not-allowed" : ""}`}
+                disabled={isLoading || walletBalance < CREDIT_CHECK_COST}
+                className={`${buttonClass} ${(isLoading || walletBalance < CREDIT_CHECK_COST) ? "bg-gray-600 cursor-not-allowed" : ""}`}
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center">
                     <div className="animate-spin mr-3 h-5 w-5 border-t-2 border-b-2 border-white rounded-full"></div>
                     Checking Credit Score...
                   </div>
+                ) : walletBalance < CREDIT_CHECK_COST ? (
+                  <span className="flex items-center justify-center">
+                    Insufficient Balance - Add ₹{(CREDIT_CHECK_COST - walletBalance).toFixed(2)} More
+                  </span>
                 ) : (
                   <span className="flex items-center justify-center">
-                    Check Credit Score
+                    Check Credit Score (₹{CREDIT_CHECK_COST})
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
                     </svg>

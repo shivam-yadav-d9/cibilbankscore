@@ -1,27 +1,19 @@
+// routes/adminRoutes.js
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
-import { 
-  addFunds, 
-  getWalletBalance, 
-  getUserTransactions, 
-  spendMoney, 
-  approveTransaction, 
-  getPendingTransactions,
-  getAllTransactions,
-  rejectTransaction 
-} from '../controllers/walletController.js';
+import { getBankSettings, updateBankSettings } from '../controllers/bankSettingsController.js';
 
 const router = express.Router();
 
-// Configure multer for file uploads
+// Configure multer for QR image uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/');
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    cb(null, 'qr-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
 
@@ -41,16 +33,8 @@ const upload = multer({
   }
 });
 
-// Routes
-router.post('/add-funds', upload.single('screenshot'), addFunds);
-router.get('/balance', getWalletBalance);
-router.get('/transactions', getUserTransactions);
-router.post('/spend', spendMoney);
-
-// Admin routes
-router.get('/pending-transactions', getPendingTransactions);
-router.get('/all-transactions', getAllTransactions);
-router.put('/approve/:transactionId', approveTransaction);
-router.put('/reject/:transactionId', rejectTransaction);
+// Bank settings routes
+router.get('/bank-settings', getBankSettings);
+router.post('/bank-settings', upload.single('qrImage'), updateBankSettings);
 
 export default router;

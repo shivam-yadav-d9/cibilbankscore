@@ -25,7 +25,7 @@ import creditCheckRoutes from "./routes/creditCheck.js";
 import forgetpassword from "./routes/forgotPassword.js";
 import forgotPasswordAgentRoutes from "./routes/forgotPasswordAgentroute.js";
 import expertConnectRoutes from "./routes/expertConnect.js";
-
+import adminRoutes from './routes/adminRoutes.js';
 import walletRoutes from './routes/walletRoutes.js';
 
 import loanStatusRoutes from './routes/loanStatusRoutes.js';
@@ -118,7 +118,7 @@ app.use("/api/credit", creditCheckRoutes);
 app.use("/api/auth", forgetpassword);
 app.use("/api/agent", forgotPasswordAgentRoutes);
 app.use("/api/expert-connect", expertConnectRoutes);
-
+app.use('/api/admin', adminRoutes);
 
 app.use('/uploads', express.static('uploads'));
 app.use('/api/wallet', walletRoutes);
