@@ -1,43 +1,54 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 export const getLoanStatus = async (req, res) => {
-  const { loan_application_id, ref_code } = req.body;
+  const { loan_application_id } = req.body;
 
-  if (!loan_application_id || !ref_code) {
-    return res.status(400).json({ error: 'Missing loan_application_id or ref_code' });
+  if (!loan_application_id) {
+    return res.status(400).json({ success: false, message: 'Loan Application ID is required' });
   }
 
   try {
-    // Use URLSearchParams for application/x-www-form-urlencoded
-    const authParams = new URLSearchParams();
-    authParams.append('api_key', process.env.API_KEY);
-    authParams.append('api_secret', process.env.API_SECRET);
-    authParams.append('ref_code', process.env.REF_CODE);
-
-    const tokenRes = await axios.post(process.env.EVOLUTO_AUTH_URL, authParams, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+    // Step 1: Generate Token
+    const authResponse = await axios.post(process.env.EVOLUTO_AUTH_URL, {
+      api_key: process.env.API_KEY,
+      api_secret: process.env.API_SECRET,
+      ref_code: process.env.REF_CODE,
     });
 
-    const token = tokenRes.data.token;
+    const token = authResponse.data?.data?.token;
+    if (!token) {
+      return res.status(500).json({ success: false, message: 'Failed to get token' });
+    }
 
-    const statusRes = await axios.get(process.env.API_LOAN_STATUS_URL, {
+    // Step 2: Get Loan Status
+    const statusResponse = await axios({
+      method: 'get',
+      url: process.env.API_LOAN_STATUS_URL,
       headers: {
-        token,
+        token: token,
         'Content-Type': 'application/json',
       },
-      params: {
-        loan_application_id,
-        ref_code,
+      data: {
+        loan_application_id: loan_application_id,
+        ref_code: process.env.REF_CODE,
       },
     });
 
-    res.status(200).json(statusRes.data);
+    return res.status(200).json({
+      success: true,
+      message: 'Loan status fetched successfully',
+      data: statusResponse.data.data,
+    });
+
   } catch (error) {
-    console.error('Error fetching loan status:', error.response?.data || error.message);
-    res.status(500).json({ error: 'Failed to fetch loan status' });
+    console.error('Error fetching loan status:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+      error: error.response?.data || error.message,
+    });
   }
 };

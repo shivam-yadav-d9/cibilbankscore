@@ -30,7 +30,7 @@ export const saveUserAddress = async (req, res) => {
       const base64Credentials = Buffer.from(credentials).toString('base64');
 
       const tokenRes = await axios.post(
-        "https://uat-api.evolutosolution.com/v1/authentication",
+        "https://api.evolutosolution.com/v1/authentication",
         {},
         {
           headers: { 
@@ -89,7 +89,7 @@ export const saveUserAddress = async (req, res) => {
     let externalResponse;
     try {
       externalResponse = await axios.post(
-        "https://uat-api.evolutosolution.com/v1/loan/saveApplicant",
+        "https://api.evolutosolution.com/v1/loan/saveApplicant",
         requestBody,
         {
           headers: {
