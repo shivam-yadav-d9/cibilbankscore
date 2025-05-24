@@ -1,0 +1,35 @@
+name: Deploy to Staging EC2 Instances
+
+on:
+  push:
+    branches:
+      - stage
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Frontend Deployment
+      - name: Setup SSH Key for Frontend
+        run: |
+          echo "${{ secrets.STAGING_FRONTEND_KEY }}" > frontend_key.pem
+          chmod 600 frontend_key.pem
+
+      - name: Deploy to Frontend EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no -i frontend_key.pem ${{ secrets.FRONTEND_USER }}@${{ secrets.FRONTEND_HOST }} 'bash ~/deploy/deploy_frontend.sh'
+
+      # Backend Deployment
+      - name: Setup SSH Key for Backend
+        run: |
+          echo "${{ secrets.STAGING_BACKEND_KEY }}" > backend_key.pem
+          chmod 600 backend_key.pem
+
+      - name: Deploy to Backend EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no -i backend_key.pem ${{ secrets.BACKEND_USER }}@${{ secrets.BACKEND_HOST }} 'bash ~/deploy/deploy_backend.sh'
+
