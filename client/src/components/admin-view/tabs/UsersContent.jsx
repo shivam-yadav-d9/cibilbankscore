@@ -19,6 +19,10 @@ const UsersContent = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [pageSize, setPageSize] = useState(10);
 
+    // New State for Loan Status Information
+    const [loanStatus, setLoanStatus] = useState(null); // Initialize to null
+    const [loanStatusLoading, setLoanStatusLoading] = useState(false); // Add loading state for loan status
+
     const [authToken, setAuthToken] = useState(null);
 
     const fetchUsers = async (userType, startDate = '', endDate = '', page = 1, pageSize = 10) => {
@@ -126,6 +130,7 @@ const UsersContent = () => {
                 setLoanDetails([]);  // Handle the case where the API returns an empty array or invalid data.
             }
             setSelectedUserId(userId);
+            setLoanStatus(null); // Clear previous loan status when fetching new details
         } catch (error) {
             console.error("Failed to fetch loan details:", error);
             setLoanDetails(null);
@@ -155,65 +160,79 @@ const UsersContent = () => {
             alert("Error deleting customer.");
         }
     };
-    // loan status
+
     // Updated handleCheckLoanStatus function for your React component
-const handleCheckLoanStatus = async (applicationId, refCode) => {
-    if (!applicationId || !refCode) {
-        alert("Missing Application ID or Ref Code.");
-        return;
-    }
+    const handleCheckLoanStatus = async (applicationId, refCode) => {
+        if (!applicationId || !refCode) {
+            alert("Missing Application ID or Ref Code.");
+            return;
+        }
 
-    // Show loading state
-    const originalText = event.target.textContent;
-    event.target.textContent = "Checking...";
-    event.target.disabled = true;
+        // Show loading state
+        // const originalText = event.target.textContent;
+        // event.target.textContent = "Checking...";
+        // event.target.disabled = true;
+        setLoanStatusLoading(true);
+        setLoanStatus(null);
 
-    try {
-        console.log('Checking loan status:', { applicationId, refCode });
-        
-        const res = await axios.post(
-            `${import.meta.env.VITE_BACKEND_URL}/api/loan/check-loan-status`, 
-            {
-                loan_application_id: applicationId,
-                ref_code: refCode,
-            }, 
-            {
-                headers: {
-                    'Content-Type': 'application/json',
+        try {
+            console.log('Checking loan status:', { applicationId, refCode });
+
+            const res = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/loan/check-loan-status`,
+                {
+                    loan_application_id: applicationId,
+                    ref_code: refCode,
                 },
-                timeout: 30000 // 30 second timeout
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    timeout: 30000 // 30 second timeout
+                }
+            );
+
+            console.log('Loan status response:', res.data);
+
+            if (res.data.success) {
+                const statusData = res.data.data?.data; // access the nested data
+                const message = res.data.data?.message || "No message";
+                const statusCode = res.data.data?.statusCode || "No status code";
+
+                // Store loan status data in state
+                setLoanStatus({
+                    message,
+                    statusCode,
+                    details: statusData,
+                });
+
+                // alert(
+                //     `Loan Status:\nMessage: ${message}\nStatus Code: ${statusCode}\nDetails: ${JSON.stringify(statusData, null, 2)}`
+                // );
             }
-        );
 
-        console.log('Loan status response:', res.data);
+        } catch (err) {
+            console.error("Failed to fetch loan status:", err);
 
-        if (res.data.success) {
-            const status = res.data.data?.status || res.data.data?.loan_status || "Status not available";
-            alert(`Loan Status: ${status}`);
-        } else {
-            alert(`Error: ${res.data.message || "Failed to fetch loan status"}`);
+            let errorMessage = "Error fetching loan status.";
+
+            if (err.code === 'ECONNABORTED') {
+                errorMessage = "Request timeout. Please try again.";
+            } else if (err.response) {
+                errorMessage = err.response.data?.message || `Server error: ${err.response.status}`;
+            } else if (err.request) {
+                errorMessage = "Unable to connect to server. Please check your connection.";
+            }
+
+            setError(errorMessage);
+            // alert(errorMessage);
+        } finally {
+            // Reset button state
+            // event.target.textContent = originalText;
+            // event.target.disabled = false;
+            setLoanStatusLoading(false);
         }
-
-    } catch (err) {
-        console.error("Failed to fetch loan status:", err);
-        
-        let errorMessage = "Error fetching loan status.";
-        
-        if (err.code === 'ECONNABORTED') {
-            errorMessage = "Request timeout. Please try again.";
-        } else if (err.response) {
-            errorMessage = err.response.data?.message || `Server error: ${err.response.status}`;
-        } else if (err.request) {
-            errorMessage = "Unable to connect to server. Please check your connection.";
-        }
-        
-        alert(errorMessage);
-    } finally {
-        // Reset button state
-        event.target.textContent = originalText;
-        event.target.disabled = false;
-    }
-};
+    };
 
     return (
         <div className="p-6 space-y-6">
@@ -326,32 +345,52 @@ const handleCheckLoanStatus = async (applicationId, refCode) => {
                                         loanDetails.map((loan, idx) => (
                                             <tr key={idx} className="bg-gray-50 border-t">
                                                 <td colSpan="5" className="px-6 py-4">
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-6 text-sm text-gray-700">
-                                                        <div><span className="font-semibold">Customer Name:</span> {loan.name || '—'}</div>
-                                                        <div><span className="font-semibold">Application ID:</span> {loan.application_id || '—'}</div>
-                                                        <div><span className="font-semibold">City:</span> {loan.city || '—'}</div>
-                                                        <div><span className="font-semibold">PAN:</span> {loan.pan || '—'}</div>
-                                                        <div><span className="font-semibold">Monthly Income:</span> ₹{loan.monthly_income || '—'}</div>
-                                                        <div><span className="font-semibold">Loan Amount:</span> ₹{loan.loan_amount || '—'}</div>
-                                                        <div><span className="font-semibold">Aadhaar:</span> {loan.aadhaar || '—'}</div>
-                                                        <div><span className="font-semibold">Loan Type ID:</span> {loan.loan_type_id || '—'}</div>
-                                                        <div><span className="font-semibold">Pin code:</span> {loan.pincode || '—'}</div>
-                                                        <div><span className="font-semibold">ref code:</span> {loan.ref_code || '—'}</div>
+                                                    <div className="flex flex-col gap-4 text-sm text-gray-700">
+                                                        <div className="flex flex-wrap gap-x-12 gap-y-3">
+                                                            <div><span className="font-semibold">Customer Name:</span> {loan.name || '—'}</div>
+                                                            <div><span className="font-semibold">Application ID:</span> {loan.application_id || '—'}</div>
+                                                            <div><span className="font-semibold">City:</span> {loan.city || '—'}</div>
+                                                            <div><span className="font-semibold">PAN:</span> {loan.pan || '—'}</div>
+                                                            <div><span className="font-semibold">Monthly Income:</span> ₹{loan.monthly_income || '—'}</div>
+                                                            <div><span className="font-semibold">Loan Amount:</span> ₹{loan.loan_amount || '—'}</div>
+                                                            <div><span className="font-semibold">Aadhaar:</span> {loan.aadhaar || '—'}</div>
+                                                            <div><span className="font-semibold">Loan Type ID:</span> {loan.loan_type_id || '—'}</div>
+                                                            <div><span className="font-semibold">Pin code:</span> {loan.pincode || '—'}</div>
+                                                            <div><span className="font-semibold">Ref Code:</span> {loan.ref_code || '—'}</div>
+                                                        </div>
 
+                                                        <div className="flex items-center gap-4 mt-2">
+                                                            <button
+                                                                onClick={() => handleCheckLoanStatus(loan.application_id, loan.ref_code)}
+                                                                className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-md hover:bg-blue-700 transition-all"
+                                                                disabled={loanStatusLoading}
+                                                            >
+                                                                {loanStatusLoading ? "Checking..." : "Check Loan Status"}
+                                                            </button>
+                                                            {loanStatusLoading && <div className="text-yellow-500">Checking loan status...</div>}
+                                                            {error && <div className="text-red-600">{error}</div>}
+                                                        </div>
 
-                                                        <button
-                                                            onClick={() => handleCheckLoanStatus(loan.application_id, loan.ref_code)}
-                                                            className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-md hover:bg-blue-700 transition-all"
-                                                        >
-                                                            Check Loan Status
-                                                        </button>
-
-
+                                                        {loanStatus && (
+                                                            <div className="flex flex-col gap-2 mt-2">
+                                                                <div className="font-semibold">Loan Status:</div>
+                                                                {loanStatus.details && (
+                                                                    <div className="flex flex-col gap-1 text-sm">
+                                                                        <div><span className="font-semibold">Application ID:</span> {loanStatus.details.application_id}</div>
+                                                                        <div><span className="font-semibold">Status Code:</span> {loanStatus.details.status_code}</div>
+                                                                        <div><span className="font-semibold">Loan Amount:</span> {loanStatus.details.loan_amount}</div>
+                                                                        <div><span className="font-semibold">Status:</span> {loanStatus.details.status}</div>
+                                                                        <div><span className="font-semibold">Remarks:</span> {loanStatus.details.remarks}</div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
                                         ))
                                     )}
+
                                 </React.Fragment>
                             ))
                         )}

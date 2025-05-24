@@ -160,8 +160,8 @@ const MyProfile = () => {
       return;
     }
 
-    console.log("loanData:", loanData);
-    console.log("loanData.application_id:", loanData.application_id);
+    // console.log("loanData:", loanData);
+    // console.log("loanData.application_id:", loanData.application_id);
 
     setStatusLoading(true);
     setStatusError("");
@@ -172,6 +172,8 @@ const MyProfile = () => {
         `${import.meta.env.VITE_BACKEND_URL}/api/loan/check-loan-status`,
         {
           loan_application_id: loanData.application_id,
+          ref_code: loanData.ref_code,
+
         }
       );
 
@@ -267,12 +269,26 @@ const MyProfile = () => {
           {statusLoading && <p className="text-blue-600 mt-2">Checking loan status...</p>}
           {statusError && <p className="text-red-600 mt-2">{statusError}</p>}
 
-          {loanStatus && (
+          {/* {loanStatus && (
             <div className="mt-4 p-4 bg-green-100 border border-green-400 rounded text-green-800 text-left max-w-xl mx-auto">
               <h4 className="font-bold text-lg mb-2">Loan Status:</h4>
               <pre className="text-sm whitespace-pre-wrap">{JSON.stringify(loanStatus, null, 2)}</pre>
             </div>
+          )} */}
+          {loanStatus && (
+            <div className="mt-6 bg-gray-100 p-4 rounded-lg shadow-md w-full">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Loan Status</h3>
+              <div className="space-y-1 text-gray-700">
+                <p><strong>Application ID:</strong> {loanStatus.application_id || loanStatus.data?.application_id}</p>
+                <p><strong>Status Code:</strong> {loanStatus.status_code || loanStatus.data?.status_code}</p>
+                <p><strong>Loan Amount:</strong> ₹{(loanStatus.loan_amount || loanStatus.data?.loan_amount)?.toLocaleString()}</p>
+                <p><strong>Status:</strong> {loanStatus.status || loanStatus.data?.status}</p>
+                <p><strong>Remarks:</strong> {loanStatus.remarks || loanStatus.data?.remarks}</p>
+              </div>
+            </div>
           )}
+
+
         </div>
 
         {loanData && userData?.userType === "customer" && (
