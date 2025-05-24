@@ -7,7 +7,7 @@ dotenv.config();
 const generateToken = async () => {
   try {
     const response = await axios.post(
-      `${process.env.API_BASE_URL || "https://uat-api.evolutosolution.com/v1"}/authentication`,
+      `${process.env.API_BASE_URL || "https://api.evolutosolution.com/v1"}/authentication`,
       {
         api_key: process.env.API_KEY,
         api_secret: process.env.API_SECRET
@@ -16,7 +16,7 @@ const generateToken = async () => {
         headers: {
           'source': 'web',
           'package': '10.0.2.215',
-          'outletid': process.env.REF_CODE || 'OUI202590898',
+          'outletid': process.env.REF_CODE,
           'Authorization': `Basic ${process.env.EVOLUTO_AUTH_BASIC}`
         }
       }
@@ -33,7 +33,7 @@ const generateToken = async () => {
 export const saveUserReferences = async (req, res) => {
   try {
     // Validate request body
-    const { application_id, ref_code, reference1, reference2, userId, userType } = req.body;
+    const { application_id, reference1, reference2, userId, userType } = req.body;
     
     if (!reference1?.name || !reference1?.relationship || !reference1?.email || !reference1?.phone ||
         !reference2?.name || !reference2?.relationship || !reference2?.email || !reference2?.phone ||
@@ -41,16 +41,25 @@ export const saveUserReferences = async (req, res) => {
       return res.status(400).json({ error: "Missing required information" });
     }
     
-    console.log("Saving user references:", req.body);
+    // Use production REF_CODE from environment
+    const productionRefCode = process.env.REF_CODE;
+    
+    // Prepare data with production ref_code
+    const dataToSave = {
+      application_id,
+      ref_code: productionRefCode,
+      reference1,
+      reference2,
+      userId,
+      userType
+    };
+    
+    console.log("Saving user references with production ref_code:", dataToSave);
     
     // Use findOneAndUpdate with upsert option instead of create
     const savedData = await UserReference.findOneAndUpdate(
       { application_id }, // filter criteria
-      { 
-        ...req.body,  // spread to include userId and userType along with references
-        userId,
-        userType
-      }, 
+      dataToSave, 
       { 
         new: true, // return the updated document
         upsert: true, // create if it doesn't exist
@@ -65,14 +74,15 @@ export const saveUserReferences = async (req, res) => {
       // Generate authentication token
       const token = await generateToken();
       
-      // Make request to Evoluto API
+      // Make request to Evoluto API with production ref_code
       const evoResponse = await axios.post(
-        `${process.env.API_BASE_URL || "https://uat-api.evolutosolution.com/v1"}/loan/saveRefrences`,
-        req.body,
+        `${process.env.API_BASE_URL || "https://api.evolutosolution.com/v1"}/loan/saveRefrences`,
+        dataToSave, // Using dataToSave which has production ref_code
         { 
           headers: { 
             'token': token,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'outletid': process.env.REF_CODE,
           } 
         }
       );

@@ -7,7 +7,7 @@ dotenv.config();
 const generateToken = async () => {
   try {
     const response = await axios.post(
-      `${process.env.API_BASE_URL || "https://uat-api.evolutosolution.com/v1"}/authentication`,
+      `${process.env.API_BASE_URL}/authentication`,
       {
         api_key: process.env.API_KEY,
         api_secret: process.env.API_SECRET
@@ -16,7 +16,7 @@ const generateToken = async () => {
         headers: {
           source: "web",
           package: "10.0.2.215",
-          outletid: process.env.OUTLET_ID || "OUI202590898",
+          outletid: process.env.REF_CODE,
           Authorization: `Basic ${process.env.EVOLUTO_AUTH_BASIC}`
         }
       }
@@ -32,7 +32,6 @@ export const saveUserPreviousLoans = async (req, res) => {
   try {
     const {
       application_id,
-      ref_code,
       loan_data,
       userId,
       userType
@@ -40,7 +39,6 @@ export const saveUserPreviousLoans = async (req, res) => {
 
     if (
       !application_id ||
-      !ref_code ||
       !loan_data ||
       !userId ||
       !userType ||
@@ -63,6 +61,9 @@ export const saveUserPreviousLoans = async (req, res) => {
       }
     }
 
+    // Use production REF_CODE from environment
+    const productionRefCode = process.env.REF_CODE;
+
     // Strip _id if present in loan_data
     const cleanedLoanData = loan_data.map(({ loan_account_no, loan_year, loan_amount, emi_amount, product, bank_name }) => ({
       loan_account_no,
@@ -73,16 +74,25 @@ export const saveUserPreviousLoans = async (req, res) => {
       bank_name
     }));
 
-    // Save/update to DB without evolutoResponse
+    // Prepare data with production ref_code
+    const dataToSave = {
+      application_id,
+      ref_code: productionRefCode,
+      loan_data: cleanedLoanData,
+      userId,
+      userType
+    };
+
+    console.log("Saving user previous loans with production ref_code:", {
+      application_id,
+      ref_code: productionRefCode,
+      loan_count: cleanedLoanData.length
+    });
+
+    // Save/update to DB with production ref_code
     const updatedDoc = await UserPreviousLoan.findOneAndUpdate(
       { application_id },
-      {
-        application_id,
-        ref_code,
-        loan_data: cleanedLoanData,
-        userId,
-        userType
-      },
+      dataToSave,
       { new: true, upsert: true, setDefaultsOnInsert: true }
     ).lean();
 
@@ -91,10 +101,10 @@ export const saveUserPreviousLoans = async (req, res) => {
       const token = await generateToken();
 
       const evoResponse = await axios.post(
-        `${process.env.API_BASE_URL || "https://uat-api.evolutosolution.com/v1"}/loan/previousLoans`,
+        `${process.env.API_BASE_URL}/loan/previousLoans`,
         {
           application_id,
-          ref_code,
+          ref_code: productionRefCode,
           loan_data: cleanedLoanData
         },
         {
@@ -104,6 +114,8 @@ export const saveUserPreviousLoans = async (req, res) => {
           }
         }
       );
+
+      console.log("Data saved to Evoluto API:", evoResponse.data);
 
       return res.status(200).json({
         message: "Previous loans saved to DB and sent to external API",

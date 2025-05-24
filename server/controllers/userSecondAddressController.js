@@ -9,7 +9,8 @@ export const saveUserSecondAddress = async (req, res) => {
 
         const API_KEY = process.env.API_KEY;
         const API_SECRET = process.env.API_SECRET;
-        const REF_CODE = req.body.ref_code || process.env.REF_CODE;
+        // Prioritize environment variable REF_CODE for production
+        const REF_CODE = process.env.REF_CODE || req.body.ref_code;
 
         if (!API_KEY || !API_SECRET) {
             return res.status(500).json({
@@ -21,7 +22,7 @@ export const saveUserSecondAddress = async (req, res) => {
         if (!REF_CODE) {
             return res.status(400).json({
                 success: false,
-                message: "Missing ref_code in request and not configured in environment",
+                message: "Missing ref_code in environment configuration and request",
             });
         }
 
@@ -31,14 +32,14 @@ export const saveUserSecondAddress = async (req, res) => {
             const base64Credentials = Buffer.from(credentials).toString('base64');
 
             const tokenRes = await axios.post(
-                "https://uat-api.evolutosolution.com/v1/authentication",
+                "https://api.evolutosolution.com/v1/authentication",
                 {},
                 {
                     headers: {
                         'Authorization': `Basic ${base64Credentials}`,
                         'source': 'web',
                         'package': '10.0.2.215',
-                        'outletid': REF_CODE,
+                        'outletid': REF_CODE, // Use the production REF_CODE
                     },
                 }
             );
@@ -64,8 +65,10 @@ export const saveUserSecondAddress = async (req, res) => {
 
         let saved;
 
+        // Prepare data for database (with nested addresses structure)
         const restructuredData = {
             ...req.body,
+            ref_code: REF_CODE, // Ensure consistent ref_code (production)
             addresses: {
                 present_address: req.body.present_address,
                 permanent_address: req.body.permanent_address,
@@ -73,40 +76,63 @@ export const saveUserSecondAddress = async (req, res) => {
             },
         };
 
-        delete restructuredData.present_address;
-        delete restructuredData.permanent_address;
-        delete restructuredData.office_address;
+        // Save to database
+        try {
+            const existingRecord = await AddressDetails.findOne({
+                application_id: req.body.application_id,
+            });
 
-        const existingRecord = await AddressDetails.findOne({
-            application_id: req.body.application_id,
-        });
-
-        if (existingRecord) {
-            saved = await AddressDetails.findOneAndUpdate(
-                { application_id: req.body.application_id },
-                restructuredData,
-                { new: true }
-            );
-        } else {
-            saved = await AddressDetails.create(restructuredData);
+            if (existingRecord) {
+                saved = await AddressDetails.findOneAndUpdate(
+                    { application_id: req.body.application_id },
+                    restructuredData,
+                    { new: true }
+                );
+            } else {
+                saved = await AddressDetails.create(restructuredData);
+            }
+        } catch (dbError) {
+            console.error("Database Error:", dbError.message);
+            return res.status(500).json({
+                success: false,
+                message: "Failed to save to database",
+                error: dbError.message,
+            });
         }
 
+        // Prepare data for external API (with nested addresses structure as expected by API)
+        const apiPayload = {
+            application_id: req.body.application_id,
+            userId: req.body.userId,
+            userType: req.body.userType,
+            ref_code: REF_CODE, // Use the production REF_CODE
+            years_of_residence: req.body.years_of_residence,
+            residential_status: req.body.residential_status,
+            residence_type: req.body.residence_type,
+            monthly_rent: req.body.monthly_rent,
+            addresses: {
+                present_address: req.body.present_address,
+                permanent_address: req.body.permanent_address,
+                office_address: req.body.office_address,
+            }
+        };
+
+        // Call external API
         try {
             const apiResponse = await axios.post(
-                "https://uat-api.evolutosolution.com/v1/loan/saveAddresses",
-                {
-                    ...req.body,
-                    ref_code: REF_CODE,
-                },
+                "https://api.evolutosolution.com/v1/loan/saveAddresses",
+                apiPayload,
                 {
                     headers: {
                         'token': token,
                         'Content-Type': 'application/json',
                     },
+                    timeout: 30000, // 30 second timeout
                 }
             );
 
-            console.log(apiResponse);
+            console.log("API Response:", apiResponse.data);
+            
             res.status(200).json({
                 success: true,
                 message: "Address information saved successfully",
@@ -114,14 +140,24 @@ export const saveUserSecondAddress = async (req, res) => {
                 db_data: saved,
             });
         } catch (apiError) {
-            console.error("External API Error:", apiError.response?.data || apiError.message);
+            console.error("External API Error:", {
+                status: apiError.response?.status,
+                statusText: apiError.response?.statusText,
+                data: apiError.response?.data,
+                message: apiError.message
+            });
+            
+            // Return partial success - database saved but API failed
             res.status(207).json({
                 success: true,
                 dbSuccess: true,
                 apiSuccess: false,
                 message: "Address saved to database, but external API call failed",
                 db_data: saved,
-                api_error: apiError.response?.data || apiError.message,
+                api_error: {
+                    status: apiError.response?.status,
+                    message: apiError.response?.data || apiError.message,
+                },
             });
         }
     } catch (error) {
@@ -137,6 +173,13 @@ export const saveUserSecondAddress = async (req, res) => {
 export const getUserAddressesByApplicationId = async (req, res) => {
     try {
         const { applicationId } = req.params;
+
+        if (!applicationId) {
+            return res.status(400).json({
+                success: false,
+                message: "Application ID is required",
+            });
+        }
 
         const addressData = await AddressDetails.findOne({
             application_id: applicationId,

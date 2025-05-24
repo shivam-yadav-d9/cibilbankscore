@@ -156,34 +156,64 @@ const UsersContent = () => {
         }
     };
     // loan status
-    const handleCheckLoanStatus = async (applicationId, refCode) => {
-        if (!applicationId || !refCode) {
-            alert("Missing Application ID or Ref Code.");
-            return;
-        }
+    // Updated handleCheckLoanStatus function for your React component
+const handleCheckLoanStatus = async (applicationId, refCode) => {
+    if (!applicationId || !refCode) {
+        alert("Missing Application ID or Ref Code.");
+        return;
+    }
 
-        try {
-            // const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/loan/check-loan-status`, {
-            //     loan_application_id: applicationId,
-            //     ref_code: refCode,
-            // });
+    // Show loading state
+    const originalText = event.target.textContent;
+    event.target.textContent = "Checking...";
+    event.target.disabled = true;
 
-            const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/loan/check-loan-status`, {
+    try {
+        console.log('Checking loan status:', { applicationId, refCode });
+        
+        const res = await axios.post(
+            `${import.meta.env.VITE_BACKEND_URL}/api/loan/check-loan-status`, 
+            {
                 loan_application_id: applicationId,
                 ref_code: refCode,
-            }, {
+            }, 
+            {
                 headers: {
-                    //'Content-Type': 'application/json',  // Ensure correct content type
+                    'Content-Type': 'application/json',
                 },
-            });
+                timeout: 30000 // 30 second timeout
+            }
+        );
 
-            const status = res.data.data.status || "No status found.";
+        console.log('Loan status response:', res.data);
+
+        if (res.data.success) {
+            const status = res.data.data?.status || res.data.data?.loan_status || "Status not available";
             alert(`Loan Status: ${status}`);
-        } catch (err) {
-            console.error("Failed to fetch loan status:", err.response?.data || err.message);
-            alert("Error fetching loan status.");
+        } else {
+            alert(`Error: ${res.data.message || "Failed to fetch loan status"}`);
         }
-    };
+
+    } catch (err) {
+        console.error("Failed to fetch loan status:", err);
+        
+        let errorMessage = "Error fetching loan status.";
+        
+        if (err.code === 'ECONNABORTED') {
+            errorMessage = "Request timeout. Please try again.";
+        } else if (err.response) {
+            errorMessage = err.response.data?.message || `Server error: ${err.response.status}`;
+        } else if (err.request) {
+            errorMessage = "Unable to connect to server. Please check your connection.";
+        }
+        
+        alert(errorMessage);
+    } finally {
+        // Reset button state
+        event.target.textContent = originalText;
+        event.target.disabled = false;
+    }
+};
 
     return (
         <div className="p-6 space-y-6">

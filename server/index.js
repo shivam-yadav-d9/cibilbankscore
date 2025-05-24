@@ -13,6 +13,7 @@ import message from "./routes/messages.js";
 import savedocsRoutes from "./routes/saveDocsRoutes.js";
 import notification from "./routes/notifications.js";
 import loanRoutes from "./routes/loanRoutes.js";
+import loanstatusRoutes from "./routes/loanStatusRoutes.js"
 import UserAddress from "./routes/UserAddress.js";
 import userSecondAddressRoutes from "./routes/userSecondAddress.js";
 import LoanProcessorRoutes from "./routes/LoanProcessorRoutes.js";
@@ -103,6 +104,7 @@ app.use("/dashboard", dashboardRoutes);
 app.use("/api/messages", message);
 app.use("/api/notifications", notification);
 app.use("/api/loan", loanRoutes);
+app.use("/api/loan", loanstatusRoutes);
 app.use("/api/user-address", UserAddress);
 app.use("/api/user-second-address", userSecondAddressRoutes);
 app.use("/api/user-co-app", coApplicantRoutes);

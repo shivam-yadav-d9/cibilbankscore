@@ -10,45 +10,48 @@ function UserSecondAddress() {
 
   const [formData, setFormData] = useState({
     application_id: "",
-    userId: "",
-    userType: "",
+    userId: "", // Initialize with empty string
+    userType: "", // Initialize with empty string
     ref_code: "OUI2025107118", // Get ref_code from location or default
     years_of_residence: "",
     residential_status: "Resident", // Add this field
     residence_type: "1", // Add this field with a default value
     monthly_rent: "",
-    present_address: {
-      address_line1: "",
-      address_line2: "",
-      address_line3: "",
-      pincode: "",
-      state: "",
-      city: "",
-      landmark: "",
-      email: "",
-      phone: "",
-    },
-    permanent_address: {
-      address_line1: "",
-      address_line2: "",
-      address_line3: "",
-      pincode: "",
-      state: "",
-      city: "",
-      landmark: "",
-      email: "",
-      phone: "",
-    },
-    office_address: {
-      address_line1: "",
-      address_line2: "",
-      address_line3: "",
-      pincode: "",
-      state: "",
-      city: "",
-      landmark: "",
-      email: "",
-      phone: "",
+    // Restructure formData to nest addresses under 'addresses' key
+    addresses: {
+      present_address: {
+        address_line1: "",
+        address_line2: "",
+        address_line3: "",
+        pincode: "",
+        state: "",
+        city: "",
+        landmark: "",
+        email: "",
+        phone: "",
+      },
+      permanent_address: {
+        address_line1: "",
+        address_line2: "",
+        address_line3: "",
+        pincode: "",
+        state: "",
+        city: "",
+        landmark: "",
+        email: "",
+        phone: "",
+      },
+      office_address: {
+        address_line1: "",
+        address_line2: "",
+        address_line3: "",
+        pincode: "",
+        state: "",
+        city: "",
+        landmark: "",
+        email: "",
+        phone: "",
+      },
     },
   });
 
@@ -59,48 +62,86 @@ function UserSecondAddress() {
   const [sameAsPresent, setSameAsPresent] = useState(false);
 
   useEffect(() => {
+    // Get data from location state or localStorage
     const applicationId =
       location.state?.applicationId ||
       localStorage.getItem("applicationId") ||
       "";
-    const userId = location.state?.userId || "";
-    const userType = location.state?.userType || "";
-    const refCode = location.state?.ref_code || "OUI202590898";
+    // Prioritize location.state, then check localStorage for userId and userType
+    const userId = location.state?.userId || localStorage.getItem("userId") || "";
+    const userType = location.state?.userType || localStorage.getItem("userType") || "";
+
+    const refCode = location.state?.ref_code || "OUI202590898"; // Use default if not in location state
 
     const savedFormData = localStorage.getItem(
       `secondFormData_${applicationId}`
     );
+
     if (savedFormData) {
       const parsedData = JSON.parse(savedFormData);
+      // When loading from localStorage, ensure addresses are correctly nested
       setFormData({
         ...parsedData,
         application_id: applicationId,
-        userId,
-        userType,
+        userId: userId || parsedData.userId, // Use fetched userId if available, otherwise use saved data
+        userType: userType || parsedData.userType, // Use fetched userType if available, otherwise use saved data
         ref_code: refCode, // Ensure ref_code is set
+        // Ensure addresses are nested if not already
+        addresses: parsedData.addresses || {
+          present_address: parsedData.present_address || {},
+          permanent_address: parsedData.permanent_address || {},
+          office_address: parsedData.office_address || {},
+        }
       });
+       // Check if permanent address was same as present and update state
+      if (JSON.stringify(parsedData.addresses?.permanent_address || {}) === JSON.stringify(parsedData.addresses?.present_address || {}) &&
+         Object.keys(parsedData.addresses?.permanent_address || {}).length > 0 // Only check if there's actual data saved
+         ) {
+        setSameAsPresent(true);
+      }
+
     } else {
       setFormData((prev) => ({
         ...prev,
         application_id: applicationId,
-        userId,
-        userType,
+        userId: userId || prev.userId, // Use fetched userId if available
+        userType: userType || prev.userType, // Use fetched userType if available
         ref_code: refCode, // Ensure ref_code is set
+         // Ensure addresses are initialized nested
+         addresses: {
+          present_address: prev.addresses?.present_address || { address_line1: "", address_line2: "", address_line3: "", pincode: "", state: "", city: "", landmark: "", email: "", phone: "" },
+          permanent_address: prev.addresses?.permanent_address || { address_line1: "", address_line2: "", address_line3: "", pincode: "", state: "", city: "", landmark: "", email: "", phone: "" },
+          office_address: prev.addresses?.office_address || { address_line1: "", address_line2: "", address_line3: "", pincode: "", state: "", city: "", landmark: "", email: "", phone: "" },
+         }
       }));
     }
-  }, [location]);
+
+    // Optionally save userId and userType to localStorage if they were found in location.state
+    if (location.state?.userId) {
+      localStorage.setItem("userId", location.state.userId);
+    }
+    if (location.state?.userType) {
+      localStorage.setItem("userType", location.state.userType);
+    }
+
+  }, [location]); // Add location to dependency array
 
   const handleChange = (e, addressType = null, field = null) => {
     let updatedFormData;
     if (addressType) {
+       // Update nested address fields correctly
       updatedFormData = {
         ...formData,
-        [addressType]: {
-          ...formData[addressType],
-          [field]: e.target.value,
+        addresses: {
+          ...formData.addresses,
+          [addressType]: {
+            ...formData.addresses[addressType],
+            [field]: e.target.value,
+          },
         },
       };
     } else {
+       // Handle top-level fields like years_of_residence, residential_status, etc.
       updatedFormData = { ...formData, [e.target.name]: e.target.value };
     }
     setFormData(updatedFormData);
@@ -116,10 +157,14 @@ function UserSecondAddress() {
     const isChecked = e.target.checked;
     setSameAsPresent(isChecked);
     if (isChecked) {
+       // Copy present address to permanent address within the nested structure
       const updatedFormData = {
         ...formData,
-        permanent_address: {
-          ...formData.present_address,
+        addresses: {
+          ...formData.addresses,
+          permanent_address: {
+            ...formData.addresses.present_address,
+          },
         },
       };
       setFormData(updatedFormData);
@@ -129,14 +174,42 @@ function UserSecondAddress() {
           JSON.stringify(updatedFormData)
         );
       }
+    } else {
+        // If unchecked, clear the permanent address fields
+        const updatedFormData = {
+            ...formData,
+            addresses: {
+                ...formData.addresses,
+                permanent_address: {
+                    address_line1: "",
+                    address_line2: "",
+                    address_line3: "",
+                    pincode: "",
+                    state: "",
+                    city: "",
+                    landmark: "",
+                    email: "",
+                    phone: "",
+                },
+            },
+        };
+        setFormData(updatedFormData);
+         if (updatedFormData.application_id) {
+            localStorage.setItem(
+                `secondFormData_${updatedFormData.application_id}`,
+                JSON.stringify(updatedFormData)
+            );
+        }
     }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setSuccess(null);
 
+    // Save current form data to localStorage before submitting
     if (formData.application_id) {
       localStorage.setItem(
         `secondFormData_${formData.application_id}`,
@@ -145,9 +218,22 @@ function UserSecondAddress() {
     }
 
     try {
+      const authToken = localStorage.getItem('authToken'); // Retrieve the token
+
+      // Log formData just before sending to verify structure and values
+      console.log("Submitting formData:", formData);
+      console.log("Sending token:", authToken);
+
+      // Send the correctly structured formData directly to your backend
       await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/user-second-address/save`,
-        formData
+        formData, // formData now has the correct nested 'addresses' structure
+        {
+          headers: {
+            'Authorization': `Bearer ${authToken}`, // Include the token in the Authorization header
+            'Content-Type': 'application/json', // Specify content type
+          }
+        }
       );
 
       setSuccess("Address information saved successfully!");
@@ -155,16 +241,19 @@ function UserSecondAddress() {
       navigate("/UserCoApplications", {
         state: {
           applicationId: formData.application_id,
-          userId: formData.userId,
+          userId: formData.userId, // Pass userId and userType to the next route
           userType: formData.userType,
         },
       });
 
     } catch (err) {
+      console.error("Error submitting form:", err.response?.data || err.message); // More detailed error logging
+       // Check if the error response has a specific message for display
+      const errorMessage = err.response?.data?.message || err.message;
       setError(
-        "Error submitting form: " +
-        (err.response?.data?.error || err.message)
+        "Error submitting form: " + errorMessage
       );
+      // Do not set success to null here to show the error message
     } finally {
       setLoading(false);
     }
@@ -196,12 +285,13 @@ function UserSecondAddress() {
     ? "w-full font-medium text-lg py-4 px-6 rounded-xl shadow-lg transition-all duration-500 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white hover:shadow-indigo-500/50 transform hover:-translate-y-1"
     : "w-full font-medium text-lg py-4 px-6 rounded-xl shadow-lg transition-all duration-500 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white hover:shadow-indigo-500/50 transform hover:-translate-y-1";
 
+  // Updated renderAddressFields to work with nested structure
   const renderAddressFields = (type, disabled = false) => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="group relative">
         <input
           placeholder=" "
-          value={formData[type].address_line1}
+          value={formData.addresses[type].address_line1} // Access nested value
           onChange={(e) => handleChange(e, type, "address_line1")}
           className={inputClass}
           required
@@ -212,7 +302,7 @@ function UserSecondAddress() {
       <div className="group relative">
         <input
           placeholder=" "
-          value={formData[type].address_line2}
+          value={formData.addresses[type].address_line2} // Access nested value
           onChange={(e) => handleChange(e, type, "address_line2")}
           className={inputClass}
           required // Make address_line2 required
@@ -223,7 +313,7 @@ function UserSecondAddress() {
       <div className="group relative">
         <input
           placeholder=" "
-          value={formData[type].address_line3}
+          value={formData.addresses[type].address_line3} // Access nested value
           onChange={(e) => handleChange(e, type, "address_line3")}
           className={inputClass}
           disabled={disabled}
@@ -233,7 +323,7 @@ function UserSecondAddress() {
       <div className="group relative">
         <input
           placeholder=" "
-          value={formData[type].pincode}
+          value={formData.addresses[type].pincode} // Access nested value
           onChange={(e) => handleChange(e, type, "pincode")}
           className={inputClass}
           required
@@ -244,7 +334,7 @@ function UserSecondAddress() {
       <div className="group relative">
         <input
           placeholder=" "
-          value={formData[type].city}
+          value={formData.addresses[type].city} // Access nested value
           onChange={(e) => handleChange(e, type, "city")}
           className={inputClass}
           required
@@ -255,7 +345,7 @@ function UserSecondAddress() {
       <div className="group relative">
         <input
           placeholder=" "
-          value={formData[type].state}
+          value={formData.addresses[type].state} // Access nested value
           onChange={(e) => handleChange(e, type, "state")}
           className={inputClass}
           required
@@ -266,7 +356,7 @@ function UserSecondAddress() {
       <div className="group relative">
         <input
           placeholder=" "
-          value={formData[type].landmark}
+          value={formData.addresses[type].landmark} // Access nested value
           onChange={(e) => handleChange(e, type, "landmark")}
           className={inputClass}
           disabled={disabled}
@@ -276,7 +366,7 @@ function UserSecondAddress() {
       <div className="group relative">
         <input
           placeholder=" "
-          value={formData[type].email}
+          value={formData.addresses[type].email} // Access nested value
           onChange={(e) => handleChange(e, type, "email")}
           className={inputClass}
           required
@@ -287,7 +377,7 @@ function UserSecondAddress() {
       <div className="group relative">
         <input
           placeholder=" "
-          value={formData[type].phone}
+          value={formData.addresses[type].phone} // Access nested value
           onChange={(e) => handleChange(e, type, "phone")}
           className={inputClass}
           required
@@ -374,6 +464,31 @@ function UserSecondAddress() {
               />
               <label className={labelClass}>Application ID</label>
             </div>
+
+            {/* userId Field (Hidden or Read-only) */}
+             <div className="group relative mb-8" style={{ display: 'none' }}>
+              <input
+                type="text"
+                name="userId"
+                value={formData.userId}
+                readOnly // Make it read-only
+                className={inputClass}
+              />
+               <label className={labelClass}>User ID</label>
+            </div>
+
+            {/* userType Field (Hidden or Read-only) */}
+             <div className="group relative mb-8" style={{ display: 'none' }}>
+              <input
+                type="text"
+                name="userType"
+                value={formData.userType}
+                 readOnly // Make it read-only
+                className={inputClass}
+              />
+               <label className={labelClass}>User Type</label>
+            </div>
+
 
             {/* Years of Residence Field */}
             <div className="group relative mb-8">
@@ -476,6 +591,7 @@ function UserSecondAddress() {
                   </label>
                 </div>
               </div>
+              {/* Pass disabled prop based on sameAsPresent state */}
               {renderAddressFields("permanent_address", sameAsPresent)}
             </div>
 
