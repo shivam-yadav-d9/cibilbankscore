@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import {Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import {
   FaUser,
@@ -23,6 +23,10 @@ const MyProfile = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [agentDetails, setAgentDetails] = useState(null);
+
+  const [loanStatus, setLoanStatus] = useState(null);
+  const [statusLoading, setStatusLoading] = useState(false);
+  const [statusError, setStatusError] = useState("");
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -53,7 +57,6 @@ const MyProfile = () => {
     }
 
     // Only fetch loan data for customer users
-    axios
     axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/loan/get-by-email/${user.email}`)
       .then((res) => {
         setLoanData(res.data);
@@ -63,6 +66,7 @@ const MyProfile = () => {
         console.error("Error fetching loan data:", err);
         // For 404 errors, we'll just show the profile without loan data
         if (err.response && err.response.status === 404) {
+          setLoanData(null); // Explicitly set loanData to null
           setLoading(false);
         } else {
           setError(err.response?.data?.message || "Failed to fetch loan data");
@@ -150,6 +154,37 @@ const MyProfile = () => {
     return "N/A";
   };
 
+  const checkLoanStatus = async () => {
+    if (!loanData || !loanData.application_id) {
+      setStatusError("Loan Application ID not found.");
+      return;
+    }
+
+    console.log("loanData:", loanData);
+    console.log("loanData.application_id:", loanData.application_id);
+
+    setStatusLoading(true);
+    setStatusError("");
+    setLoanStatus(null);
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/loan/check-loan-status`,
+        {
+          loan_application_id: loanData.application_id,
+        }
+      );
+
+      setLoanStatus(response.data.data);
+    } catch (error) {
+      console.error("Error checking loan status:", error);
+      console.error("Full error response:", error.response); // Log the full error response
+      setStatusError(error.response?.data?.message || "Something went wrong");
+    } finally {
+      setStatusLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col justify-start items-center py-10 bg-gradient-to-tr from-indigo-50 via-purple-50 to-pink-50 px-4 min-h-screen">
       <div className="bg-white shadow-2xl rounded-2xl overflow-hidden w-full max-w-4xl border border-gray-200">
@@ -161,7 +196,7 @@ const MyProfile = () => {
         {/* User Basic Info - Always shown */}
         <div className="px-6 py-8">
 
-         <Link to="/dashboard"><button className="text-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg shadow-md transition duration-300 mb-4">
+          <Link to="/dashboard"><button className="text-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg shadow-md transition duration-300 mb-4">
             Your Dashboard
           </button>
           </Link>
@@ -218,27 +253,28 @@ const MyProfile = () => {
           </div>
         </div>
 
-        {/* Debug section - will be visible only in development */}
-        {/* {process.env.NODE_ENV !== 'production' && (
-          <div className="px-6 py-4 bg-gray-100 border-t border-gray-200">
-            <details>
-              <summary className="text-sm font-medium text-gray-600 cursor-pointer">Debug Information</summary>
-              <div className="mt-2 p-3 bg-gray-200 rounded overflow-auto max-h-60 text-xs">
-                <p className="font-bold">User Data from localStorage:</p>
-                <pre>{JSON.stringify(userData, null, 2)}</pre>
-                
-                {agentDetails && (
-                  <>
-                    <p className="font-bold mt-2">Agent Details from API:</p>
-                    <pre>{JSON.stringify(agentDetails, null, 2)}</pre>
-                  </>
-                )}
-              </div>
-            </details>
-          </div>
-        )} */}
-
         {/* Loan Information - Only shown for customers who have loan data */}
+        <div className="mt-6 text-center">
+          {loanData && ( // Conditionally render the button
+            <button
+              onClick={checkLoanStatus}
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded shadow"
+            >
+              Check Loan Status
+            </button>
+          )}
+
+          {statusLoading && <p className="text-blue-600 mt-2">Checking loan status...</p>}
+          {statusError && <p className="text-red-600 mt-2">{statusError}</p>}
+
+          {loanStatus && (
+            <div className="mt-4 p-4 bg-green-100 border border-green-400 rounded text-green-800 text-left max-w-xl mx-auto">
+              <h4 className="font-bold text-lg mb-2">Loan Status:</h4>
+              <pre className="text-sm whitespace-pre-wrap">{JSON.stringify(loanStatus, null, 2)}</pre>
+            </div>
+          )}
+        </div>
+
         {loanData && userData?.userType === "customer" && (
           <div className="px-6 py-8 border-t border-gray-200">
             <h3 className="text-xl font-semibold text-gray-800 mb-4">Loan Information</h3>

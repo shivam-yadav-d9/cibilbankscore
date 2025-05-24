@@ -12,7 +12,7 @@ function UserSecondAddress() {
     application_id: "",
     userId: "",
     userType: "",
-    ref_code: "OUI202590898", // Get ref_code from location or default
+    ref_code: "OUI2025107118", // Get ref_code from location or default
     years_of_residence: "",
     residential_status: "Resident", // Add this field
     residence_type: "1", // Add this field with a default value

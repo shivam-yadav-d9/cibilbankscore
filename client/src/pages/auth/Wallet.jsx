@@ -1,21 +1,34 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function WalletPage() {
   const [amount, setAmount] = useState('');
-  const [submittedAmount, setSubmittedAmount] = useState(null); // NEW: store submitted amount
+  const [submittedAmount, setSubmittedAmount] = useState(null);
   const [utr, setUtr] = useState('');
   const [screenshot, setScreenshot] = useState(null);
   const [transactions, setTransactions] = useState([]);
+  const { currentUser } = useAuth(); // ⬅️ Use auth context to get logged-in user
+  const email = currentUser?.email;
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/wallet/transactions`)
-      .then(res => res.json())
-      .then(data => setTransactions(data));
-  }, []);
+    if (email) {
+      fetch(`${import.meta.env.VITE_BACKEND_URL}/api/wallet/transactions?email=${email}`)
+        .then(res => res.json())
+        .then(data => setTransactions(data))
+        .catch(err => console.error("Failed to fetch transactions:", err));
+    }
+  }, [email]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!email) {
+      alert("User not logged in!");
+      return;
+    }
+
     const formData = new FormData();
+    formData.append('email', email); // ⬅️ Include email
     formData.append('amount', amount);
     formData.append('utr', utr);
     formData.append('screenshot', screenshot);
@@ -30,15 +43,16 @@ export default function WalletPage() {
 
       if (res.ok) {
         setTransactions([data, ...transactions]);
-        setSubmittedAmount(amount); // ✅ Save last submitted amount
+        setSubmittedAmount(amount);
         setAmount('');
         setUtr('');
         setScreenshot(null);
       } else {
-        alert(data.message);
+        alert(data.message || "Failed to submit wallet data.");
       }
     } catch (err) {
-      alert('Something went wrong');
+      console.error(err);
+      alert('Something went wrong while submitting.');
     }
   };
 
@@ -53,7 +67,6 @@ export default function WalletPage() {
         Scan QR to Pay
       </button>
 
-      {/* ✅ Show submitted amount or current amount */}
       {(submittedAmount || amount) && (
         <div className="mb-4">
           <button
@@ -76,6 +89,7 @@ export default function WalletPage() {
             required
           />
         </div>
+
         <div className="mb-4">
           <label className="block text-sm font-medium">Bank UTR Number</label>
           <input
@@ -86,6 +100,7 @@ export default function WalletPage() {
             required
           />
         </div>
+
         <div className="mb-4">
           <label className="block text-sm font-medium">Upload Screenshot</label>
           <input
@@ -96,6 +111,7 @@ export default function WalletPage() {
             required
           />
         </div>
+
         <button
           type="submit"
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"

@@ -19,6 +19,8 @@ const UsersContent = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [pageSize, setPageSize] = useState(10);
 
+    const [authToken, setAuthToken] = useState(null);
+
     const fetchUsers = async (userType, startDate = '', endDate = '', page = 1, pageSize = 10) => {
         setIsLoading(true);
         setError(null);
@@ -161,19 +163,27 @@ const UsersContent = () => {
         }
 
         try {
+            // const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/loan/check-loan-status`, {
+            //     loan_application_id: applicationId,
+            //     ref_code: refCode,
+            // });
+
             const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/loan/check-loan-status`, {
                 loan_application_id: applicationId,
                 ref_code: refCode,
+            }, {
+                headers: {
+                    //'Content-Type': 'application/json',  // Ensure correct content type
+                },
             });
 
-            const status = res.data.status || "No status found.";
+            const status = res.data.data.status || "No status found.";
             alert(`Loan Status: ${status}`);
         } catch (err) {
             console.error("Failed to fetch loan status:", err.response?.data || err.message);
             alert("Error fetching loan status.");
         }
     };
-
 
     return (
         <div className="p-6 space-y-6">
@@ -296,6 +306,8 @@ const UsersContent = () => {
                                                         <div><span className="font-semibold">Aadhaar:</span> {loan.aadhaar || '—'}</div>
                                                         <div><span className="font-semibold">Loan Type ID:</span> {loan.loan_type_id || '—'}</div>
                                                         <div><span className="font-semibold">Pin code:</span> {loan.pincode || '—'}</div>
+                                                        <div><span className="font-semibold">ref code:</span> {loan.ref_code || '—'}</div>
+
 
                                                         <button
                                                             onClick={() => handleCheckLoanStatus(loan.application_id, loan.ref_code)}
@@ -303,6 +315,7 @@ const UsersContent = () => {
                                                         >
                                                             Check Loan Status
                                                         </button>
+
 
                                                     </div>
                                                 </td>
