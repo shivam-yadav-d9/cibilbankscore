@@ -17,6 +17,7 @@ import NotificationsContent from "./tabs/NotificationsContent";
 import AgentApprove from "./tabs/Agentapprove.jsx";
 import WalletApprovalContent from "./tabs/WalletApprovalContent.jsx";
 import BankSettingsContent from "./tabs/BankSettingsContent.jsx";
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -96,6 +97,18 @@ const AdminPanel = () => {
     }
   };
 
+  const navigate = useNavigate(); // Initialize useNavigate
+
+  const handleLogout = () => {
+      // Clear localStorage
+      localStorage.removeItem("token");
+      localStorage.removeItem("agentId");
+      localStorage.removeItem("isApproved");
+
+      // Redirect to the login page
+      navigate("/Login");
+  };
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
@@ -151,7 +164,7 @@ const AdminPanel = () => {
             <SidebarLink
               icon={<LogOutIcon size={20} />}
               title="Logout"
-              onClick={() => alert("Logged out")}
+              onClick={handleLogout} // Call handleLogout on click
             />
           </div>
         </nav>

@@ -14,6 +14,8 @@ const B2BSignup = () => {
     email: '',
     phone: '',
     password: '',
+    isApproved: false // <---- IMPORTANT: Explicitly set to false
+
   });
 
   const [error, setError] = useState('');

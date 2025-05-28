@@ -14,6 +14,7 @@ const AgentApprove = () => {
         setAgents(response.data);
       } catch (error) {
         console.error("Error fetching agents:", error);
+        // Optionally, display an error message to the user.
       } finally {
         setLoading(false);
       }
@@ -22,20 +23,54 @@ const AgentApprove = () => {
     fetchAgents();
   }, []);
 
-  const handleApprove = (id) => {
-    // TODO: Call backend API to approve the agent
-    alert(`Approved agent ID: ${id}`);
+
+  const handleApprove = async (id) => {
+    // Optimistic Update: Immediately update the UI
+    const updatedAgents = agents.map(agent =>
+      agent._id === id ? { ...agent, isApproved: true } : agent
+    );
+    setAgents(updatedAgents);
+
+    try {
+      await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/approve/${id}`);
+      alert("Agent approved successfully!");
+
+      // Update local storage for that agent
+      localStorage.setItem("isApproved", "true");
+    } catch (err) {
+      console.error("Error approving agent:", err);
+      alert("Failed to approve agent.");
+      // Revert the optimistic update on error (optional, depending on your needs)
+      setAgents(agents); // Reset to the original state
+    }
   };
 
-  const handleReject = (id) => {
-    // TODO: Call backend API to reject the agent
-    alert(`Rejected agent ID: ${id}`);
+  const handleReject = async (id) => {
+    // Optimistic Update: Immediately update the UI
+    const updatedAgents = agents.map(agent =>
+      agent._id === id ? { ...agent, isApproved: false } : agent
+    );
+    setAgents(updatedAgents);
+
+    try {
+      await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/reject/${id}`);
+      alert("Agent rejected successfully!");
+
+       // Update local storage for that agent
+       localStorage.setItem("isApproved", "false");
+    } catch (err) {
+      console.error("Error rejecting agent:", err);
+      alert("Failed to reject agent.");
+      // Revert the optimistic update on error
+      setAgents(agents); // Reset to the original state
+    }
   };
+
 
   return (
     <div className="p-6">
       <h2 className="text-2xl font-semibold mb-4 text-center">Agent Approval Panel</h2>
-      
+
       {loading ? (
         <p className="text-center">Loading agents...</p>
       ) : (
@@ -60,13 +95,15 @@ const AgentApprove = () => {
                   <td className="px-4 py-3 space-x-2">
                     <button
                       onClick={() => handleApprove(agent._id)}
-                      className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
+                      className={`bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded ${agent.isApproved ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      disabled={agent.isApproved}
                     >
-                      Approve
+                      {agent.isApproved ? "Approved" : "Approve"}
                     </button>
                     <button
                       onClick={() => handleReject(agent._id)}
-                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                      className={`bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded ${!agent.isApproved ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      disabled={!agent.isApproved}
                     >
                       Reject
                     </button>
