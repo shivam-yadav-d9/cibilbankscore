@@ -212,36 +212,36 @@ export const saveCoApplicant = async (req, res) => {
 /**
  * Get co-applicant data by application ID ok 
  */
-export const getCoApplicantByApplicationId = async (req, res) => {
-  try {
-    const { applicationId } = req.params;
+// export const getCoApplicantByApplicationId = async (req, res) => {
+//   try {
+//     const { applicationId } = req.params;
     
-    if (!applicationId) {
-      return res.status(400).json({
-        success: false,
-        message: "Application ID is required"
-      });
-    }
+//     if (!applicationId) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Application ID is required"
+//       });
+//     }
     
-    const coApplicant = await CoApplicant.findOne({ application_id: applicationId });
+//     const coApplicant = await CoApplicant.findOne({ application_id: applicationId });
     
-    if (!coApplicant) {
-      return res.status(404).json({
-        success: false,
-        message: "No co-applicant found for this application ID"
-      });
-    }
+//     if (!coApplicant) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "No co-applicant found for this application ID"
+//       });
+//     }
     
-    res.status(200).json({
-      success: true,
-      data: coApplicant
-    });
-  } catch (error) {
-    console.error("Get Co-Applicant Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to retrieve co-applicant information",
-      error: error.message
-    });
-  }
-};
+//     res.status(200).json({
+//       success: true,
+//       data: coApplicant
+//     });
+//   } catch (error) {
+//     console.error("Get Co-Applicant Error:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to retrieve co-applicant information",
+//       error: error.message
+//     });
+//   }
+// };

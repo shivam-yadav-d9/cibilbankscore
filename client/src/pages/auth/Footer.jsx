@@ -5,7 +5,7 @@ function Footer() {
 
         {/* Company Info */}
         <div>
-          <h2 className="text-xl font-semibold text-white">DBNPEY🤵</h2>
+          <h2 className="text-xl font-semibold text-white">DBNPE🤵</h2>
           <p className="mt-2 text-sm">
             Secure and trusted banking solutions to help you manage your financial future.
           </p>
@@ -51,7 +51,7 @@ function Footer() {
       Karnataka, India */}
       {/* Bottom Section */}
       <div className="border-t border-gray-700 mt-8 pt-6 text-center text-sm">
-        <p>&copy; {new Date().getFullYear()} BankCorp. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} DBNPE.in All rights reserved.</p>
       </div>
     </footer>
   );

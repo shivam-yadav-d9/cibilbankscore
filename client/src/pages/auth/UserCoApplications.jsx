@@ -42,10 +42,10 @@ const UserCoApplications = () => {
           },
         };
 
-        const response = await axios.get(
-          `/api/user-co-app/${applicationId}`,
-          axiosConfig
-        );
+        // const response = await axios.get(
+        //   `/api/user-co-app/${applicationId}`,
+        //   axiosConfig
+        // );
         if (response.data.success && response.data.data) {
           setFormData(response.data.data);
           localStorage.setItem(

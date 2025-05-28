@@ -66,12 +66,13 @@ const TermsAndConditions = () => {
                             <span className="font-semibold text-lg">Credit Card</span>
                         </div>
 
-                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                        <a href="https://login.dbnpay.in/
+" className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
                             <div className="hover:-translate-y-2 transition-transform duration-300">
                                 <ReceiptText size={50} />
                             </div>
                             <span className="font-semibold text-lg">Bill Payment</span>
-                        </div>
+                        </a>
 
                         <a href="https://www.turtlemint.com/" className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
                             <div className="hover:-translate-y-2 transition-transform duration-300">
@@ -139,49 +140,49 @@ const TermsAndConditions = () => {
                             <span className="font-semibold text-lg">Account Opening</span>
                         </a>
 
-                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                        <a href="https://www.delhivery.com/" className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
                             <div className="hover:-translate-y-2 transition-transform duration-300">
                                 <Truck size={50} />
                             </div>
                             <span className="font-semibold text-lg">Courier Services</span>
-                        </div>
+                        </a>
                         <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
                             <div className="hover:-translate-y-2 transition-transform duration-300">
                                 <HeartPulse size={50} />
                             </div>
                             <span className="font-semibold text-lg">E-Health</span>
                         </div>
-                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                        <a href="https://login.dbnpay.in/" className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
                             <div className="hover:-translate-y-2 transition-transform duration-300">
                                 <Pill size={50} />
                             </div>
                             <span className="font-semibold text-lg">Medicine</span>
-                        </div>
+                        </a>
 
-                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                        <a href="https://login.dbnpay.in/" className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
                             <div className="hover:-translate-y-2 transition-transform duration-300">
                                 <HandHelping size={50} />
                             </div>
                             <span className="font-semibold text-lg">Affliction Service</span>
-                        </div>
-                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                        </a>
+                        <a href="https://login.dbnpay.in/" className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
                             <div className="hover:-translate-y-2 transition-transform duration-300">
                                 <CalendarCheck2 size={50} />
                             </div>
                             <span className="font-semibold text-lg">Booking</span>
-                        </div>
-                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                        </a>
+                       <a href="https://login.dbnpay.in/" className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
                             <div className="hover:-translate-y-2 transition-transform duration-300">
                                 <DollarSign size={50} />
                             </div>
                             <span className="font-semibold text-lg">Consumer Finance</span>
-                        </div>
-                        <div className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
+                        </a>
+                        <a href="https://login.dbnpay.in/" className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
                             <div className="hover:-translate-y-2 transition-transform duration-300">
                                 <MonitorSmartphone size={50} />
                             </div>
                             <span className="font-semibold text-lg">Matm</span>
-                        </div>
+                        </a>
                     </div>
 
 
