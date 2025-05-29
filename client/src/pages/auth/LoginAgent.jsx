@@ -32,6 +32,7 @@ const LoginAgent = ({ updateAuth }) => {
           email: email,
         };
 
+        console.log(userData)
         // Use AuthContext login
         login(userData);
 
@@ -40,7 +41,7 @@ const LoginAgent = ({ updateAuth }) => {
         }
 
         // Navigate to business dashboard
-        navigate("/business-dashboard");
+        navigate("/business-dashboard", { state: { userId: response.data.user._id } });
       } else {
         setError("Login failed. Please try again.");
       }
@@ -74,7 +75,7 @@ const LoginAgent = ({ updateAuth }) => {
                   </h2>
                 </div>
               </div>
-              
+
               <div className="flex items-center justify-center">
                 <img
                   src="/Agentimage.png"
@@ -82,11 +83,11 @@ const LoginAgent = ({ updateAuth }) => {
                   className="max-w-full h-auto object-cover filter drop-shadow-2xl"
                 />
               </div>
-              
+
               <div className="mt-auto">
                 <h3 className="text-xl font-semibold text-white mb-2">Agent Portal</h3>
                 <p className="text-indigo-200">Access your dashboard, manage clients, and grow your business all in one place.</p>
-                
+
                 <div className="mt-8 flex flex-wrap gap-4">
                   <div className="flex items-center space-x-2">
                     <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center">
@@ -96,7 +97,7 @@ const LoginAgent = ({ updateAuth }) => {
                     </div>
                     <span className="text-indigo-200 text-sm">Secure Access</span>
                   </div>
-                  
+
                   <div className="flex items-center space-x-2">
                     <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -109,7 +110,7 @@ const LoginAgent = ({ updateAuth }) => {
               </div>
             </div>
           </div>
-          
+
           {/* Right Side - Login Form */}
           <div className="w-full md:w-1/2 p-8 md:p-12">
             <div className="max-w-md mx-auto">
@@ -241,11 +242,10 @@ const LoginAgent = ({ updateAuth }) => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className={`w-full flex justify-center items-center py-3.5 px-6 rounded-xl text-white font-medium transition duration-200 ${
-                      loading
+                    className={`w-full flex justify-center items-center py-3.5 px-6 rounded-xl text-white font-medium transition duration-200 ${loading
                         ? "bg-indigo-700/50 cursor-not-allowed"
                         : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/30"
-                    }`}
+                      }`}
                   >
                     {loading ? (
                       <>

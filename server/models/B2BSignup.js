@@ -8,12 +8,11 @@ const B2BSignupSchema = new mongoose.Schema({
     email: String,
     phone: String,
     password: String,
-    isApproved: {
-        type: Boolean,
-        default: false,
-    },
-
-    userType: {
+    status: {
+        type: String,
+        enum: ['approved', 'rejected'],
+        default: 'rejected'
+    }, userType: {
         type: String,
         default: "business"
     }
