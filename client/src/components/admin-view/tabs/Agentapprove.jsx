@@ -23,48 +23,32 @@ const AgentApprove = () => {
     fetchAgents();
   }, []);
 
-
   const handleApprove = async (id) => {
-    // Optimistic Update: Immediately update the UI
-    const updatedAgents = agents.map(agent =>
-      agent._id === id ? { ...agent, isApproved: true } : agent
-    );
-    setAgents(updatedAgents);
-
     try {
       await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/approve/${id}`);
       alert("Agent approved successfully!");
-
-      // Update local storage for that agent
-      localStorage.setItem("isApproved", "true");
+      const updated = agents.map(agent =>
+        agent._id === id ? { ...agent, status: 'approved' } : agent
+      );
+      setAgents(updated);
     } catch (err) {
       console.error("Error approving agent:", err);
-      alert("Failed to approve agent.");
-      // Revert the optimistic update on error (optional, depending on your needs)
-      setAgents(agents); // Reset to the original state
     }
   };
 
   const handleReject = async (id) => {
-    // Optimistic Update: Immediately update the UI
-    const updatedAgents = agents.map(agent =>
-      agent._id === id ? { ...agent, isApproved: false } : agent
-    );
-    setAgents(updatedAgents);
-
     try {
       await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/reject/${id}`);
       alert("Agent rejected successfully!");
-
-       // Update local storage for that agent
-       localStorage.setItem("isApproved", "false");
+      const updated = agents.map(agent =>
+        agent._id === id ? { ...agent, status: 'rejected' } : agent
+      );
+      setAgents(updated);
     } catch (err) {
       console.error("Error rejecting agent:", err);
-      alert("Failed to reject agent.");
-      // Revert the optimistic update on error
-      setAgents(agents); // Reset to the original state
     }
   };
+
 
 
   return (
@@ -95,15 +79,16 @@ const AgentApprove = () => {
                   <td className="px-4 py-3 space-x-2">
                     <button
                       onClick={() => handleApprove(agent._id)}
-                      className={`bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded ${agent.isApproved ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      disabled={agent.isApproved}
+                      className={`bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded ${agent.status === 'approved' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      disabled={agent.status === 'approved'}
                     >
-                      {agent.isApproved ? "Approved" : "Approve"}
+                      {agent.status === 'approved' ? "Approved" : "Approve"}
                     </button>
+
                     <button
                       onClick={() => handleReject(agent._id)}
-                      className={`bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded ${!agent.isApproved ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      disabled={!agent.isApproved}
+                      className={`bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded ${agent.status === 'rejected' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      disabled={agent.status === 'rejected'}
                     >
                       Reject
                     </button>
