@@ -63,7 +63,7 @@ export default function Navbar() {
   const handleLogout = () => {
     logout();
     setActiveDropdown(null);
-    navigate("/", { replace: true });  // redirect and replace history
+    navigate("/"); 
   };
 
   const handleNavigation = (path) => {
