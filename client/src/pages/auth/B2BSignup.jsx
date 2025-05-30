@@ -14,7 +14,6 @@ const B2BSignup = () => {
     email: '',
     phone: '',
     password: '',
-    isApproved: false // <---- IMPORTANT: Explicitly set to false
 
   });
 
