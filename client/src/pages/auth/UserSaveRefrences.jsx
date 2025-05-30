@@ -134,7 +134,6 @@ const UserSaveReferences = () => {
         `${import.meta.env.VITE_BACKEND_URL}/api/user-references/save`,
         formData,
         {
-          withCredentials: true,
           headers: { 'Content-Type': 'application/json' },
         }
       );

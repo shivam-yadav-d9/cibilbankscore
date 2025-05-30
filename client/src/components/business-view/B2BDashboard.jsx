@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axios from "axios";
 
-// Lucide Icons
+// Lucide Icons (Keep These)
 import {
   Banknote, CreditCard, ReceiptText, ShieldCheck, PiggyBank,
   Coins, Fingerprint, SendHorizontal, Building, Landmark,
@@ -11,34 +11,44 @@ import {
 
 const B2BDashboard = () => {
   const [agentData, setAgentData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isApproved, setIsApproved] = useState(null);
-  const location = useLocation();
-  const userId = location.state?.userId;
+  const [loading, setLoading] = useState(true); // Add a loading state
+  const [isApproved, setIsApproved] = useState(false);
 
   useEffect(() => {
-    if (!userId) {
-      console.warn("No userId found in location state");
-      setLoading(false);
-      return;
-    }
-
-    const fetchAgentStatus = async () => {
+    const fetchAgent = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/agent/${userId}`
-        );
+        const id = localStorage.getItem("agentId");
+        if (!id) {
+          console.warn("No agentId found in localStorage.");
+          setLoading(false);
+          return; // Exit the function if no ID is found.
+        }
+
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/agent/${id}`);
         setAgentData(res.data);
-        setIsApproved(res.data.status); // Should be "approved", "rejected", etc.
-      } catch (err) {
-        console.error("Error fetching agent data", err);
+        setIsApproved(res.data.isApproved); //set local state
+      } catch (error) {
+        console.error("Failed to fetch agent data", error);
+        // Handle errors appropriately, e.g., redirect to an error page
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAgentStatus();
-  }, [userId]);
+    fetchAgent();
+  }, []);
+
+  // Function to handle changes in approval status (after admin action)
+  const handleApprovalChange = () => {
+      setIsApproved(localStorage.getItem("isApproved") === "true");
+  };
+
+  useEffect(() => {
+    const approvalStatus = localStorage.getItem("isApproved");
+    setIsApproved(approvalStatus === "true");
+  }, []);
+
+
 
   return (
     <>
@@ -61,30 +71,29 @@ const B2BDashboard = () => {
       </div>
 
       <div className="max-w-screen-xl mx-auto px-4 md:px-8 my-8">
-        <h2 className="text-center font-bold text-crimson text-2xl md:text-4xl lg:text-5xl mb-6">
+        <h2 className="text-center font-bold text-crimson text-2xl md:text-4xl lg:text-5xl">
           B2B Banking Services in DBNpe Pvt. Ltd
         </h2>
 
         <div className="w-full min-h-screen px-6">
           <div className="flex items-center justify-center p-10">
-            {
-              loading ? (
-                <p className="text-blue-500 font-medium">Loading...</p>
-              ) : !userId ? (
-                <p className="text-red-500 font-semibold">User ID is missing. Please login again.</p>
-              ) : typeof isApproved === "string" && isApproved.toLowerCase() === "approved" ? (
+            {loading ? (
+              <p className="text-center">Loading...</p>
+            ) : (
+              isApproved ? (
                 <Link to="/TermsAndConditions">
-                  <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+                  <button className="text-white bg-blue-500 hover:bg-blue-700 border-2 border-blue-700 rounded-full px-8 py-4 shadow-lg">
                     Click here! to Use Services
                   </button>
                 </Link>
-              ) : typeof isApproved === "string" && isApproved.toLowerCase() === "rejected" ? (
-                <p className="text-red-600 font-semibold">Your application is being reviewed. Access will be granted once approved 😊 </p>
               ) : (
-                <p className="text-yellow-600 font-semibold">Your account is under review.</p>
+                <p className="text-center text-red-600 font-semibold">
+                  Your account is under review. You can apply for services once approved by Admin.
+                </p>
               )
-            }
+            )}
           </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-screen-xl mx-auto">
             {[
               { icon: <Banknote size={50} />, label: "Loan" },
@@ -104,10 +113,7 @@ const B2BDashboard = () => {
               { icon: <HeartPulse size={50} />, label: "E-Health" },
               { icon: <Pill size={50} />, label: "Medicine" },
             ].map((item, index) => (
-              <div
-                key={index}
-                className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300"
-              >
+              <div key={index} className="bg-sky-950 text-white p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-lg hover:scale-105 transition duration-300">
                 <div className="hover:-translate-y-2 transition-transform duration-300">
                   {item.icon}
                 </div>

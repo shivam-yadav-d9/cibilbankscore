@@ -140,7 +140,6 @@ const UserPreviousData = () => {
         `${import.meta.env.VITE_BACKEND_URL}/api/user-previous-loans/save`,
         formData,
         {
-          withCredentials: true,
           headers: { 'Content-Type': 'application/json' },
         }
       );

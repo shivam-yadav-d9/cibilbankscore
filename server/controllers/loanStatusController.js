@@ -23,17 +23,40 @@ export const getLoanStatus = async (req, res) => {
 
   try {
     console.log('Fetching loan status for:', { loan_application_id, ref_code });
+    
+    // Enhanced environment check with actual values
     console.log('Environment check:', {
       hasApiKey: !!process.env.API_KEY,
       hasApiSecret: !!process.env.API_SECRET,
       hasRefCode: !!process.env.REF_CODE,
       hasAuthUrl: !!process.env.EVOLUTO_AUTH_URL,
       hasStatusUrl: !!process.env.API_LOAN_STATUS_URL,
-      hasBasicAuth: !!process.env.EVOLUTO_AUTH_BASIC
+      hasBasicAuth: !!process.env.EVOLUTO_AUTH_BASIC,
+      // Debug: Show actual URL (be careful in production)
+      statusUrl: process.env.API_LOAN_STATUS_URL,
+      authUrl: process.env.EVOLUTO_AUTH_URL
     });
+
+    // Validate critical URLs before proceeding
+    if (!process.env.API_LOAN_STATUS_URL) {
+      console.error('API_LOAN_STATUS_URL is not set in environment variables');
+      return res.status(500).json({
+        success: false,
+        message: 'API_LOAN_STATUS_URL environment variable is not configured'
+      });
+    }
+
+    if (!process.env.EVOLUTO_AUTH_URL) {
+      console.error('EVOLUTO_AUTH_URL is not set in environment variables');
+      return res.status(500).json({
+        success: false,
+        message: 'EVOLUTO_AUTH_URL environment variable is not configured'
+      });
+    }
 
     // Step 1: Generate Token using Basic Authentication Header
     console.log('Attempting authentication with Basic Auth header...');
+    console.log('Auth URL:', process.env.EVOLUTO_AUTH_URL);
     
     const authResponse = await axios.post(process.env.EVOLUTO_AUTH_URL, {
       ref_code: process.env.REF_CODE,
@@ -62,6 +85,21 @@ export const getLoanStatus = async (req, res) => {
 
     // Step 2: Get Loan Status using GET method with query parameters
     console.log('Fetching loan status with token using GET method...');
+    console.log('Status URL:', process.env.API_LOAN_STATUS_URL);
+    console.log('Query params:', { loan_application_id, ref_code });
+    
+    // Validate URL format
+    try {
+      new URL(process.env.API_LOAN_STATUS_URL);
+      console.log('Status URL format is valid');
+    } catch (urlError) {
+      console.error('Invalid status URL format:', process.env.API_LOAN_STATUS_URL);
+      return res.status(500).json({
+        success: false,
+        message: 'Invalid API_LOAN_STATUS_URL format',
+        error: urlError.message
+      });
+    }
     
     const statusResponse = await axios.get(process.env.API_LOAN_STATUS_URL, {
       params: {
@@ -87,9 +125,11 @@ export const getLoanStatus = async (req, res) => {
   } catch (error) {
     console.error('Error fetching loan status:');
     console.error('Error message:', error.message);
+    console.error('Error code:', error.code);
     console.error('Error response:', error.response?.data);
     console.error('Error status:', error.response?.status);
-    console.error('Request config:', error.config);
+    console.error('Request config URL:', error.config?.url);
+    console.error('Request config method:', error.config?.method);
 
     // Enhanced error handling
     if (error.code === 'ECONNABORTED') {
@@ -97,6 +137,23 @@ export const getLoanStatus = async (req, res) => {
         success: false,
         message: 'Request timeout - API server took too long to respond',
         error: 'TIMEOUT'
+      });
+    }
+
+    // Handle invalid URL error specifically
+    if (error.message === 'Invalid URL' || error.code === 'ERR_INVALID_URL') {
+      console.error('Invalid URL detected. Environment variables:');
+      console.error('API_LOAN_STATUS_URL:', process.env.API_LOAN_STATUS_URL);
+      console.error('EVOLUTO_AUTH_URL:', process.env.EVOLUTO_AUTH_URL);
+      
+      return res.status(500).json({
+        success: false,
+        message: 'Invalid URL configuration',
+        error: 'INVALID_URL',
+        details: {
+          statusUrl: process.env.API_LOAN_STATUS_URL,
+          authUrl: process.env.EVOLUTO_AUTH_URL
+        }
       });
     }
 

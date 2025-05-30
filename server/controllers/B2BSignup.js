@@ -129,44 +129,31 @@ export const deleteAgent = async (req, res) => {
 
 
 // Approve agent
-// PUT /api/SignupRoutes/approve/:id
-// controllers/b2bController.js
 export const approveAgent = async (req, res) => {
-    try {
-        const agent = await B2BSignup.findByIdAndUpdate(req.params.id, {
-            status: 'approved',
-        }, { new: true });
-
-        res.json({ message: "Agent approved", agent });
-    } catch (err) {
-        res.status(500).json({ error: "Error approving agent" });
-    }
-};
-
-export const rejectAgent = async (req, res) => {
-    try {
-        const agent = await B2BSignup.findByIdAndUpdate(req.params.id, {
-            status: 'rejected',
-        }, { new: true });
-
-        res.json({ message: "Agent rejected", agent });
-    } catch (err) {
-        res.status(500).json({ error: "Error rejecting agent" });
-    }
-};
-
-
-
-// controllers/agentController.js
-
-export const getAgentById = async (req, res) => {
+  const { id } = req.params;
   try {
-    const agent = await B2BSignup.findById(req.params.id);
-    if (!agent) {
-      return res.status(404).json({ message: 'Agent not found' });
-    }
-    res.status(200).json(agent);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error });
+    const agent = await B2BSignup.findById(id);
+    if (!agent) return res.status(404).json({ message: "Agent not found" });
+
+    agent.isApproved = true;
+    await agent.save();
+    res.status(200).json({ message: "Agent approved" });
+  } catch (err) {
+    res.status(500).json({ message: "Error approving agent", error: err });
+  }
+};
+
+// Reject agent
+export const rejectAgent = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const agent = await B2BSignup.findById(id);
+    if (!agent) return res.status(404).json({ message: "Agent not found" });
+
+    agent.isApproved = false;
+    await agent.save();
+    res.status(200).json({ message: "Agent rejected" });
+  } catch (err) {
+    res.status(500).json({ message: "Error rejecting agent", error: err });
   }
 };
