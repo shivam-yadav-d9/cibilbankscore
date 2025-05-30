@@ -8,23 +8,25 @@ export const getLoanStatus = async (req, res) => {
 
   // Validate required fields
   if (!loan_application_id) {
-    return res.status(400).json({ 
+    return res.status(200).json({ 
       success: false, 
-      message: 'Loan Application ID is required' 
+      message: 'Loan Application ID is required',
+      error_type: 'MISSING_LOAN_ID'
     });
   }
 
   if (!ref_code) {
-    return res.status(400).json({ 
+    return res.status(200).json({ 
       success: false, 
-      message: 'Reference code is required' 
+      message: 'Reference code is required',
+      error_type: 'MISSING_REF_CODE'
     });
   }
 
   try {
     console.log('Fetching loan status for:', { loan_application_id, ref_code });
     
-    // Enhanced environment check with actual values
+    // Enhanced environment check
     console.log('Environment check:', {
       hasApiKey: !!process.env.API_KEY,
       hasApiSecret: !!process.env.API_SECRET,
@@ -32,7 +34,6 @@ export const getLoanStatus = async (req, res) => {
       hasAuthUrl: !!process.env.EVOLUTO_AUTH_URL,
       hasStatusUrl: !!process.env.API_LOAN_STATUS_URL,
       hasBasicAuth: !!process.env.EVOLUTO_AUTH_BASIC,
-      // Debug: Show actual URL (be careful in production)
       statusUrl: process.env.API_LOAN_STATUS_URL,
       authUrl: process.env.EVOLUTO_AUTH_URL
     });
@@ -40,17 +41,19 @@ export const getLoanStatus = async (req, res) => {
     // Validate critical URLs before proceeding
     if (!process.env.API_LOAN_STATUS_URL) {
       console.error('API_LOAN_STATUS_URL is not set in environment variables');
-      return res.status(500).json({
+      return res.status(200).json({
         success: false,
-        message: 'API_LOAN_STATUS_URL environment variable is not configured'
+        message: 'API_LOAN_STATUS_URL environment variable is not configured',
+        error_type: 'MISSING_ENV_VAR'
       });
     }
 
     if (!process.env.EVOLUTO_AUTH_URL) {
       console.error('EVOLUTO_AUTH_URL is not set in environment variables');
-      return res.status(500).json({
+      return res.status(200).json({
         success: false,
-        message: 'EVOLUTO_AUTH_URL environment variable is not configured'
+        message: 'EVOLUTO_AUTH_URL environment variable is not configured',
+        error_type: 'MISSING_ENV_VAR'
       });
     }
 
@@ -74,19 +77,19 @@ export const getLoanStatus = async (req, res) => {
     const token = authResponse.data?.data?.token;
     if (!token) {
       console.error('No token in auth response:', authResponse.data);
-      return res.status(500).json({ 
+      return res.status(200).json({ 
         success: false, 
         message: 'Failed to get authentication token',
+        error_type: 'AUTH_TOKEN_MISSING',
         debug: authResponse.data
       });
     }
 
     console.log('Token received successfully');
 
-    // Step 2: Get Loan Status using GET method with query parameters
-    console.log('Fetching loan status with token using GET method...');
+    // Step 2: Get Loan Status using GET method with body data (as per working example)
+    console.log('Fetching loan status with token using GET method with body...');
     console.log('Status URL:', process.env.API_LOAN_STATUS_URL);
-    console.log('Query params:', { loan_application_id, ref_code });
     
     // Validate URL format
     try {
@@ -94,23 +97,33 @@ export const getLoanStatus = async (req, res) => {
       console.log('Status URL format is valid');
     } catch (urlError) {
       console.error('Invalid status URL format:', process.env.API_LOAN_STATUS_URL);
-      return res.status(500).json({
+      return res.status(200).json({
         success: false,
         message: 'Invalid API_LOAN_STATUS_URL format',
+        error_type: 'INVALID_URL_FORMAT',
         error: urlError.message
       });
     }
+
+    // Prepare request data
+    const requestData = {
+      loan_application_id: loan_application_id,
+      ref_code: ref_code,
+    };
+
+    console.log('Request data:', requestData);
     
-    const statusResponse = await axios.get(process.env.API_LOAN_STATUS_URL, {
-      params: {
-        loan_application_id: loan_application_id,
-        ref_code: ref_code,
-      },
+    // Use GET method with data in body and token header (as per working example)
+    const statusResponse = await axios({
+      method: 'get',
+      url: process.env.API_LOAN_STATUS_URL,
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'token': token, // Use 'token' header instead of 'Bearer' as per working example
         'Content-Type': 'application/json',
       },
-      timeout: 30000
+      data: requestData, // Send data in body even for GET request
+      timeout: 30000,
+      maxBodyLength: Infinity
     });
 
     console.log('Status response received:', statusResponse.status);
@@ -133,10 +146,11 @@ export const getLoanStatus = async (req, res) => {
 
     // Enhanced error handling
     if (error.code === 'ECONNABORTED') {
-      return res.status(408).json({
+      return res.status(200).json({
         success: false,
         message: 'Request timeout - API server took too long to respond',
-        error: 'TIMEOUT'
+        error: 'TIMEOUT',
+        error_type: 'REQUEST_TIMEOUT'
       });
     }
 
@@ -146,10 +160,11 @@ export const getLoanStatus = async (req, res) => {
       console.error('API_LOAN_STATUS_URL:', process.env.API_LOAN_STATUS_URL);
       console.error('EVOLUTO_AUTH_URL:', process.env.EVOLUTO_AUTH_URL);
       
-      return res.status(500).json({
+      return res.status(200).json({
         success: false,
         message: 'Invalid URL configuration',
         error: 'INVALID_URL',
+        error_type: 'INVALID_URL_CONFIG',
         details: {
           statusUrl: process.env.API_LOAN_STATUS_URL,
           authUrl: process.env.EVOLUTO_AUTH_URL
@@ -162,11 +177,12 @@ export const getLoanStatus = async (req, res) => {
       const statusCode = error.response.status;
       const errorData = error.response.data;
       
-      return res.status(statusCode).json({
+      return res.status(200).json({
         success: false,
-        message: errorData?.message || 'API request failed',
+        message: errorData?.message || `API request failed with status ${statusCode}`,
         error: errorData,
         status: statusCode,
+        error_type: 'API_RESPONSE_ERROR',
         details: {
           url: error.config?.url,
           method: error.config?.method?.toUpperCase(),
@@ -175,16 +191,18 @@ export const getLoanStatus = async (req, res) => {
       });
     } else if (error.request) {
       // The request was made but no response was received
-      return res.status(503).json({
+      return res.status(200).json({
         success: false,
         message: 'Unable to connect to loan status API - no response received',
-        error: 'CONNECTION_ERROR'
+        error: 'CONNECTION_ERROR',
+        error_type: 'NO_RESPONSE'
       });
     } else {
       // Something happened in setting up the request
-      return res.status(500).json({
+      return res.status(200).json({
         success: false,
         message: 'Internal Server Error - request setup failed',
+        error_type: 'REQUEST_SETUP_ERROR',
         error: error.message,
       });
     }
