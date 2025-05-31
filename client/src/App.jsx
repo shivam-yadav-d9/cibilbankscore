@@ -335,7 +335,7 @@ function App() {
               <Route
                 path="/loan-documents"
                 element={
-                  <ProtectedRoute allowedTypes={["customer"]}>
+                  <ProtectedRoute allowedTypes={["customer", "business"]}>
                     <LoanDocumentsPage />
                   </ProtectedRoute>
                 }

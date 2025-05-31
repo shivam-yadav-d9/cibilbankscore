@@ -76,7 +76,7 @@ function Footer() {
           <p className="mt-1">
             📞+91 8062179504<span className="font-semibold"></span>
           </p>
-          <p className="mt-1">✉️ care@dbnpe.in</p>
+          <p className="mt-1">✉️ info@dbnpe.in</p>
           <p className="mt-1">
             addresh- 20/1, Indira Nagar Bangalore- 560038, Karnataka, India
           </p>
