@@ -11,10 +11,10 @@ const AgentApprove = () => {
     const fetchAgents = async () => {
       try {
         const response = await axios.get(apiUrl);
-        setAgents(response.data?.data?.agents || []);
+        setAgents(response.data);
       } catch (error) {
         console.error("Error fetching agents:", error);
-        setAgents([]); // fallback to empty array on error
+        // Optionally, display an error message to the user.
       } finally {
         setLoading(false);
       }
@@ -22,7 +22,6 @@ const AgentApprove = () => {
 
     fetchAgents();
   }, []);
-
 
   const handleApprove = async (id) => {
     try {

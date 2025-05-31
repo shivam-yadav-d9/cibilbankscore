@@ -15,11 +15,13 @@ const DashboardContent = () => {
           axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/users`),
           axios.get(`${import.meta.env.VITE_BACKEND_URL}/agent/agents`),
         ]);
+        
+
         console.log("Customers response data:", customersResponse.data);
         console.log("Agents response data:", agentsResponse.data);
 
         setCustomerCount(customersResponse.data.users.length);
-        setAgentCount(agentsResponse.data.data.agents.length);
+        setAgentCount(agentsResponse.data.length);
 
       } catch (err) {
         setError(err);

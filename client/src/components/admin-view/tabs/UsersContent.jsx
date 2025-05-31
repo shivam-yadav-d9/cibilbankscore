@@ -46,42 +46,24 @@ const UsersContent = () => {
             } else if (userType === 'agent-customer') {
                 apiUrl = `${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/agents`;
                 const res = await axios.get(apiUrl);
-                // Access the agents array from the response
-                if (res.data && res.data.data && Array.isArray(res.data.data.agents)) {
-                    data = res.data.data.agents;
-                    setTotalPages(1);
-                } else {
-                    console.warn("Unexpected data format for agent-customer:", res.data);
-                    data = []; // Set to empty array to avoid errors
-                    setTotalPages(1);
-                }
-
+                data = res.data;
+                // console.log(data)
+                setTotalPages(1);
             } else if (userType === 'today-customer') {
                 const [ourRes, agentRes] = await Promise.all([
                     axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/users`),
                     axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/agents`),
                 ]);
                 const today = new Date().toISOString().split('T')[0];
-
-                let ourUsers = ourRes.data.users || []; // Ensure ourRes.data.users is an array
-                let agentUsers = agentRes.data?.data?.agents || []; // Safely access agent users
-
-                const todayUsers = [...ourUsers, ...agentUsers].filter(
+                const todayUsers = [...ourRes.data.users, ...agentRes.data].filter(
                     (user) => user.createdAt && user.createdAt.startsWith(today)
                 );
                 data = todayUsers;
                 setTotalPages(1);
             }
 
-            if (Array.isArray(data)) {
-                setUsers(data);
-                setVisibleUsers(data);
-            } else {
-                // Handle the case where data is not an array
-                console.warn("Data fetched is not an array:", data);
-                setUsers([]);
-                setVisibleUsers([]);
-            }
+            setUsers(data);
+            setVisibleUsers(data);
         } catch (err) {
             console.error("Error fetching users:", err);
             setError(err.message || "An error occurred while fetching data.");
@@ -313,14 +295,14 @@ const UsersContent = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {visibleUsers && visibleUsers.length === 0 ? (
+                        {visibleUsers.length === 0 ? (
                             <tr>
                                 <td colSpan="5" className="text-center px-6 py-4 text-gray-500">
                                     No users found.
                                 </td>
                             </tr>
                         ) : (
-                            visibleUsers && Array.isArray(visibleUsers) && visibleUsers.map((user, index) => (
+                            visibleUsers.map((user, index) => (
                                 <React.Fragment key={user._id || index}>
                                     <tr className="border-b hover:bg-gray-50">
                                         <td className="px-6 py-4">{user.name || user.fullName || '—'}</td>
