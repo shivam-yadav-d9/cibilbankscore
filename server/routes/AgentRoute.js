@@ -1,5 +1,5 @@
 import express from "express";
-import { signupB2BUser, loginAgent, getAllAgents ,deleteAgent,approveAgent,rejectAgent,getAgentById} from "../controllers/B2BSignup.js";
+import { signupB2BUser, loginAgent, getAllAgents ,deleteAgent,approveAgent,rejectAgent} from "../controllers/B2BSignup.js";
 
 const router = express.Router();
 
@@ -12,7 +12,7 @@ router.delete('/agents/:id', deleteAgent); // 👈 delete route here
 
 router.put("/approve/:id", approveAgent);
 router.put("/reject/:id", rejectAgent);
-router.get('/agent/:id', getAgentById); // This must match the frontend URL
+ // This must match the frontend URL
 
 
 export default router;
