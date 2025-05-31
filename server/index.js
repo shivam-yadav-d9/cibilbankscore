@@ -4,6 +4,13 @@ import dotenv from "dotenv";
 import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// ✅ Fix for ES modules - Create __dirname equivalent
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Import routes
 import authRoutes from "./routes/authroutes.js";
@@ -27,7 +34,6 @@ import forgotPasswordAgentRoutes from "./routes/forgotPasswordAgentroute.js";
 import expertConnectRoutes from "./routes/expertConnect.js";
 import adminRoutes from './routes/adminRoutes.js';
 import walletRoutes from './routes/walletRoutes.js';
-
 import loanStatusRoutes from './routes/loanStatusRoutes.js';
 
 // Load environment variables
@@ -61,7 +67,7 @@ const corsOptions = {
     "X-Requested-With",
     "Accept",
     "Origin",
-    "token" // ✅ Add 'token' header to allow your custom request
+    "token"
   ],
 };
 
@@ -97,6 +103,114 @@ mongoose
   .then(() => console.log("MongoDB Connected successfully"))
   .catch((err) => console.error("MongoDB Connection Error:", err));
 
+// ✅ Ensure uploads directory exists (using fixed __dirname)
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('✅ Created uploads directory');
+} else {
+  console.log('✅ Uploads directory exists');
+}
+
+// Debug: List files in uploads directory
+try {
+  const files = fs.readdirSync(uploadsDir);
+  console.log('📁 Files in uploads directory:', files.length > 0 ? files.slice(0, 5) + (files.length > 5 ? ` ... and ${files.length - 5} more` : '') : 'No files found');
+} catch (error) {
+  console.error('❌ Error reading uploads directory:', error.message);
+}
+
+// ✅ Enhanced static file serving with better error handling
+app.use('/uploads', (req, res, next) => {
+  const requestedFile = req.path;
+  const fullPath = path.join(__dirname, 'uploads', requestedFile);
+  
+  console.log('🔍 Static file request:', requestedFile);
+  console.log('📍 Full path:', fullPath);
+  
+  // Check if file exists
+  if (!fs.existsSync(fullPath)) {
+    console.log('❌ File not found:', fullPath);
+    
+    // List available files for debugging
+    try {
+      const availableFiles = fs.readdirSync(path.join(__dirname, 'uploads')).slice(0, 10);
+      return res.status(404).json({
+        success: false,
+        error: 'File not found',
+        requestedPath: requestedFile,
+        message: `File '${requestedFile}' not found in uploads directory`,
+        availableFiles: availableFiles,
+        totalFiles: fs.readdirSync(path.join(__dirname, 'uploads')).length
+      });
+    } catch (err) {
+      return res.status(404).json({
+        success: false,
+        error: 'File not found and could not read directory',
+        requestedPath: requestedFile
+      });
+    }
+  }
+  
+  console.log('✅ File found, serving:', requestedFile);
+  next();
+}, express.static(path.join(__dirname, 'uploads'), {
+  // Set proper headers for different file types
+  setHeaders: (res, filePath) => {
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeTypes = {
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png',
+      '.gif': 'image/gif',
+      '.webp': 'image/webp',
+      '.bmp': 'image/bmp'
+    };
+    
+    if (mimeTypes[ext]) {
+      res.setHeader('Content-Type', mimeTypes[ext]);
+    }
+    
+    // Add cache headers
+    res.setHeader('Cache-Control', 'public, max-age=31536000');
+    
+    console.log(`📤 Serving ${path.basename(filePath)} with Content-Type: ${mimeTypes[ext] || 'default'}`);
+  },
+  // Add error handling
+  fallthrough: false
+}));
+
+// Add a test route to verify uploads work
+app.get('/test-uploads', (req, res) => {
+  try {
+    const files = fs.readdirSync(path.join(__dirname, 'uploads'));
+    const fileDetails = files.map(file => {
+      const filePath = path.join(__dirname, 'uploads', file);
+      const stats = fs.statSync(filePath);
+      return {
+        name: file,
+        size: `${(stats.size / 1024).toFixed(2)} KB`,
+        modified: stats.mtime.toISOString(),
+        url: `${req.protocol}://${req.get('host')}/uploads/${file}`
+      };
+    });
+
+    res.json({
+      success: true,
+      message: 'Uploads directory accessible',
+      uploadsPath: path.join(__dirname, 'uploads'),
+      totalFiles: files.length,
+      files: fileDetails
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Cannot access uploads directory',
+      message: error.message
+    });
+  }
+});
+
 // Routes
 app.use("/user", authRoutes);
 app.use("/api", apiRoutes);
@@ -119,18 +233,30 @@ app.use("/api/auth", forgetpassword);
 app.use("/api/agent", forgotPasswordAgentRoutes);
 app.use("/api/expert-connect", expertConnectRoutes);
 app.use('/api/admin', adminRoutes);
-
-app.use('/uploads', express.static('uploads'));
 app.use('/api/wallet', walletRoutes);
-app.use('/api/loan',loanStatusRoutes );
-
+app.use('/api/loan', loanStatusRoutes);
 
 // Root route
 app.get("/", (req, res) => {
   res.send("API is running");
 });
 
+// Global error handler for static files
+app.use((err, req, res, next) => {
+  if (req.path.startsWith('/uploads/')) {
+    console.error('❌ Static file error:', err.message);
+    return res.status(500).json({
+      success: false,
+      error: 'Error serving static file',
+      message: err.message
+    });
+  }
+  next(err);
+});
+
 // Start server
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`📁 Uploads accessible at: http://localhost:${PORT}/uploads/`);
+  console.log(`🔧 Test uploads at: http://localhost:${PORT}/test-uploads`);
 });

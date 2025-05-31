@@ -11,7 +11,7 @@ const ExpertConnect = ({ onClose }) => {
   const [submitting, setSubmitting] = useState(false);
   const [submissionStatus, setSubmissionStatus] = useState(null);
 
-  const supportPhone = "7693004909";
+  const supportPhone = "care@dbnpe.in";
   const API_ENDPOINT = `${import.meta.env.VITE_BACKEND_URL}/api/expert-connect/submit`;
 
   const handleSubmit = async (e) => {

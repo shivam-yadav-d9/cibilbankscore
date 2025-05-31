@@ -1,8 +1,9 @@
 import express from 'express';
-import { getLoanStatus } from '../controllers/loanStatusController.js';
+import { checkLoanStatus } from '../controllers/loanStatusController.js';
 
 const router = express.Router();
 
-router.post('/check-loan-status', getLoanStatus);
+// Route to check loan status
+router.post('/check-loan-status', checkLoanStatus);
 
 export default router;

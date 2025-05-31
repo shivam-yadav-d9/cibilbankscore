@@ -62,7 +62,7 @@ const Signup = () => {
 
           <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-white">
             {" "}
-            Welcome to DBNPEY! 👋
+            Welcome to DBNPE! 👋
           </h1>
         </div>
 

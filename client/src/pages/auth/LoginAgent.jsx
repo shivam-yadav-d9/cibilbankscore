@@ -71,7 +71,7 @@ const LoginAgent = ({ updateAuth }) => {
                     <span className="text-white font-bold text-lg">DB</span>
                   </div>
                   <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-200 to-purple-200">
-                    DBNPEY
+                    DBNPE
                   </h2>
                 </div>
               </div>

@@ -89,7 +89,7 @@ const Login = ({ updateAuth }) => {
             {/* Main image */}
             <img
               src="/hero.webp"
-              alt="DBNPEY platform visualization"
+              alt="DBNPE platform visualization"
               className="w-full h-full object-cover object-center transform transition-transform duration-10000 scale-110 animate-slow-zoom"
             />
           </div>
@@ -102,7 +102,7 @@ const Login = ({ updateAuth }) => {
                   <span className="text-white font-bold text-lg">D</span>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-white tracking-tight">DBNPEY</h2>
+                  <h2 className="text-2xl font-bold text-white tracking-tight">DBNPE</h2>
                   <p className="text-indigo-200 text-sm">Secure. Powerful. Intuitive.</p>
                 </div>
               </div>
@@ -120,7 +120,7 @@ const Login = ({ updateAuth }) => {
           {/* Header with animation */}
           <div className="text-center md:text-left mb-8 relative">
             <h1 className="text-3xl font-bold text-white tracking-tight">Welcome Back</h1>
-            <p className="mt-2 text-indigo-200">Sign in to your DBNPEY account to continue</p>
+            <p className="mt-2 text-indigo-200">Sign in to your DBNPE account to continue</p>
             <div className="absolute -top-1 left-0 h-1 w-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full"></div>
           </div>
 
