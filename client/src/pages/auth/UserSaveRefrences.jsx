@@ -14,7 +14,7 @@ const UserSaveReferences = () => {
 
   const [formData, setFormData] = useState({
     application_id: "",
-    ref_code: "OUI2025107118",
+    ref_code: import.meta.env.VITE_REF_CODE || "OUI2025107118",
     userId: "",
     userType: "",
     reference1: {
@@ -22,25 +22,28 @@ const UserSaveReferences = () => {
       relationship: "",
       email: "",
       phone: "",
-      address: ""
+      address: "",
     },
     reference2: {
       name: "",
       relationship: "",
       email: "",
       phone: "",
-      address: ""
-    }
+      address: "",
+    },
   });
 
   useEffect(() => {
-    let applicationId = location.state?.applicationId || localStorage.getItem("applicationId") || "";
-    let userId = location.state?.userId || localStorage.getItem("userId") || "";
-    let userType = location.state?.userType || localStorage.getItem("userType") || "";
+    const applicationId = location.state?.applicationId || localStorage.getItem("applicationId") || "";
+    const userId = location.state?.userId || localStorage.getItem("userId") || "";
+    const userType = location.state?.userType || localStorage.getItem("userType") || "";
+    const token = location.state?.token || localStorage.getItem("token") || ""; // Retrieve token
 
     // Save to localStorage for persistence
+    if (applicationId) localStorage.setItem("applicationId", applicationId);
     if (userId) localStorage.setItem("userId", userId);
     if (userType) localStorage.setItem("userType", userType);
+    if (token) localStorage.setItem("token", token);
 
     const savedFormData = localStorage.getItem(`references_${applicationId}`);
     if (savedFormData) {
@@ -49,14 +52,14 @@ const UserSaveReferences = () => {
         ...parsedData,
         application_id: applicationId,
         userId,
-        userType
+        userType,
       });
     } else {
       setFormData((prev) => ({
         ...prev,
         application_id: applicationId,
         userId,
-        userType
+        userType,
       }));
     }
   }, [location]);
@@ -66,23 +69,32 @@ const UserSaveReferences = () => {
       ...formData,
       [refType]: {
         ...formData[refType],
-        [field]: e.target.value
-      }
+        [field]: e.target.value,
+      },
     };
     setFormData(updatedFormData);
 
     if (updatedFormData.application_id) {
-      localStorage.setItem(
-        `references_${updatedFormData.application_id}`,
-        JSON.stringify(updatedFormData)
-      );
+      localStorage.setItem(`references_${updatedFormData.application_id}`, JSON.stringify(updatedFormData));
     }
 
     setError("");
   };
 
   const validateForm = () => {
-    const { reference1, reference2 } = formData;
+    const { reference1, reference2, application_id, userId, userType } = formData;
+    if (!application_id) {
+      setError("Application ID is required");
+      return false;
+    }
+    if (!userId) {
+      setError("User ID is required");
+      return false;
+    }
+    if (!userType) {
+      setError("User Type is required");
+      return false;
+    }
     if (!reference1.name || !reference1.relationship || !reference1.email || !reference1.phone) {
       setError("Please fill all required fields for Reference 1");
       return false;
@@ -103,11 +115,11 @@ const UserSaveReferences = () => {
       setError("Please provide a valid email address for Reference 2");
       return false;
     }
-    if (!phoneRegex.test(reference1.phone.replace(/\D/g, ''))) {
+    if (!phoneRegex.test(reference1.phone.replace(/\D/g, ""))) {
       setError("Please provide a valid phone number for Reference 1 (at least 10 digits)");
       return false;
     }
-    if (!phoneRegex.test(reference2.phone.replace(/\D/g, ''))) {
+    if (!phoneRegex.test(reference2.phone.replace(/\D/g, ""))) {
       setError("Please provide a valid phone number for Reference 2 (at least 10 digits)");
       return false;
     }
@@ -130,11 +142,19 @@ const UserSaveReferences = () => {
     }
 
     try {
+      const token = localStorage.getItem("token"); // Retrieve token from localStorage
+      if (!token) {
+        throw new Error("Authentication token is missing");
+      }
+
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/user-references/save`,
         formData,
         {
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            "Content-Type": "application/json",
+            token, // Include token in headers
+          },
         }
       );
 
@@ -145,16 +165,18 @@ const UserSaveReferences = () => {
           state: {
             applicationId: formData.application_id,
             userId: formData.userId,
-            userType: formData.userType
-          }
+            userType: formData.userType,
+            token, // Pass token if needed
+          },
         });
       }, 1500);
-
     } catch (err) {
+      console.error("Submission error:", err);
       setError(
-        err.response?.data?.error ||
-        err.response?.data?.details ||
-        "Error submitting references. Please try again later."
+        err.response?.data?.message ||
+          err.response?.data?.details ||
+          err.message ||
+          "Error submitting references. Please try again later."
       );
       window.scrollTo(0, 0);
     } finally {
@@ -194,15 +216,12 @@ const UserSaveReferences = () => {
       <div className={cardClass}>
         <div className={innerClass}>
           {error && (
-            <div className={isDarkMode
-              ? "bg-red-900/20 backdrop-blur-sm border border-red-500/50 text-red-100 p-4 mb-6 rounded-2xl flex items-center animate-pulse"
-              : "bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-xl flex items-center animate-pulse"}>
-              <svg
-                className="h-5 w-5 mr-3"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+            <div
+              className={isDarkMode
+                ? "bg-red-900/20 backdrop-blur-sm border border-red-500/50 text-red-100 p-4 mb-6 rounded-2xl flex items-center animate-pulse"
+                : "bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-xl flex items-center animate-pulse"}
+            >
+              <svg className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -215,21 +234,13 @@ const UserSaveReferences = () => {
           )}
 
           {success && (
-            <div className={isDarkMode
-              ? "bg-emerald-900/20 backdrop-blur-sm border border-emerald-500/50 text-emerald-100 p-4 mb-6 rounded-2xl flex items-center"
-              : "bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-4 mb-6 rounded-xl flex items-center"}>
-              <svg
-                className="h-5 w-5 mr-3"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
+            <div
+              className={isDarkMode
+                ? "bg-emerald-900/20 backdrop-blur-sm border border-emerald-500/50 text-emerald-100 p-4 mb-6 rounded-2xl flex items-center"
+                : "bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-4 mb-6 rounded-xl flex items-center"}
+            >
+              <svg className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
               <p>{success}</p>
             </div>
@@ -238,14 +249,18 @@ const UserSaveReferences = () => {
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="text-center mb-12">
               <div className="flex justify-center mb-4">
-                <div className={isDarkMode
-                  ? "h-2 w-24 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full"
-                  : "h-2 w-24 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-full"}></div>
+                <div
+                  className={isDarkMode
+                    ? "h-2 w-24 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full"
+                    : "h-2 w-24 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-full"}
+                ></div>
               </div>
               <h2 className={sectionTitleClass}>
-                <span className={isDarkMode
-                  ? "bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400"
-                  : "bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600"}>
+                <span
+                  className={isDarkMode
+                    ? "bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400"
+                    : "bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600"}
+                >
                   Personal References
                 </span>
               </h2>
@@ -257,22 +272,22 @@ const UserSaveReferences = () => {
                 name="application_id"
                 type="text"
                 value={formData.application_id}
-                onChange={(e) => setFormData({...formData, application_id: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, application_id: e.target.value })}
                 placeholder=" "
                 className={inputClass}
                 required
                 readOnly
               />
-              <label className={labelClass}>
-                Application ID
-              </label>
+              <label className={labelClass}>Application ID</label>
             </div>
 
             {/* Reference 1 Section */}
             <div className="space-y-5">
-              <h3 className={isDarkMode
-                ? "text-lg font-semibold text-indigo-300 border-b border-indigo-700 pb-2"
-                : "text-lg font-semibold text-indigo-600 border-b border-gray-200 pb-2"}>
+              <h3
+                className={isDarkMode
+                  ? "text-lg font-semibold text-indigo-300 border-b border-indigo-700 pb-2"
+                  : "text-lg font-semibold text-indigo-600 border-b border-gray-200 pb-2"}
+              >
                 Reference 1
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -285,9 +300,7 @@ const UserSaveReferences = () => {
                     className={inputClass}
                     required
                   />
-                  <label className={labelClass}>
-                    Full Name
-                  </label>
+                  <label className={labelClass}>Full Name</label>
                 </div>
                 <div className="group relative">
                   <input
@@ -298,9 +311,7 @@ const UserSaveReferences = () => {
                     className={inputClass}
                     required
                   />
-                  <label className={labelClass}>
-                    Relationship
-                  </label>
+                  <label className={labelClass}>Relationship</label>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -313,9 +324,7 @@ const UserSaveReferences = () => {
                     className={inputClass}
                     required
                   />
-                  <label className={labelClass}>
-                    Email
-                  </label>
+                  <label className={labelClass}>Email</label>
                 </div>
                 <div className="group relative">
                   <input
@@ -326,9 +335,7 @@ const UserSaveReferences = () => {
                     className={inputClass}
                     required
                   />
-                  <label className={labelClass}>
-                    Phone
-                  </label>
+                  <label className={labelClass}>Phone</label>
                 </div>
               </div>
               <div className="group relative">
@@ -339,17 +346,17 @@ const UserSaveReferences = () => {
                   placeholder=" "
                   className={inputClass}
                 />
-                <label className={labelClass}>
-                  Address (Optional)
-                </label>
+                <label className={labelClass}>Address (Optional)</label>
               </div>
             </div>
 
             {/* Reference 2 Section */}
             <div className="space-y-5">
-              <h3 className={isDarkMode
-                ? "text-lg font-semibold text-indigo-300 border-b border-indigo-700 pb-2"
-                : "text-lg font-semibold text-indigo-600 border-b border-gray-200 pb-2"}>
+              <h3
+                className={isDarkMode
+                  ? "text-lg font-semibold text-indigo-300 border-b border-indigo-700 pb-2"
+                  : "text-lg font-semibold text-indigo-600 border-b border-gray-200 pb-2"}
+              >
                 Reference 2
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -362,9 +369,7 @@ const UserSaveReferences = () => {
                     className={inputClass}
                     required
                   />
-                  <label className={labelClass}>
-                    Full Name
-                  </label>
+                  <label className={labelClass}>Full Name</label>
                 </div>
                 <div className="group relative">
                   <input
@@ -375,9 +380,7 @@ const UserSaveReferences = () => {
                     className={inputClass}
                     required
                   />
-                  <label className={labelClass}>
-                    Relationship
-                  </label>
+                  <label className={labelClass}>Relationship</label>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -390,9 +393,7 @@ const UserSaveReferences = () => {
                     className={inputClass}
                     required
                   />
-                  <label className={labelClass}>
-                    Email
-                  </label>
+                  <label className={labelClass}>Email</label>
                 </div>
                 <div className="group relative">
                   <input
@@ -403,9 +404,7 @@ const UserSaveReferences = () => {
                     className={inputClass}
                     required
                   />
-                  <label className={labelClass}>
-                    Phone
-                  </label>
+                  <label className={labelClass}>Phone</label>
                 </div>
               </div>
               <div className="group relative">
@@ -416,9 +415,7 @@ const UserSaveReferences = () => {
                   placeholder=" "
                   className={inputClass}
                 />
-                <label className={labelClass}>
-                  Address (Optional)
-                </label>
+                <label className={labelClass}>Address (Optional)</label>
               </div>
             </div>
 
