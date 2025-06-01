@@ -163,17 +163,28 @@ const ExpertConnect = ({ onClose }) => {
           </div>
 
           <div className={`${supportBg} backdrop-blur-sm rounded-lg p-4 mb-6 border ${supportBorder}`}>
-            <div className="flex items-center">
-              <div className="bg-indigo-900/50 rounded-full p-2 mr-3 border border-indigo-500/30">
-                <Phone className="text-indigo-400" size={16} />
+            <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-4">
+
+              {/* Left Side: Icon + Text */}
+              <div className="flex items-center gap-3 flex-1">
+                <div className="bg-indigo-900/50 rounded-full p-2 border border-indigo-500/30">
+                  <Phone className="text-indigo-400" size={16} />
+                </div>
+                <div>
+                  <p className={`text-sm font-medium ${supportText}`}>Prefer real-time assistance?</p>
+                  <p className={`text-sm  ${supportSubText}`}>Connect with support: {supportPhone}</p>
+                </div>
               </div>
-              <div>
-                <p className={`text-sm font-medium ${supportText}`}>Prefer real-time assistance?</p>
-                <p className={`text-sm ${supportSubText}`}>Connect with support: {supportPhone}</p>
+              {/* Right Side: Small Image */}
+              <div className="w-[120px] h-[160px] flex-shrink-0">
+                <img
+                  src="expert.jpg"
+                  alt="Expert Connect"
+                  className="w-full h-full object-cover rounded-md"
+                />
               </div>
             </div>
           </div>
-
           <div className="flex justify-end">
             <button
               type="submit"
