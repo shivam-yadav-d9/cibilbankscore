@@ -35,6 +35,8 @@ import expertConnectRoutes from "./routes/expertConnect.js";
 import adminRoutes from './routes/adminRoutes.js';
 import walletRoutes from './routes/walletRoutes.js';
 import loanStatusRoutes from './routes/loanStatusRoutes.js';
+import documentRoutes from "./routes/documentRoutes.js"
+import applicationRoutes from './routes/applicationRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -235,6 +237,8 @@ app.use("/api/expert-connect", expertConnectRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/loan', loanStatusRoutes);
+app.use('/api', documentRoutes);
+app.use('/api/applications', applicationRoutes); 
 
 // Root route
 app.get("/", (req, res) => {
