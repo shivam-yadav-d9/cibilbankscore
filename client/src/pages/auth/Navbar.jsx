@@ -76,15 +76,25 @@ export default function Navbar() {
     setActiveDropdown(activeDropdown === dropdown ? null : dropdown);
   };
 
-  // Get user's initials for avatar
-  const getInitials = (name) => {
-    if (!name) return "";
-    const nameParts = name.split(" ");
-    if (nameParts.length > 1) {
-      return (nameParts[0][0] + nameParts[1][0]).toUpperCase();
-    }
-    return nameParts[0][0].toUpperCase();
-  };
+  // Fixed getInitials function
+const getInitials = (name) => {
+  if (!name) return "";
+  
+  const nameParts = name.trim().split(" ").filter(part => part.length > 0);
+  
+  if (nameParts.length === 0) return "";
+  
+  if (nameParts.length === 1) {
+    // Single name: take first two characters if available, otherwise just first character
+    const singleName = nameParts[0];
+    return singleName.length >= 2 
+      ? singleName.substring(0, 2).toUpperCase()
+      : singleName[0].toUpperCase();
+  }
+  
+  // Multiple names: take first character of first and last name
+  return (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
+};
 
   const isActive = (path) => {
     return location.pathname === path;
@@ -303,13 +313,13 @@ export default function Navbar() {
                           Redeem Voucher
                         </Link>
                         <Link
-                          to="/payment-history"
+                          to="/MyApplication"
                           className="px-4 py-2 text-sm text-white hover:bg-blue-700/50 transition-colors duration-200 flex items-center"
                         >
                           <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                           </svg>
-                          Payment History
+                          My Application
                         </Link>
 
                         <div className="border-t border-blue-700/50 mt-1 pt-1">
@@ -519,14 +529,14 @@ export default function Navbar() {
                         Redeem Voucher
                       </Link>
                       <Link
-                        to="/payment-history"
+                        to="/MyApplication"
                         className="flex items-center py-2 text-blue-100 hover:text-white transition-colors duration-200"
                         onClick={() => setMenuOpen(false)}
                       >
                         <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        Payment History
+                        MyApplication
                       </Link>
                     </div>
 

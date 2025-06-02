@@ -655,7 +655,7 @@ const LoanProcessor = () => {
                         value={formData.cibil_score}
                         onChange={handleChange}
                         className={inputClass}
-                      // readOnly // ✅ Prevent manual input
+                        readOnly // ✅ Prevent manual input
                       />
                       <label className={labelClass}>CIBIL Score</label>
 
