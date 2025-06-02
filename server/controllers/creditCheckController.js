@@ -69,3 +69,31 @@ export const checkCreditScore = async (req, res) => {
     });
   }
 };
+// controllers/creditScoreController.js
+export const getCibilScoreByPhone = async (req, res) => {
+  const { number } = req.query;
+  console.log("🔍 Phone number received for CIBIL check:", number);
+
+  try {
+    const existingScore = await CreditScore.findOne({ phone: number }).sort({ createdAt: -1 });
+
+    if (!existingScore) {
+      console.log("❌ No score found for:", number);
+      return res.status(404).json({ success: false, message: "No CIBIL score found for this number" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "CIBIL score fetched from database",
+      data: existingScore,
+    });
+  } catch (error) {
+    console.error("Fetch DB Score Error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching score",
+      error: error.message,
+    });
+  }
+};
+
