@@ -29,7 +29,6 @@ const LoanProcessor = () => {
     loan_amount: "",
     loan_type_id: loanTypeId,
   });
-
   const [apiToken, setApiToken] = useState("");
   const [eligibilityResult, setEligibilityResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -74,6 +73,36 @@ const LoanProcessor = () => {
       }
     }
   }, [navigate]);
+
+const fetchCibilScore = async () => {
+  try {
+    const res = await axios.get(
+      `${import.meta.env.VITE_BACKEND_URL}/api/credit/get-from-db?number=${formData.phone}`
+    );
+
+    console.log("CIBIL API Response:", res.data); // ✅ Good
+
+    if (res.data.success && res.data.data) {
+      const score = res.data.data.credit_score || "";
+
+      alert(`CIBIL Score fetched: ${score}`);
+
+      setFormData((prev) => ({
+        ...prev,
+        cibil_score: score,
+      }));
+
+      setError("");
+    } else {
+      navigate("/credit-check");
+    }
+  } catch (err) {
+    console.error("Fetch CIBIL Error:", err.response?.data || err.message); // ✅ Use `err`, not `res`
+    alert("Error fetching CIBIL score");
+    navigate("/credit-check");
+  }
+};
+
 
   // Fetch API token with JWT if required
   const fetchToken = async () => {
@@ -601,12 +630,22 @@ const LoanProcessor = () => {
                         value={formData.cibil_score}
                         onChange={handleChange}
                         className={inputClass}
+                      // readOnly // Prevent manual edit
                       />
-                      <label className={labelClass}>
-                        CIBIL Score
-                      </label>
+                      <label className={labelClass}>CIBIL Score</label>
+                    </div>
+
+                    <div className="flex items-end">
+                      <button
+                        type="button"
+                        onClick={fetchCibilScore} // ✅ Hook up the function here
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                      >
+                        Get CIBIL Score
+                      </button>
                     </div>
                   </div>
+
                 </div>
               </div>
 
