@@ -82,6 +82,19 @@ export const getCibilScoreByPhone = async (req, res) => {
       return res.status(404).json({ success: false, message: "No CIBIL score found for this number" });
     }
 
+    // ✅ Check if the score is older than 30 days
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
+
+    if (existingScore.createdAt < oneMonthAgo) {
+      console.log("⚠️ CIBIL score expired for:", number);
+      return res.status(403).json({
+        success: false,
+        message: "CIBIL score expired. Please re-check to generate a new score.",
+      });
+    }
+
+    // ✅ Score is valid
     res.status(200).json({
       success: true,
       message: "CIBIL score fetched from database",
@@ -96,4 +109,5 @@ export const getCibilScoreByPhone = async (req, res) => {
     });
   }
 };
+
 

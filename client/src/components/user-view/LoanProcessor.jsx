@@ -74,34 +74,58 @@ const LoanProcessor = () => {
     }
   }, [navigate]);
 
-const fetchCibilScore = async () => {
-  try {
-    const res = await axios.get(
-      `${import.meta.env.VITE_BACKEND_URL}/api/credit/get-from-db?number=${formData.phone}`
-    );
+  const fetchCibilScore = async () => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/credit/get-from-db?number=${formData.phone}`
+      );
 
-    console.log("CIBIL API Response:", res.data); // ✅ Good
+      console.log("CIBIL API Response:", res.data);
 
-    if (res.data.success && res.data.data) {
-      const score = res.data.data.credit_score || "";
+      if (res.data.success && res.data.data) {
+        const score = res.data.data.credit_score || "";
 
-      alert(`CIBIL Score fetched: ${score}`);
+        alert(`CIBIL Score fetched: ${score}`);
 
-      setFormData((prev) => ({
-        ...prev,
-        cibil_score: score,
-      }));
+        setFormData((prev) => ({
+          ...prev,
+          cibil_score: score,
+        }));
 
-      setError("");
-    } else {
+        setError("");
+      } else {
+        // Unexpected case: success = false but not a thrown error
+        alert("Unable to fetch CIBIL score. Please try again.");
+      }
+    } catch (err) {
+      const status = err.response?.status;
+      const message = err.response?.data?.message || "Error fetching CIBIL score";
+
+      console.error("Fetch CIBIL Error:", message);
+
+      // ✅ Expired score
+      if (status === 403) {
+        alert("Your CIBIL score has expired. Please re-check.");
+        setFormData((prev) => ({
+          ...prev,
+          cibil_score: "", // Clear old score
+        }));
+      }
+
+      // ✅ Not found
+      else if (status === 404) {
+        alert("No CIBIL score found. Please generate it.");
+      }
+
+      // ✅ Other server or network errors
+      else {
+        alert("Error fetching CIBIL score");
+      }
+
       navigate("/credit-check");
     }
-  } catch (err) {
-    console.error("Fetch CIBIL Error:", err.response?.data || err.message); // ✅ Use `err`, not `res`
-    alert("Error fetching CIBIL score");
-    navigate("/credit-check");
-  }
-};
+  };
+
 
 
   // Fetch API token with JWT if required
@@ -623,6 +647,7 @@ const fetchCibilScore = async () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* CIBIL Score Input */}
                     <div className="group relative">
                       <input
                         name="cibil_score"
@@ -630,22 +655,29 @@ const fetchCibilScore = async () => {
                         value={formData.cibil_score}
                         onChange={handleChange}
                         className={inputClass}
-                      // readOnly // Prevent manual edit
+                      // readOnly // ✅ Prevent manual input
                       />
                       <label className={labelClass}>CIBIL Score</label>
+
+                      {/* ✅ Show message if score is missing or expired */}
+                      {formData.cibil_score === "" && (
+                        <p className="text-red-600 text-sm mt-1">
+                          CIBIL score not available or expired. Please click "Get CIBIL Score".
+                        </p>
+                      )}
                     </div>
 
+                    {/* Fetch Button */}
                     <div className="flex items-end">
                       <button
                         type="button"
-                        onClick={fetchCibilScore} // ✅ Hook up the function here
+                        onClick={fetchCibilScore}
                         className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
                       >
                         Get CIBIL Score
                       </button>
                     </div>
                   </div>
-
                 </div>
               </div>
 
