@@ -14,7 +14,7 @@ const B2BDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isApproved, setIsApproved] = useState(null);
   const location = useLocation();
-  const userId = location.state?.userId;
+  const userId = location.state?.userId || localStorage.getItem("userId");
 
   useEffect(() => {
     if (!userId) {
@@ -22,7 +22,7 @@ const B2BDashboard = () => {
       setLoading(false);
       return;
     }
-
+    
     const fetchAgentStatus = async () => {
       try {
         const res = await axios.get(
@@ -36,7 +36,6 @@ const B2BDashboard = () => {
         setLoading(false);
       }
     };
-
     fetchAgentStatus();
   }, [userId]);
 

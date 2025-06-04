@@ -33,6 +33,8 @@ const LoginAgent = ({ updateAuth }) => {
         };
 
         console.log(userData)
+        localStorage.setItem("userId", response.data.user._id);
+
         // Use AuthContext login
         login(userData);
 
@@ -243,8 +245,8 @@ const LoginAgent = ({ updateAuth }) => {
                     type="submit"
                     disabled={loading}
                     className={`w-full flex justify-center items-center py-3.5 px-6 rounded-xl text-white font-medium transition duration-200 ${loading
-                        ? "bg-indigo-700/50 cursor-not-allowed"
-                        : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/30"
+                      ? "bg-indigo-700/50 cursor-not-allowed"
+                      : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/30"
                       }`}
                   >
                     {loading ? (
