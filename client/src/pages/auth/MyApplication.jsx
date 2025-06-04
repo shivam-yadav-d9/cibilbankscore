@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -14,6 +14,9 @@ const MyApplication = () => {
   const [loading, setLoading] = useState(true);
   const [loanStatus, setLoanStatus] = useState({});
   const [loanStatusLoading, setLoanStatusLoading] = useState({});
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   // Theme-based classes
   const containerClass = isDarkMode
@@ -28,6 +31,26 @@ const MyApplication = () => {
     ? 'px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg text-white font-medium shadow-lg hover:shadow-indigo-500/50 transition-all duration-300 hover:scale-105'
     : 'px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg text-white font-medium shadow-lg hover:shadow-blue-500/50 transition-all duration-300 hover:scale-105';
 
+  // Filtered and paginated applications
+  const filteredApplications = useMemo(() => {
+    return applications.filter(app => 
+      app.applicationId.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [applications, searchTerm]);
+
+  const totalPages = Math.ceil(filteredApplications.length / itemsPerPage);
+  const paginatedApplications = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredApplications.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredApplications, currentPage]);
+
+  // Handle page change
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   // Function to authenticate with EvolutoSolution API
   const authenticateEvoluto = async () => {
     try {
@@ -41,13 +64,10 @@ const MyApplication = () => {
           outletid: import.meta.env.VITE_REF_CODE,
           Authorization: `Basic ${import.meta.env.VITE_AUTH_BASIC}`,
         },
-        timeout: 30000, // 30-second timeout
+        timeout: 30000,
       };
 
       const response = await axios.request(config);
-      console.log('Authentication response:', response.data);
-
-      // Check for token in response.data or nested structures
       const token = response.data?.token || response.data?.data?.token || response.data?.access_token;
       if (token) {
         return token;
@@ -72,14 +92,10 @@ const MyApplication = () => {
     setError(null);
 
     try {
-      // Step 1: Authenticate to get token
       const authToken = await authenticateEvoluto();
-
-      // Step 2: Fetch loan status - Try different approaches
       let statusResponse;
       
       try {
-        // Option 1: Try with query parameters (most common for GET requests)
         const statusConfig = {
           method: 'get',
           url: `${import.meta.env.VITE_API_BASE_URL}/loan/status`,
@@ -95,11 +111,9 @@ const MyApplication = () => {
         };
 
         statusResponse = await axios.request(statusConfig);
-        
       } catch (getError) {
         console.log('GET with params failed, trying POST:', getError.message);
         
-        // Option 2: Try POST request with body data
         const postConfig = {
           method: 'post',
           url: `${import.meta.env.VITE_API_BASE_URL}/loan/status`,
@@ -117,14 +131,11 @@ const MyApplication = () => {
         statusResponse = await axios.request(postConfig);
       }
 
-      console.log('Loan status response:', statusResponse.data);
-
       if (statusResponse.data) {
         setLoanStatus(prev => ({ ...prev, [applicationId]: statusResponse.data }));
       } else {
         setError('No loan status data received.');
       }
-      
     } catch (err) {
       console.error('Failed to fetch loan status:', err);
       let errorMessage = 'Error fetching loan status.';
@@ -132,17 +143,7 @@ const MyApplication = () => {
       if (err.code === 'ECONNABORTED') {
         errorMessage = 'Request timeout. Please try again.';
       } else if (err.response) {
-        console.error('Error response:', err.response.data);
         errorMessage = err.response.data?.message || `Server error: ${err.response.status}`;
-        
-        // Log more details for debugging
-        if (err.response.status === 500) {
-          console.error('Server error details:', {
-            status: err.response.status,
-            data: err.response.data,
-            headers: err.response.headers
-          });
-        }
       } else if (err.request) {
         errorMessage = 'Unable to connect to server. Please check your connection.';
       }
@@ -165,7 +166,6 @@ const MyApplication = () => {
       setLoading(true);
       setError(null);
 
-      // Fetch loan details for the current user
       const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/loan/details`, {
         params: { 
           userId: user._id, 
@@ -173,10 +173,7 @@ const MyApplication = () => {
         },
       });
 
-      console.log('Loan details response:', response.data);
-
       if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-        // Transform the data to match the expected format
         const transformedApplications = response.data.map((loan, index) => ({
           applicationId: loan.application_id || `app_${index}`,
           bank_id: loan.bank_id || 'N/A',
@@ -185,7 +182,7 @@ const MyApplication = () => {
           name: loan.name || user.name || 'N/A',
           email: loan.email || user.email || 'N/A',
           mobile: loan.mobile || loan.phone || loan.mobile_number || 'N/A',
-          documents: [], // Documents would need to be fetched separately if available
+          documents: [],
           status: loan.status || 'Pending',
           created_at: loan.created_at || loan.createdAt || new Date().toISOString(),
           user_id: loan.user_id || user._id,
@@ -196,7 +193,7 @@ const MyApplication = () => {
           aadhaar: loan.aadhaar || 'N/A',
           loan_type_id: loan.loan_type_id || 'N/A',
           pincode: loan.pincode || 'N/A',
-          formData: loan // Keep original loan data for reference
+          formData: loan
         }));
 
         setApplications(transformedApplications);
@@ -213,13 +210,11 @@ const MyApplication = () => {
   };
 
   useEffect(() => {
-    // Redirect to login if not authenticated
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
 
-    // Fetch applications when component mounts or user changes
     if (user) {
       fetchUserApplications();
     }
@@ -251,7 +246,6 @@ const MyApplication = () => {
 
   return (
     <div className={containerClass}>
-      {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className={isDarkMode
           ? 'absolute -top-10 -right-10 w-60 h-60 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob'
@@ -271,7 +265,6 @@ const MyApplication = () => {
           transition={{ duration: 0.5 }}
           className="p-6 md:p-8"
         >
-          {/* Header */}
           <div className="mb-12 text-center">
             <h1 className={isDarkMode
               ? 'text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-indigo-500 to-purple-500'
@@ -283,7 +276,6 @@ const MyApplication = () => {
             </p>
           </div>
 
-          {/* User Info Banner */}
           {user && (
             <motion.div 
               initial={{ opacity: 0, y: -10 }}
@@ -310,7 +302,24 @@ const MyApplication = () => {
             </motion.div>
           )}
 
-          {/* Error Notification */}
+          {/* Search Bar */}
+          {!loading && applications.length > 0 && (
+            <div className="mb-6">
+              <input
+                type="text"
+                placeholder="Search by Application ID..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className={isDarkMode
+                  ? 'w-full px-4 py-2 rounded-lg bg-slate-800 border border-indigo-500/50 text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                  : 'w-full px-4 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500'}
+              />
+            </div>
+          )}
+
           {error && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
@@ -345,7 +354,6 @@ const MyApplication = () => {
             </motion.div>
           )}
 
-          {/* Loading State */}
           {loading && (
             <div className={isDarkMode
               ? 'bg-indigo-900/20 backdrop-blur-sm border border-indigo-500/50 text-indigo-100 p-4 mb-6 rounded-2xl flex items-center'
@@ -356,7 +364,6 @@ const MyApplication = () => {
             </div>
           )}
 
-          {/* No Applications State */}
           {!loading && applications.length === 0 && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -382,177 +389,208 @@ const MyApplication = () => {
             </motion.div>
           )}
 
-          {/* Application List */}
           {!loading && applications.length > 0 && (
-            <div className="space-y-6">
-              {applications.map((app, index) => (
-                <motion.div
-                  key={app.applicationId || index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className={isDarkMode
-                    ? 'bg-slate-800/50 backdrop-blur-sm border border-indigo-500/30 rounded-2xl p-6 shadow-xl'
-                    : 'bg-white border border-gray-200 rounded-xl p-6 shadow-lg'}
-                >
-                  <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-6">
-                    <div className="flex-1">
-                      <h3 className={isDarkMode ? 'text-xl font-bold text-white mb-4' : 'text-xl font-bold text-gray-900 mb-4'}>
-                        Application ID: {app.applicationId}
-                      </h3>
-                      
-                      {/* Display applicant information */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className="space-y-2">
-                          <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                            <span className="font-medium">Applicant:</span> {app.name}
-                          </p>
-                          <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                            <span className="font-medium">Email:</span> {app.email}
-                          </p>
-                          {app.mobile !== 'N/A' && (
+            <>
+              <div className="space-y-6">
+                {paginatedApplications.map((app, index) => (
+                  <motion.div
+                    key={app.applicationId || index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className={isDarkMode
+                      ? 'bg-slate-800/50 backdrop-blur-sm border border-indigo-500/30 rounded-2xl p-6 shadow-xl'
+                      : 'bg-white border border-gray-200 rounded-xl p-6 shadow-lg'}
+                  >
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-6">
+                      <div className="flex-1">
+                        <h3 className={isDarkMode ? 'text-xl font-bold text-white mb-4' : 'text-xl font-bold text-gray-900 mb-4'}>
+                          Application ID: {app.applicationId}
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div className="space-y-2">
                             <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                              <span className="font-medium">Mobile:</span> {app.mobile}
+                              <span className="font-medium">Applicant:</span> {app.name}
                             </p>
-                          )}
-                          {app.city !== 'N/A' && (
                             <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                              <span className="font-medium">City:</span> {app.city}
+                              <span className="font-medium">Email:</span> {app.email}
                             </p>
-                          )}
-                          {app.pan !== 'N/A' && (
+                            {app.mobile !== 'N/A' && (
+                              <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                                <span className="font-medium">Mobile:</span> {app.mobile}
+                              </p>
+                            )}
+                            {app.city !== 'N/A' && (
+                              <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                                <span className="font-medium">City:</span> {app.city}
+                              </p>
+                            )}
+                            {app.pan !== 'N/A' && (
+                              <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                                <span className="font-medium">PAN:</span> {app.pan}
+                              </p>
+                            )}
+                          </div>
+                          <div className="space-y-2">
                             <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                              <span className="font-medium">PAN:</span> {app.pan}
+                              <span className="font-medium">Bank:</span> {app.bank_name}
                             </p>
-                          )}
+                            <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                              <span className="font-medium">Bank ID:</span> {app.bank_id}
+                            </p>
+                            <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                              <span className="font-medium">Loan Amount:</span> {formatLoanAmount(app.loan_amount)}
+                            </p>
+                            <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                              <span className="font-medium">Applied On:</span> {formatDate(app.created_at)}
+                            </p>
+                            <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                              <span className="font-medium">Ref Code:</span> {app.ref_code}
+                            </p>
+                            {app.monthly_income !== 'N/A' && (
+                              <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                                <span className="font-medium">Monthly Income:</span> {formatLoanAmount(app.monthly_income)}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        <div className="space-y-2">
+                        <div className="mt-4">
                           <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                            <span className="font-medium">Bank:</span> {app.bank_name}
+                            <span className="font-medium">Status:</span> 
+                            <span className={`ml-2 px-3 py-1 rounded-full text-sm font-medium ${
+                              app.status === 'Approved' 
+                                ? isDarkMode ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'
+                                : app.status === 'Rejected'
+                                ? isDarkMode ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-600' 
+                                : isDarkMode ? 'bg-yellow-500/20 text-yellow-400' : 'bg-yellow-100 text-yellow-600'
+                            }`}>
+                              {app.status}
+                            </span>
                           </p>
-                          <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                            <span className="font-medium">Bank ID:</span> {app.bank_id}
-                          </p>
-                          <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                            <span className="font-medium">Loan Amount:</span> {formatLoanAmount(app.loan_amount)}
-                          </p>
-                          <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                            <span className="font-medium">Applied On:</span> {formatDate(app.created_at)}
-                          </p>
-                          <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                            <span className="font-medium">Ref Code:</span> {app.ref_code}
-                          </p>
-                          {app.monthly_income !== 'N/A' && (
-                            <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                              <span className="font-medium">Monthly Income:</span> {formatLoanAmount(app.monthly_income)}
-                            </p>
-                          )}
                         </div>
                       </div>
+                      <div className="mt-4 md:mt-0 md:ml-6 flex flex-col gap-2">
+                        {app.applicationId !== 'N/A' && app.ref_code !== 'N/A' && (
+                          <button
+                            onClick={() => handleCheckLoanStatus(app.applicationId, app.ref_code)}
+                            className={`${buttonClass} ${loanStatusLoading[app.applicationId] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={loanStatusLoading[app.applicationId]}
+                          >
+                            {loanStatusLoading[app.applicationId] ? 'Checking...' : 'Check Status'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
 
-                      {/* Status */}
-                      <div className="mt-4">
-                        <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                          <span className="font-medium">Status:</span> 
-                          <span className={`ml-2 px-3 py-1 rounded-full text-sm font-medium ${
-                            app.status === 'Approved' 
-                              ? isDarkMode ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'
-                              : app.status === 'Rejected'
-                              ? isDarkMode ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-600' 
-                              : isDarkMode ? 'bg-yellow-500/20 text-yellow-400' : 'bg-yellow-100 text-yellow-600'
-                          }`}>
-                            {app.status}
-                          </span>
-                        </p>
+                    {loanStatus[app.applicationId] && (
+                      <div className={isDarkMode ? 'border-t border-slate-700 pt-4 mb-4' : 'border-t border-gray-200 pt-4 mb-4'}>
+                        <h4 className={isDarkMode ? 'text-lg font-semibold text-green-400 mb-3' : 'text-lg font-semibold text-green-600 mb-3'}>
+                          Current Loan Status
+                        </h4>
+                        <div className={isDarkMode ? 'bg-slate-900/50 rounded-lg p-4' : 'bg-gray-50 rounded-lg p-4'}>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                            <div className="space-y-2">
+                              <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                                <span className="font-medium">Application ID:</span> {loanStatus[app.applicationId].application_id || loanStatus[app.applicationId].data?.application_id || '—'}
+                              </p>
+                              <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                                <span className="font-medium">Status Code:</span> {loanStatus[app.applicationId].status_code || loanStatus[app.applicationId].data?.status_code || '—'}
+                              </p>
+                              <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                                <span className="font-medium">Loan Amount:</span> {loanStatus[app.applicationId].loan_amount || loanStatus[app.applicationId].data?.loan_amount || '—'}
+                              </p>
+                            </div>
+                            <div className="space-y-2">
+                              <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                                <span className="font-medium">Status:</span> 
+                                <span className={`ml-2 px-2 py-1 rounded text-xs font-medium ${
+                                  (loanStatus[app.applicationId].status || loanStatus[app.applicationId].data?.status)?.toLowerCase() === 'approved'
+                                    ? isDarkMode ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'
+                                    : (loanStatus[app.applicationId].status || loanStatus[app.applicationId].data?.status)?.toLowerCase() === 'rejected'
+                                    ? isDarkMode ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-600'
+                                    : isDarkMode ? 'bg-yellow-500/20 text-yellow-400' : 'bg-yellow-100 text-yellow-600'
+                                }`}>
+                                  {loanStatus[app.applicationId].status || loanStatus[app.applicationId].data?.status || '—'}
+                                </span>
+                              </p>
+                              <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                                <span className="font-medium">Remarks:</span> {loanStatus[app.applicationId].remarks || loanStatus[app.applicationId].data?.remarks || '—'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    
-                    {/* Action Buttons */}
-                    <div className="mt-4 md:mt-0 md:ml-6 flex flex-col gap-2">
-                      {app.applicationId !== 'N/A' && app.ref_code !== 'N/A' && (
-                        <button
-                          onClick={() => handleCheckLoanStatus(app.applicationId, app.ref_code)}
-                          className={`${buttonClass} ${loanStatusLoading[app.applicationId] ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          disabled={loanStatusLoading[app.applicationId]}
-                        >
-                          {loanStatusLoading[app.applicationId] ? 'Checking...' : 'Check Status'}
-                        </button>
-                      )}
-                    </div>
+                    )}
+
+                    {(app.aadhaar !== 'N/A' || app.loan_type_id !== 'N/A' || app.pincode !== 'N/A') && (
+                      <div className={isDarkMode ? 'border-t border-slate-700 pt-4' : 'border-t border-gray-200 pt-4'}>
+                        <h4 className={isDarkMode ? 'text-lg font-semibold text-indigo-300 mb-3' : 'text-lg font-semibold text-indigo-600 mb-3'}>
+                          Additional Details
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          {app.aadhaar !== 'N/A' && (
+                            <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                              <span className="font-medium">Aadhaar:</span> {app.aadhaar}
+                            </p>
+                          )}
+                          {app.loan_type_id !== 'N/A' && (
+                            <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                              <span className="font-medium">Loan Type ID:</span> {app.loan_type_id}
+                            </p>
+                          )}
+                          {app.pincode !== 'N/A' && (
+                            <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                              <span className="font-medium">Pincode:</span> {app.pincode}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Pagination Controls */}
+              {filteredApplications.length > itemsPerPage && (
+                <div className="mt-6 flex items-center justify-between">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className={`px-4 py-2 rounded-lg font-medium ${
+                      isDarkMode
+                        ? currentPage === 1
+                          ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                          : 'bg-indigo-600 text-white hover:bg-indigo-500'
+                        : currentPage === 1
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-blue-500 text-white hover:bg-blue-600'
+                    }`}
+                  >
+                    Previous
+                  </button>
+                  <div className="text-sm">
+                    Page {currentPage} of {totalPages}
                   </div>
-
-                  {/* Loan Status Display */}
-                  {loanStatus[app.applicationId] && (
-                    <div className={isDarkMode ? 'border-t border-slate-700 pt-4 mb-4' : 'border-t border-gray-200 pt-4 mb-4'}>
-                      <h4 className={isDarkMode ? 'text-lg font-semibold text-green-400 mb-3' : 'text-lg font-semibold text-green-600 mb-3'}>
-                        Current Loan Status
-                      </h4>
-                      <div className={isDarkMode ? 'bg-slate-900/50 rounded-lg p-4' : 'bg-gray-50 rounded-lg p-4'}>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                          <div className="space-y-2">
-                            <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                              <span className="font-medium">Application ID:</span> {loanStatus[app.applicationId].application_id || loanStatus[app.applicationId].data?.application_id || '—'}
-                            </p>
-                            <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                              <span className="font-medium">Status Code:</span> {loanStatus[app.applicationId].status_code || loanStatus[app.applicationId].data?.status_code || '—'}
-                            </p>
-                            <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                              <span className="font-medium">Loan Amount:</span> {loanStatus[app.applicationId].loan_amount || loanStatus[app.applicationId].data?.loan_amount || '—'}
-                            </p>
-                          </div>
-                          <div className="space-y-2">
-                            <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                              <span className="font-medium">Status:</span> 
-                              <span className={`ml-2 px-2 py-1 rounded text-xs font-medium ${
-                                (loanStatus[app.applicationId].status || loanStatus[app.applicationId].data?.status)?.toLowerCase() === 'approved'
-                                  ? isDarkMode ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'
-                                  : (loanStatus[app.applicationId].status || loanStatus[app.applicationId].data?.status)?.toLowerCase() === 'rejected'
-                                  ? isDarkMode ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-600'
-                                  : isDarkMode ? 'bg-yellow-500/20 text-yellow-400' : 'bg-yellow-100 text-yellow-600'
-                              }`}>
-                                {loanStatus[app.applicationId].status || loanStatus[app.applicationId].data?.status || '—'}
-                              </span>
-                            </p>
-                            <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                              <span className="font-medium">Remarks:</span> {loanStatus[app.applicationId].remarks || loanStatus[app.applicationId].data?.remarks || '—'}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Additional Details Section */}
-                  {(app.aadhaar !== 'N/A' || app.loan_type_id !== 'N/A' || app.pincode !== 'N/A') && (
-                    <div className={isDarkMode ? 'border-t border-slate-700 pt-4' : 'border-t border-gray-200 pt-4'}>
-                      <h4 className={isDarkMode ? 'text-lg font-semibold text-indigo-300 mb-3' : 'text-lg font-semibold text-indigo-600 mb-3'}>
-                        Additional Details
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        {app.aadhaar !== 'N/A' && (
-                          <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                            <span className="font-medium">Aadhaar:</span> {app.aadhaar}
-                          </p>
-                        )}
-                        {app.loan_type_id !== 'N/A' && (
-                          <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                            <span className="font-medium">Loan Type ID:</span> {app.loan_type_id}
-                          </p>
-                        )}
-                        {app.pincode !== 'N/A' && (
-                          <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                            <span className="font-medium">Pincode:</span> {app.pincode}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-              ))}
-            </div>
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className={`px-4 py-2 rounded-lg font-medium ${
+                      isDarkMode
+                        ? currentPage === totalPages
+                          ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                          : 'bg-indigo-600 text-white hover:bg-indigo-500'
+                        : currentPage === totalPages
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-blue-500 text-white hover:bg-blue-600'
+                    }`}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
           )}
 
-          {/* Return to Home */}
           <div className="flex justify-center mt-12">
             <Link
               to="/"

@@ -75,7 +75,7 @@ function StatusBadge({ doc, status }) {
   }
 
 // Define the API base URL
-const API_BASE_URL = 'http://localhost:3001/api'; // Adjust if your backend runs on a different URL/port
+const API_BASE_URL = 'https://apidbnpe.in/api'; // Adjust if your backend runs on a different URL/port
 
 function UserDocuments() {
   const location = useLocation();
