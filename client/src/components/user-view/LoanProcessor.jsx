@@ -62,15 +62,33 @@ const LoanProcessor = () => {
       const user = JSON.parse(userData);
       setUserType(user.userType || null);
 
-      // Only prefill for customers
-      if (user.userType !== "business") {
-        setFormData((prev) => ({
-          ...prev,
-          name: user.name || "",
-          email: user.email || "",
-          mobile: user.mobile || "",
-        }));
+      // Prefill form data for customers
+      let updatedFormData = {
+        ...formData,
+        name: user.name || "",
+        email: user.email || "",
+        mobile: user.mobile || "",
+        phone: user.mobile || "",
+      };
+
+      // Check for a recent credit score in localStorage
+      const cachedScores = localStorage.getItem("creditScores");
+      if (cachedScores && user.mobile) {
+        const scores = JSON.parse(cachedScores);
+        const existingScore = scores.find(score => score.phone === user.mobile);
+        if (existingScore) {
+          const oneMonthAgo = new Date();
+          oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
+          if (new Date(existingScore.createdAt) >= oneMonthAgo && existingScore.credit_score) {
+            updatedFormData = {
+              ...updatedFormData,
+              cibil_score: existingScore.credit_score.toString(),
+            };
+          }
+        }
       }
+
+      setFormData(updatedFormData);
     }
   }, [navigate]);
 
@@ -89,12 +107,11 @@ const LoanProcessor = () => {
 
         setFormData((prev) => ({
           ...prev,
-          cibil_score: score,
+          cibil_score: score.toString(),
         }));
 
         setError("");
       } else {
-        // Unexpected case: success = false but not a thrown error
         alert("Unable to fetch CIBIL score. Please try again.");
       }
     } catch (err) {
@@ -103,30 +120,21 @@ const LoanProcessor = () => {
 
       console.error("Fetch CIBIL Error:", message);
 
-      // ✅ Expired score
       if (status === 403) {
         alert("Your CIBIL score has expired. Please re-check.");
         setFormData((prev) => ({
           ...prev,
-          cibil_score: "", // Clear old score
+          cibil_score: "",
         }));
-      }
-
-      // ✅ Not found
-      else if (status === 404) {
+      } else if (status === 404) {
         alert("No CIBIL score found. Please generate it.");
-      }
-
-      // ✅ Other server or network errors
-      else {
+      } else {
         alert("Error fetching CIBIL score");
       }
 
       navigate("/credit-check");
     }
   };
-
-
 
   // Fetch API token with JWT if required
   const fetchToken = async () => {
@@ -158,7 +166,6 @@ const LoanProcessor = () => {
 
   useEffect(() => {
     fetchToken();
-    // eslint-disable-next-line
   }, [jwtToken]);
 
   const handleChange = (e) => {
@@ -177,14 +184,14 @@ const LoanProcessor = () => {
   const handleNext = (bankId = null) => {
     const dataToStore = {
       ...formData,
-      bank_id: bankId
+      bank_id: bankId,
     };
     localStorage.setItem("loanProcessorFormData", JSON.stringify(dataToStore));
     navigate("/UserBasicData", {
       state: {
         loan_type_id: loanTypeId,
-        bank_id: bankId
-      }
+        bank_id: bankId,
+      },
     });
   };
 
@@ -415,7 +422,6 @@ const LoanProcessor = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Name and Email: Prefilled and readOnly for customers, empty and editable for agents */}
                     <div className="group relative">
                       <input
                         name="name"
@@ -577,8 +583,6 @@ const LoanProcessor = () => {
                     </div>
                   </div>
 
-                  {/* Loan Type selection removed as per your request */}
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="group relative">
                       <input
@@ -655,11 +659,10 @@ const LoanProcessor = () => {
                         value={formData.cibil_score}
                         onChange={handleChange}
                         className={inputClass}
-                        readOnly // ✅ Prevent manual input
+                        readOnly
                       />
                       <label className={labelClass}>CIBIL Score</label>
 
-                      {/* ✅ Show message if score is missing or expired */}
                       {formData.cibil_score === "" && (
                         <p className="text-red-600 text-sm mt-1">
                           CIBIL score not available or expired. Please click "Get CIBIL Score".

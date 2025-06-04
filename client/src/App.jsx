@@ -58,7 +58,7 @@ import CustomerLegalAdvice from "./pages/auth/CustomerLegalAdvice.jsx";
 import ForgotPasswordAgent from "./pages/auth/ForgotPasswordAgent.jsx";
 import ResetPasswordAgent from "./pages/auth/ResetPasswordAgent.jsx";
 
-import PaymentHistory from "./pages/auth/PaymentHistory.jsx";
+
 import WalletPage from "./pages/auth/Wallet.jsx";
 
 import MyProfile from "./myProfile/MyProfile.jsx";
@@ -310,15 +310,6 @@ function App() {
                 element={
                   <ProtectedRoute allowedTypes={["customer"]}>
                     <ExpertConnect />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/payment-history"
-                element={
-                  <ProtectedRoute allowedTypes={["customer", "business"]}>
-                    <PaymentHistory />
                   </ProtectedRoute>
                 }
               />

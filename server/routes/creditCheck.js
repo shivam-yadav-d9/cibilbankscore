@@ -1,10 +1,10 @@
-// routes/creditScoreRoutes.js
 import express from "express";
-import { checkCreditScore, getCibilScoreByPhone } from "../controllers/creditCheckController.js";
+import { checkCreditScore, fetchToken, getCreditScoreByPhone } from "../controllers/creditCheckController.js";
 
 const router = express.Router();
 
+router.post("/getToken", fetchToken);
 router.post("/check", checkCreditScore);
-router.get("/get-from-db", getCibilScoreByPhone); // ✅ changed to GET
+router.get("/get-from-db", getCreditScoreByPhone);
 
 export default router;

@@ -153,6 +153,65 @@ const MyApplication = () => {
     }
   };
 
+  // Function to fetch user's loan applications from backend
+  const fetchUserApplications = async () => {
+    if (!user || !user._id) {
+      setError('User information not available');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch loan details for the current user
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/loan/details`, {
+        params: { 
+          userId: user._id, 
+          userType: user.userType || 'customer' 
+        },
+      });
+
+      console.log('Loan details response:', response.data);
+
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        // Transform the data to match the expected format
+        const transformedApplications = response.data.map((loan, index) => ({
+          applicationId: loan.application_id || `app_${index}`,
+          bank_id: loan.bank_id || 'N/A',
+          bank_name: loan.bank_name || 'Unknown Bank',
+          loan_amount: loan.loan_amount || 'N/A',
+          name: loan.name || user.name || 'N/A',
+          email: loan.email || user.email || 'N/A',
+          mobile: loan.mobile || loan.phone || loan.mobile_number || 'N/A',
+          documents: [], // Documents would need to be fetched separately if available
+          status: loan.status || 'Pending',
+          created_at: loan.created_at || loan.createdAt || new Date().toISOString(),
+          user_id: loan.user_id || user._id,
+          ref_code: loan.ref_code || 'N/A',
+          city: loan.city || 'N/A',
+          pan: loan.pan || 'N/A',
+          monthly_income: loan.monthly_income || 'N/A',
+          aadhaar: loan.aadhaar || 'N/A',
+          loan_type_id: loan.loan_type_id || 'N/A',
+          pincode: loan.pincode || 'N/A',
+          formData: loan // Keep original loan data for reference
+        }));
+
+        setApplications(transformedApplications);
+      } else {
+        setApplications([]);
+      }
+    } catch (err) {
+      console.error('Error fetching user applications:', err);
+      setError('Failed to load applications. Please try again.');
+      setApplications([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     // Redirect to login if not authenticated
     if (!isAuthenticated) {
@@ -160,143 +219,9 @@ const MyApplication = () => {
       return;
     }
 
-    // Fetch application data from localStorage
-    try {
-      setLoading(true);
-      console.log('Current user:', user); // Debug log
-      
-      // Retrieve all document entries from localStorage
-      const documentKeys = Object.keys(localStorage).filter((key) =>
-        key.startsWith('documents_')
-      );
-
-      console.log('Found document keys:', documentKeys); // Debug log
-
-      if (documentKeys.length === 0) {
-        setApplications([]);
-        setLoading(false);
-        return;
-      }
-
-      // Map document entries to applications
-      const allApplications = documentKeys.map((key) => {
-        const applicationId = key.replace('documents_', '');
-        const documents = JSON.parse(localStorage.getItem(key)) || [];
-        
-        // Try multiple form data keys to find application data
-        const formDataKeys = [
-          `loanProcessorFormData_${applicationId}`,
-          'loanProcessorFormData',
-          `formData_${applicationId}`,
-          'formData'
-        ];
-
-        let formData = null;
-        for (const formKey of formDataKeys) {
-          const formDataStr = localStorage.getItem(formKey);
-          if (formDataStr) {
-            try {
-              formData = JSON.parse(formDataStr);
-              break;
-            } catch (err) {
-              console.error(`Error parsing form data for key ${formKey}:`, err);
-            }
-          }
-        }
-
-        // Default values
-        let bank_id = 'N/A';
-        let bank_name = 'Unknown Bank';
-        let loan_amount = 'N/A';
-        let name = 'N/A';
-        let email = 'N/A';
-        let mobile = 'N/A';
-        let user_id = null;
-        let created_at = new Date().toISOString();
-        let ref_code = 'N/A';
-
-        if (formData) {
-          bank_id = formData.bank_id || 'N/A';
-          bank_name = formData.bank_name || 'Unknown Bank';
-          loan_amount = formData.loan_amount || 'N/A';
-          name = formData.name || formData.applicant_name || 'N/A';
-          email = formData.email || formData.applicant_email || 'N/A';
-          mobile = formData.mobile || formData.phone || formData.mobile_number || 'N/A';
-          user_id = formData.user_id || null;
-          created_at = formData.created_at || formData.timestamp || new Date().toISOString();
-          ref_code = formData.ref_code || 'N/A';
-        }
-
-        return {
-          applicationId,
-          bank_id,
-          bank_name,
-          loan_amount,
-          name,
-          email,
-          mobile,
-          documents,
-          status: 'Pending',
-          created_at,
-          user_id,
-          ref_code,
-          formData // Keep original form data for debugging
-        };
-      });
-
-      console.log('All applications before filtering:', allApplications); // Debug log
-
-      // Improved filtering logic - more lenient approach
-      let userApplications = [];
-
-      if (user) {
-        // Filter applications based on multiple criteria
-        userApplications = allApplications.filter(app => {
-          // Method 1: Direct user ID match
-          if (app.user_id && user.id && app.user_id === user.id) {
-            return true;
-          }
-          
-          // Method 2: Email match (case insensitive)
-          if (user.email && app.email && 
-              user.email.toLowerCase() === app.email.toLowerCase()) {
-            return true;
-          }
-          
-          // Method 3: If user has a name, check if it matches
-          if (user.name && app.name && 
-              user.name.toLowerCase() === app.name.toLowerCase()) {
-            return true;
-          }
-
-          // Method 4: If no specific user data found, include all applications
-          // This is a fallback for cases where user association is not properly stored
-          if (!app.user_id && !app.email) {
-            return true;
-          }
-
-          return false;
-        });
-
-        // If no applications found with strict filtering, show all applications
-        // This handles cases where the association logic might have issues
-        if (userApplications.length === 0 && allApplications.length > 0) {
-          console.warn('No applications found with user filtering, showing all applications');
-          userApplications = allApplications;
-        }
-      } else {
-        // If no user data available, show all applications
-        userApplications = allApplications;
-      }
-
-      console.log('Filtered user applications:', userApplications); // Debug log
-
-      setApplications(userApplications);
-      setLoading(false);
-    } catch (err) {
-      console.error('Error fetching applications:', err);
-      setError('Failed to load applications. Please try again.');
-      setLoading(false);
+    // Fetch applications when component mounts or user changes
+    if (user) {
+      fetchUserApplications();
     }
   }, [navigate, isAuthenticated, user]);
 
@@ -408,7 +333,15 @@ const MyApplication = () => {
                   d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                 />
               </svg>
-              <p>{error}</p>
+              <div>
+                <p>{error}</p>
+                <button
+                  onClick={fetchUserApplications}
+                  className="mt-2 text-sm underline hover:no-underline"
+                >
+                  Try again
+                </button>
+              </div>
             </motion.div>
           )}
 
@@ -482,6 +415,16 @@ const MyApplication = () => {
                               <span className="font-medium">Mobile:</span> {app.mobile}
                             </p>
                           )}
+                          {app.city !== 'N/A' && (
+                            <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                              <span className="font-medium">City:</span> {app.city}
+                            </p>
+                          )}
+                          {app.pan !== 'N/A' && (
+                            <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                              <span className="font-medium">PAN:</span> {app.pan}
+                            </p>
+                          )}
                         </div>
                         <div className="space-y-2">
                           <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
@@ -499,6 +442,11 @@ const MyApplication = () => {
                           <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
                             <span className="font-medium">Ref Code:</span> {app.ref_code}
                           </p>
+                          {app.monthly_income !== 'N/A' && (
+                            <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                              <span className="font-medium">Monthly Income:</span> {formatLoanAmount(app.monthly_income)}
+                            </p>
+                          )}
                         </div>
                       </div>
 
@@ -521,12 +469,6 @@ const MyApplication = () => {
                     
                     {/* Action Buttons */}
                     <div className="mt-4 md:mt-0 md:ml-6 flex flex-col gap-2">
-                      <button
-                        onClick={() => navigate('/loan-processor', { state: { applicationId: app.applicationId } })}
-                        className={buttonClass}
-                      >
-                        View Details
-                      </button>
                       {app.applicationId !== 'N/A' && app.ref_code !== 'N/A' && (
                         <button
                           onClick={() => handleCheckLoanStatus(app.applicationId, app.ref_code)}
@@ -580,76 +522,31 @@ const MyApplication = () => {
                     </div>
                   )}
 
-                  {/* Documents Section */}
-                  <div className={isDarkMode ? 'border-t border-slate-700 pt-6' : 'border-t border-gray-200 pt-6'}>
-                    <h4 className={isDarkMode ? 'text-lg font-semibold text-indigo-300 mb-4' : 'text-lg font-semibold text-indigo-600 mb-4'}>
-                      Uploaded Documents ({app.documents.length})
-                    </h4>
-                    {app.documents.length === 0 ? (
-                      <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
-                        No documents uploaded for this application.
-                      </p>
-                    ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {app.documents.map((doc, idx) => (
-                          <div
-                            key={doc.id || idx}
-                            className={isDarkMode
-                              ? 'bg-slate-900/50 rounded-lg p-4 border border-indigo-500/20'
-                              : 'bg-gray-50 rounded-lg p-4 border border-gray-200'}
-                          >
-                            <div className="flex items-center mb-3">
-                              <svg
-                                className={isDarkMode ? 'h-5 w-5 text-indigo-400 mr-2 flex-shrink-0' : 'h-5 w-5 text-indigo-600 mr-2 flex-shrink-0'}
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                />
-                              </svg>
-                              <h5 className={isDarkMode ? 'text-indigo-200 font-medium text-sm' : 'text-gray-800 font-medium text-sm'}>
-                                {doc.doc_type || 'Document'}
-                              </h5>
-                            </div>
-                            <div className="mb-3 space-y-1">
-                              <p className={isDarkMode ? 'text-xs text-indigo-300' : 'text-xs text-gray-600'}>
-                                <span className="font-medium">Number:</span> {doc.doc_no || 'N/A'}
-                              </p>
-                              <p className={isDarkMode ? 'text-xs text-indigo-300' : 'text-xs text-gray-600'}>
-                                <span className="font-medium">Uploaded:</span> {formatDate(doc.created_at || app.created_at)}
-                              </p>
-                            </div>
-                            {doc.file_data && (
-                              <div className="relative h-32 rounded-lg overflow-hidden bg-gray-100">
-                                <img
-                                  src={doc.file_data}
-                                  alt={`${doc.doc_type || 'Document'} preview`}
-                                  className="object-contain w-full h-full p-2"
-                                  onError={handleImageError}
-                                />
-                                <div className={isDarkMode
-                                  ? 'absolute top-2 right-2'
-                                  : 'absolute top-2 right-2'}
-                                >
-                                  <span className={isDarkMode
-                                    ? 'bg-green-500/20 px-2 py-1 rounded-full text-green-400 text-xs font-medium'
-                                    : 'bg-green-100 px-2 py-1 rounded-full text-green-600 text-xs font-medium'}
-                                  >
-                                    ✓ Verified
-                                  </span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                  {/* Additional Details Section */}
+                  {(app.aadhaar !== 'N/A' || app.loan_type_id !== 'N/A' || app.pincode !== 'N/A') && (
+                    <div className={isDarkMode ? 'border-t border-slate-700 pt-4' : 'border-t border-gray-200 pt-4'}>
+                      <h4 className={isDarkMode ? 'text-lg font-semibold text-indigo-300 mb-3' : 'text-lg font-semibold text-indigo-600 mb-3'}>
+                        Additional Details
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        {app.aadhaar !== 'N/A' && (
+                          <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                            <span className="font-medium">Aadhaar:</span> {app.aadhaar}
+                          </p>
+                        )}
+                        {app.loan_type_id !== 'N/A' && (
+                          <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                            <span className="font-medium">Loan Type ID:</span> {app.loan_type_id}
+                          </p>
+                        )}
+                        {app.pincode !== 'N/A' && (
+                          <p className={isDarkMode ? 'text-indigo-300' : 'text-gray-600'}>
+                            <span className="font-medium">Pincode:</span> {app.pincode}
+                          </p>
+                        )}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </motion.div>
               ))}
             </div>
