@@ -15,6 +15,8 @@ const MyApplication = () => {
   const [loanStatus, setLoanStatus] = useState({});
   const [loanStatusLoading, setLoanStatusLoading] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
+  const [monthFilter, setMonthFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -31,12 +33,28 @@ const MyApplication = () => {
     ? 'px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg text-white font-medium shadow-lg hover:shadow-indigo-500/50 transition-all duration-300 hover:scale-105'
     : 'px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg text-white font-medium shadow-lg hover:shadow-blue-500/50 transition-all duration-300 hover:scale-105';
 
+  const inputClass = isDarkMode
+    ? 'w-full px-4 py-2 rounded-lg bg-slate-800 border border-indigo-500/50 text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500'
+    : 'w-full px-4 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500';
+
+  const selectClass = isDarkMode
+    ? 'w-full px-4 py-2 rounded-lg bg-slate-800 border border-indigo-500/50 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500'
+    : 'w-full px-4 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500';
+
   // Filtered and paginated applications
   const filteredApplications = useMemo(() => {
-    return applications.filter(app => 
-      app.applicationId.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [applications, searchTerm]);
+    return applications.filter(app => {
+      const matchesSearch = app.applicationId.toLowerCase().includes(searchTerm.toLowerCase());
+      const appDate = new Date(app.created_at);
+      const matchesDate = dateFilter
+        ? appDate.toISOString().split('T')[0] === dateFilter
+        : true;
+      const matchesMonth = monthFilter
+        ? `${appDate.getFullYear()}-${String(appDate.getMonth() + 1).padStart(2, '0')}` === monthFilter
+        : true;
+      return matchesSearch && matchesDate && matchesMonth;
+    });
+  }, [applications, searchTerm, dateFilter, monthFilter]);
 
   const totalPages = Math.ceil(filteredApplications.length / itemsPerPage);
   const paginatedApplications = useMemo(() => {
@@ -194,6 +212,7 @@ const MyApplication = () => {
           loan_type_id: loan.loan_type_id || 'N/A',
           pincode: loan.pincode || 'N/A',
           formData: loan
+
         }));
 
         setApplications(transformedApplications);
@@ -302,21 +321,56 @@ const MyApplication = () => {
             </motion.div>
           )}
 
-          {/* Search Bar */}
+          {/* Filter Section */}
           {!loading && applications.length > 0 && (
-            <div className="mb-6">
-              <input
-                type="text"
-                placeholder="Search by Application ID..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className={isDarkMode
-                  ? 'w-full px-4 py-2 rounded-lg bg-slate-800 border border-indigo-500/50 text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                  : 'w-full px-4 py-2 rounded-lg bg-white border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500'}
-              />
+            <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <input
+                  type="text"
+                  placeholder="Search by Application ID..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => {
+                    setDateFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <select
+                  value={monthFilter}
+                  onChange={(e) => {
+                    setMonthFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className={selectClass}
+                >
+                  <option value="">Select Month</option>
+                  <option value="2025-01">January 2025</option>
+                  <option value="2025-02">February 2025</option>
+                  <option value="2025-03">March 2025</option>
+                  <option value="2025-04">April 2025</option>
+                  <option value="2025-05">May 2025</option>
+                  <option value="2025-06">June 2025</option>
+                  <option value="2025-07">July 2025</option>
+                  <option value="2025-08">August 2025</option>
+                  <option value="2025-09">September 2025</option>
+                  <option value="2025-10">October 2025</option>
+                  <option value="2025-11">November 2025</option>
+                  <option value="2025-12">December 2025</option>
+                </select>
+              </div>
             </div>
           )}
 

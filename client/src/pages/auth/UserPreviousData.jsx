@@ -146,7 +146,7 @@ const UserPreviousData = () => {
 
       setSuccess(true);
       setTimeout(() => {
-        navigate("/MyApplication", {
+        navigate("/UserDocuments", {
           state: {
             applicationId: formData.application_id,
             userId: formData.userId,
