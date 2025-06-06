@@ -23,6 +23,8 @@ function UserBasicData() {
     aadhaar: "",
     loan_type_id: loanTypeId,
     preferred_banks: "[1, 2]",
+    cibil_score: "", // ✅ Add this field explicitly
+
   });
 
   const [isLoading, setLoading] = useState(false);
@@ -53,9 +55,9 @@ function UserBasicData() {
       setUserData(parsedUser);
       setFormData((prev) => ({
         ...prev,
-        name:"",
-        email:"",
-        mobile:"",
+        name: "",
+        email: "",
+        mobile: "",
       }));
     }
 
@@ -70,6 +72,8 @@ function UserBasicData() {
         pan: parsedData.pan_no || prev.pan,
         aadhaar: parsedData.aadhaar_no || prev.aadhaar,
         loan_amount: parsedData.loan_amount || prev.loan_amount,
+        cibil_score: parsedData.cibil_score || prev.cibil_score, // ✅ include this
+
       }));
     }
   }, [navigate]);
@@ -105,7 +109,7 @@ function UserBasicData() {
       if (response.data.application_id) {
         localStorage.setItem("userBasicData", JSON.stringify(formattedData));
         localStorage.setItem("applicationId", response.data.application_id);
-        
+
         navigate("/UserAddress", {
           state: {
             applicationId: response.data.application_id,
@@ -113,7 +117,7 @@ function UserBasicData() {
             userType: userData.userType,
           },
         });
-        
+
         setSuccess("Application submitted successfully!");
       } else {
         throw new Error(response.data.message || "Failed to submit application");
@@ -121,8 +125,8 @@ function UserBasicData() {
     } catch (error) {
       setError(
         error.response?.data?.message ||
-          error.message ||
-          "Failed to submit application"
+        error.message ||
+        "Failed to submit application"
       );
     } finally {
       setLoading(false);

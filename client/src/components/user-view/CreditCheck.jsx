@@ -201,7 +201,7 @@ const CreditCheck = () => {
         };
 
         scores.push(newScore);
-        localStorage.setItem("creditScores", JSON.stringify(scores));
+        // localStorage.setItem("creditScores", JSON.stringify(scores));
     };
 
     const handleSubmit = async (e) => {
@@ -275,6 +275,11 @@ const CreditCheck = () => {
 
             // Save to cache
             saveCreditScoreToCache(responseData);
+            // Save the CIBIL score to localStorage for use on other pages
+            if (responseData?.data?.score) {
+                localStorage.setItem("userCibilScore", responseData.data.score.toString());
+                console.log("Saved CIBIL Score:", responseData.data.score);
+            }
 
             await fetchWalletBalance();
             localStorage.setItem("creditCheckResult", JSON.stringify(response.data));

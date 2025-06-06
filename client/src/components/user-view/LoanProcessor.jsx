@@ -36,6 +36,23 @@ const LoanProcessor = () => {
   const [success, setSuccess] = useState("");
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [showForm, setShowForm] = useState(true);
+  const [cibilScore, setCibilScore] = useState(null);
+
+  useEffect(() => {
+    const storedScore = localStorage.getItem("userCibilScore");
+    if (storedScore) {
+      console.log("Fetched CIBIL Score from localStorage:", storedScore);
+      setCibilScore(storedScore);
+
+      // ✅ Update formData state
+      setFormData(prev => ({
+        ...prev,
+        cibil_score: storedScore,
+      }));
+    }
+  }, []);
+
+
 
   const BASE_URL = `${import.meta.env.VITE_BACKEND_URL}/api/loanProcessor`;
 
@@ -92,49 +109,103 @@ const LoanProcessor = () => {
     }
   }, [navigate]);
 
-  const fetchCibilScore = async () => {
-    try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/credit/get-from-db?number=${formData.phone}`
-      );
+useEffect(() => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const phone = user?.mobile;
 
-      console.log("CIBIL API Response:", res.data);
+  let updatedForm = { ...formData };
+  let found = false;
 
-      if (res.data.success && res.data.data) {
-        const score = res.data.data.credit_score || "";
+  // Check latest score
+  const storedScore = localStorage.getItem("userCibilScore");
+  if (storedScore) {
+    updatedForm.cibil_score = storedScore;
+    found = true;
+  }
 
-        alert(`CIBIL Score fetched: ${score}`);
+  const cachedScores = localStorage.getItem("creditScores");
+  if (!found && cachedScores && phone) {
+    const scores = JSON.parse(cachedScores);
+    const match = scores.find((s) => s.phone === phone);
 
-        setFormData((prev) => ({
-          ...prev,
-          cibil_score: score.toString(),
-        }));
+    if (match) {
+      const scoreDate = new Date(match.createdAt);
+      const now = new Date();
+      const diffInDays = (now - scoreDate) / (1000 * 60 * 60 * 24);
 
-        setError("");
-      } else {
-        alert("Unable to fetch CIBIL score. Please try again.");
+      if (diffInDays <= 30 && match.credit_score) {
+        updatedForm.cibil_score = match.credit_score.toString();
       }
-    } catch (err) {
-      const status = err.response?.status;
-      const message = err.response?.data?.message || "Error fetching CIBIL score";
-
-      console.error("Fetch CIBIL Error:", message);
-
-      if (status === 403) {
-        alert("Your CIBIL score has expired. Please re-check.");
-        setFormData((prev) => ({
-          ...prev,
-          cibil_score: "",
-        }));
-      } else if (status === 404) {
-        alert("No CIBIL score found. Please generate it.");
-      } else {
-        alert("Error fetching CIBIL score");
-      }
-
-      navigate("/credit-check");
     }
-  };
+  }
+
+  setFormData((prev) => ({
+    ...prev,
+    ...updatedForm,
+  }));
+}, []);
+
+
+const fetchCibilScore = async () => {
+  if (!formData.phone) {
+    alert("Phone number is missing. Please enter it first.");
+    return;
+  }
+
+  try {
+    const res = await axios.get(
+      `${import.meta.env.VITE_BACKEND_URL}/api/loan/cibil/${formData.phone}`
+    );
+
+    const score = res.data.cibil_score;
+
+    alert(`CIBIL Score fetched: ${score}`);
+
+    setFormData((prev) => ({
+      ...prev,
+      cibil_score: score.toString(),
+    }));
+
+    const user = JSON.parse(localStorage.getItem("user"));
+    const phone = user?.mobile;
+
+    if (phone) {
+      const creditScoreObj = {
+        phone,
+        credit_score: score,
+        createdAt: new Date().toISOString(),
+      };
+
+      const existing = JSON.parse(localStorage.getItem("creditScores")) || [];
+      const updated = existing.filter((item) => item.phone !== phone);
+      updated.push(creditScoreObj);
+
+      localStorage.setItem("creditScores", JSON.stringify(updated));
+      localStorage.setItem("userCibilScore", score.toString());
+    }
+
+    setError("");
+  } catch (err) {
+    const status = err.response?.status;
+    const message = err.response?.data?.message || "Error fetching CIBIL score";
+
+    console.error("Fetch CIBIL Error:", message);
+
+    if (status === 403) {
+      alert("Your CIBIL score has expired. Please re-check.");
+      setFormData((prev) => ({ ...prev, cibil_score: "" }));
+      localStorage.removeItem("userCibilScore");
+    } else if (status === 404) {
+      alert("No CIBIL score found. Please generate it.");
+    } else {
+      alert("Error fetching CIBIL score");
+    }
+
+    navigate("/credit-check");
+  }
+};
+
+
 
   // Fetch API token with JWT if required
   const fetchToken = async () => {
@@ -655,11 +726,11 @@ const LoanProcessor = () => {
                     <div className="group relative">
                       <input
                         name="cibil_score"
-                        placeholder=" "
+                        placeholder="click button to fetch cibil score "
                         value={formData.cibil_score}
                         onChange={handleChange}
                         className={inputClass}
-                        readOnly
+                      // readOnly
                       />
                       <label className={labelClass}>CIBIL Score</label>
 
