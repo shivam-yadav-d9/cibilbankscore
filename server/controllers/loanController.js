@@ -146,6 +146,7 @@ export const storeLoanDetails = async (req, res) => {
       application_id: applicationId,
       preferred_banks: preferredBanks,
       appliedBy: {
+        cibil_score: req.body.cibil_score, // ✅ explicitly set thi
         userId: req.body.userId,
         userType: req.body.userType
       }
@@ -215,3 +216,31 @@ export const getLoanDetailsByUser = async (req, res) => {
   }
 };
 
+// Get CIBIL score by mobile number
+export const getCibilScoreByMobile = async (req, res) => {
+  const { mobile } = req.params;
+
+  try {
+    if (!mobile) {
+      return res.status(400).json({ message: "Mobile number is required" });
+    }
+
+    const user = await LoanApplication.findOne({ mobile });
+
+    if (!user) {
+      return res.status(404).json({ message: "No loan application found for this mobile number" });
+    }
+
+    // Check if CIBIL score exists
+    const cibilScore = user.cibil_score || user.appliedBy?.cibil_score;
+
+    if (!cibilScore) {
+      return res.status(404).json({ message: "CIBIL score not available for this user" });
+    }
+
+    return res.status(200).json({ cibil_score: cibilScore });
+  } catch (error) {
+    console.error("Error fetching CIBIL score:", error);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};

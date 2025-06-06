@@ -26,14 +26,18 @@ const LoanApplicationSchema = new mongoose.Schema({
   application_id: { type: String, required: true },
 
   // Store userId and userType directly
-  userId: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    required: true, 
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
     ref: 'User' // Optional: Reference to User model
   },
-  userType: { 
-    type: String, 
-    required: true, 
+  cibil_score: {
+    type: String,
+  },
+
+  userType: {
+    type: String,
+    required: true,
     enum: ['customer', 'agent', 'business'] // Add 'business' here
   }
 }, {
