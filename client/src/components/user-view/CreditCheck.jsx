@@ -114,7 +114,6 @@ const CreditCheck = () => {
                 const token = response.data.data.token;
                 setApiToken(token);
                 setSuccess("Authentication successful");
-                // Decode token to get expiry time using atob
                 const payload = token.split('.')[1];
                 const decodedPayload = atob(payload);
                 const decodedToken = JSON.parse(decodedPayload);
@@ -131,7 +130,6 @@ const CreditCheck = () => {
     };
 
     useEffect(() => {
-        // Check if a valid token exists in localStorage
         const storedToken = localStorage.getItem("apiToken");
         if (storedToken) {
             const { token, expiry } = JSON.parse(storedToken);
@@ -184,7 +182,7 @@ const CreditCheck = () => {
         const cachedScores = localStorage.getItem("creditScores");
         if (cachedScores) {
             scores = JSON.parse(cachedScores);
-            scores = scores.filter(score => score.phone !== formData.phone); // Remove old score for this phone
+            scores = scores.filter(score => score.phone !== formData.phone);
         }
 
         const newScore = {
@@ -201,7 +199,7 @@ const CreditCheck = () => {
         };
 
         scores.push(newScore);
-        // localStorage.setItem("creditScores", JSON.stringify(scores));
+        localStorage.setItem("creditScores", JSON.stringify(scores));
     };
 
     const handleSubmit = async (e) => {
@@ -221,7 +219,6 @@ const CreditCheck = () => {
             return;
         }
 
-        // Check if a recent credit score exists in cache
         const cachedResult = checkCachedCreditScore();
         if (cachedResult) {
             setResult(cachedResult);
@@ -239,6 +236,7 @@ const CreditCheck = () => {
         try {
             setLoading(true);
 
+            // Step 1: Prepare credit check data
             const creditCheckData = {
                 fname: formData.fname,
                 lname: formData.lname,
@@ -248,7 +246,8 @@ const CreditCheck = () => {
                 ref_code: formData.ref_code,
             };
 
-            const config = {
+            // Step 2: Call the credit score check API
+            const creditConfig = {
                 method: "post",
                 maxBodyLength: Infinity,
                 url: `${API_BASE_URL}/loan/checkCreditScore`,
@@ -262,30 +261,56 @@ const CreditCheck = () => {
                 data: creditCheckData,
             };
 
-            const response = await axios.request(config);
+            const creditResponse = await axios.request(creditConfig);
+            const responseData = creditResponse.data;
 
-            const responseData = response.data;
+            // Step 3: Deduct wallet balance if credit check is successful
+            if (responseData?.success && responseData?.data?.score) {
+                const deductConfig = {
+                    method: "post",
+                    maxBodyLength: Infinity,
+                    url: `${import.meta.env.VITE_BACKEND_URL}/api/wallet/spend`,
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    data: {
+                        email: user.email,
+                        amount: CREDIT_CHECK_COST,
+                        description: "Credit score check payment",
+                    },
+                };
+
+                const deductResponse = await axios.request(deductConfig);
+                
+                if (!deductResponse.data?.success) {
+                    throw new Error(deductResponse.data?.message || "Failed to deduct wallet balance.");
+                }
+            } else {
+                throw new Error(responseData?.message || "Credit score check failed.");
+            }
+
+            // Step 4: Update state and cache on success
             setResult({
                 success: true,
                 message: "Credit score successfully fetched",
                 data: responseData,
             });
-            setSuccess("Credit score check completed successfully!");
+            setSuccess("Credit score check and payment completed successfully!");
             setShowPayment(false);
 
             // Save to cache
             saveCreditScoreToCache(responseData);
-            // Save the CIBIL score to localStorage for use on other pages
             if (responseData?.data?.score) {
                 localStorage.setItem("userCibilScore", responseData.data.score.toString());
                 console.log("Saved CIBIL Score:", responseData.data.score);
             }
 
+            // Refresh wallet balance
             await fetchWalletBalance();
-            localStorage.setItem("creditCheckResult", JSON.stringify(response.data));
+            localStorage.setItem("creditCheckResult", JSON.stringify(responseData));
         } catch (error) {
             console.error("Error processing payment or checking credit score:", error);
-            setError(error.response?.data?.message || "Failed to process payment or check credit score. Please try again.");
+            setError(error.response?.data?.message || error.message || "Failed to process payment or check credit score. Please try again.");
             setShowPayment(false);
         } finally {
             setLoading(false);
@@ -347,7 +372,7 @@ const CreditCheck = () => {
                                 </p>
                             </div>
                             <div className="text-center">
-                                <p className={isDarkMode ? "text-purple-300 text-sm" : "text-purple-600 text-sm"}>Credit Check Cost</p>
+                                <p className={isDarkMode? "text-purple-300 text-sm" : "text-purple-600 text-sm"}>Credit Check Cost</p>
                                 <p className={isDarkMode ? "text-white text-xl font-bold" : "text-gray-900 text-xl font-bold"}>₹{CREDIT_CHECK_COST}</p>
                             </div>
                             <button
@@ -415,7 +440,7 @@ const CreditCheck = () => {
                         <div
                             className={
                                 isDarkMode
-                                    ? "bg-indigo-900/20 backdrop-blur-sm border border-indigo-500/50 text-indigo-100 p-4 mb-6 rounded-2xl flex items-center"
+                                    ? "bg-indigo-900/20 backdrop-blur-sm border border-indigo-500/30 text-indigo-100 p-4 mb-6 rounded-2xl flex items-center"
                                     : "bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded-xl flex items-center"
                             }
                         >
@@ -649,7 +674,7 @@ const CreditCheck = () => {
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
                                             <path
                                                 fillRule="evenodd"
-                                                d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                                                d="M10当然293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
                                                 clipRule="evenodd"
                                             />
                                         </svg>

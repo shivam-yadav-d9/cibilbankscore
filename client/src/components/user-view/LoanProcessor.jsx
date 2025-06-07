@@ -730,7 +730,7 @@ const fetchCibilScore = async () => {
                         value={formData.cibil_score}
                         onChange={handleChange}
                         className={inputClass}
-                      // readOnly
+                        readOnly
                       />
                       <label className={labelClass}>CIBIL Score</label>
 
