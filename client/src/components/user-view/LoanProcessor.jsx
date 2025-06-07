@@ -726,7 +726,7 @@ const fetchCibilScore = async () => {
                     <div className="group relative">
                       <input
                         name="cibil_score"
-                        placeholder="click button to fetch cibil score "
+                        placeholder=" "
                         value={formData.cibil_score}
                         onChange={handleChange}
                         className={inputClass}
@@ -735,7 +735,7 @@ const fetchCibilScore = async () => {
                       <label className={labelClass}>CIBIL Score</label>
 
                       {formData.cibil_score === "" && (
-                        <p className="text-red-600 text-sm mt-1">
+                        <p className="text-blue-600 text-sm mt-1">
                           CIBIL score not available or expired. Please click "Get CIBIL Score".
                         </p>
                       )}

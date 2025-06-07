@@ -148,34 +148,34 @@ const CreditCheck = () => {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const checkCachedCreditScore = () => {
-        const cachedScores = localStorage.getItem("creditScores");
-        if (!cachedScores) return null;
+    // const checkCachedCreditScore = () => {
+    //     const cachedScores = localStorage.getItem("creditScores");
+    //     if (!cachedScores) return null;
 
-        const scores = JSON.parse(cachedScores);
-        const existingScore = scores.find(score => score.phone === formData.phone);
-        if (!existingScore) return null;
+    //     const scores = JSON.parse(cachedScores);
+    //     const existingScore = scores.find(score => score.phone === formData.phone);
+    //     if (!existingScore) return null;
 
-        const oneMonthAgo = new Date();
-        oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
+    //     const oneMonthAgo = new Date();
+    //     oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
 
-        if (new Date(existingScore.createdAt) >= oneMonthAgo && existingScore.credit_score) {
-            return {
-                success: true,
-                message: "Credit score fetched from cache.",
-                data: {
-                    success: true,
-                    message: "Success",
-                    statusCode: 200,
-                    data: {
-                        name: `${existingScore.fname} ${existingScore.lname}`,
-                        score: existingScore.credit_score,
-                    },
-                },
-            };
-        }
-        return null;
-    };
+    //     if (new Date(existingScore.createdAt) >= oneMonthAgo && existingScore.credit_score) {
+    //         return {
+    //             success: true,
+    //             message: "Credit score fetched from cache.",
+    //             data: {
+    //                 success: true,
+    //                 message: "Success",
+    //                 statusCode: 200,
+    //                 data: {
+    //                     name: `${existingScore.fname} ${existingScore.lname}`,
+    //                     score: existingScore.credit_score,
+    //                 },
+    //             },
+    //         };
+    //     }
+    //     return null;
+    // };
 
     const saveCreditScoreToCache = (data) => {
         let scores = [];
@@ -219,12 +219,12 @@ const CreditCheck = () => {
             return;
         }
 
-        const cachedResult = checkCachedCreditScore();
-        if (cachedResult) {
-            setResult(cachedResult);
-            setSuccess("Credit score check completed successfully!");
-            return;
-        }
+        // const cachedResult = checkCachedCreditScore();
+        // if (cachedResult) {
+        //     setResult(cachedResult);
+        //     setSuccess("Credit score check completed successfully!");
+        //     return;
+        // }
 
         setShowPayment(true);
     };

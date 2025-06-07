@@ -61,9 +61,12 @@ export default function Navbar() {
   }, [location.pathname]);
 
   const handleLogout = () => {
+    localStorage.removeItem("userCibilScore");
+    localStorage.removeItem("creditCheckResult");
+    localStorage.removeItem("creditScores");
     logout();
     setActiveDropdown(null);
-    navigate("/"); 
+    navigate("/");
   };
 
   const handleNavigation = (path) => {
@@ -77,24 +80,24 @@ export default function Navbar() {
   };
 
   // Fixed getInitials function
-const getInitials = (name) => {
-  if (!name) return "";
-  
-  const nameParts = name.trim().split(" ").filter(part => part.length > 0);
-  
-  if (nameParts.length === 0) return "";
-  
-  if (nameParts.length === 1) {
-    // Single name: take first two characters if available, otherwise just first character
-    const singleName = nameParts[0];
-    return singleName.length >= 2 
-      ? singleName.substring(0, 2).toUpperCase()
-      : singleName[0].toUpperCase();
-  }
-  
-  // Multiple names: take first character of first and last name
-  return (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
-};
+  const getInitials = (name) => {
+    if (!name) return "";
+
+    const nameParts = name.trim().split(" ").filter(part => part.length > 0);
+
+    if (nameParts.length === 0) return "";
+
+    if (nameParts.length === 1) {
+      // Single name: take first two characters if available, otherwise just first character
+      const singleName = nameParts[0];
+      return singleName.length >= 2
+        ? singleName.substring(0, 2).toUpperCase()
+        : singleName[0].toUpperCase();
+    }
+
+    // Multiple names: take first character of first and last name
+    return (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
+  };
 
   const isActive = (path) => {
     return location.pathname === path;
@@ -103,8 +106,8 @@ const getInitials = (name) => {
   return (
     <nav
       className={`fixed w-full z-50 top-0 transition-all duration-500 ${scrolled
-          ? "bg-gradient-to-r from-blue-950 to-indigo-950 bg-opacity-85 backdrop-blur-lg shadow-lg shadow-blue-900/20 h-16"
-          : "bg-gradient-to-r from-blue-900 to-indigo-900 h-20"
+        ? "bg-gradient-to-r from-blue-950 to-indigo-950 bg-opacity-85 backdrop-blur-lg shadow-lg shadow-blue-900/20 h-16"
+        : "bg-gradient-to-r from-blue-900 to-indigo-900 h-20"
         }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
@@ -445,8 +448,8 @@ const getInitials = (name) => {
                         <Link
                           to={link.path}
                           className={`flex items-center px-4 py-3 rounded-lg ${isActive(link.path)
-                              ? "bg-blue-600/40 text-white"
-                              : "text-blue-100 hover:bg-blue-800/30"
+                            ? "bg-blue-600/40 text-white"
+                            : "text-blue-100 hover:bg-blue-800/30"
                             } transition-colors duration-200`}
                           onClick={() => setMenuOpen(false)}
                         >
