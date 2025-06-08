@@ -108,6 +108,29 @@ export const getAllAgents = async (req, res) => {
     }
 };
 
+export const getAllAgentswithpagination = async (req, res) => {
+  try {
+    const { page = 1, limit = 5 } = req.query;
+    const skip = (page - 1) * limit;
+
+    const totalAgents = await B2BSignup.countDocuments({ userType: 'business' });
+    const totalPages = Math.ceil(totalAgents / limit);
+
+    const agents = await B2BSignup.find({ userType: 'business' })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      agents,
+      totalPages,
+    });
+  } catch (error) {
+    console.error("Fetch Agents Error:", error.message);
+    res.status(500).json({ message: "Failed to fetch agents" });
+  }
+};
+
 
 // Delete agent by ID
 export const deleteAgent = async (req, res) => {

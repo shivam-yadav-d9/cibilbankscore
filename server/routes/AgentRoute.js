@@ -1,5 +1,5 @@
 import express from "express";
-import { signupB2BUser, loginAgent, getAllAgents ,deleteAgent,approveAgent,rejectAgent,getAgentById} from "../controllers/B2BSignup.js";
+import { signupB2BUser, loginAgent, getAllAgents ,deleteAgent,approveAgent,rejectAgent,getAgentById,getAllAgentswithpagination} from "../controllers/B2BSignup.js";
 
 const router = express.Router();
 
@@ -8,6 +8,8 @@ router.post("/login", loginAgent);
 
 //New route for admin
 router.get("/agents", getAllAgents);
+router.get("/agent", getAllAgentswithpagination);
+
 router.delete('/agents/:id', deleteAgent); // 👈 delete route here
 
 router.put("/approve/:id", approveAgent);
