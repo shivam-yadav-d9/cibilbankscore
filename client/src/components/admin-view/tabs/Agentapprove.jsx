@@ -4,33 +4,49 @@ import axios from "axios";
 const AgentApprove = () => {
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
-  const apiUrl = `${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/agents`;
+  const limit = 5; // Agents per page
+  const apiUrl = `${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/agent`;
+
+  const fetchAgents = async () => {
+    setLoading(true);
+    try {
+      const params = {
+        page,
+        limit,
+      };
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
+
+      const response = await axios.get(apiUrl, { params });
+
+      setAgents(response.data.agents);
+      setTotalPages(response.data.totalPages);
+    } catch (error) {
+      console.error("Error fetching agents:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchAgents = async () => {
-      try {
-        const response = await axios.get(apiUrl);
-        setAgents(response.data);
-      } catch (error) {
-        console.error("Error fetching agents:", error);
-        // Optionally, display an error message to the user.
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchAgents();
-  }, []);
+  }, [page]);
+
+  const handleSearch = () => {
+    setPage(1);
+    fetchAgents();
+  };
 
   const handleApprove = async (id) => {
     try {
       await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/approve/${id}`);
       alert("Agent approved successfully!");
-      const updated = agents.map(agent =>
-        agent._id === id ? { ...agent, status: 'approved' } : agent
-      );
-      setAgents(updated);
+      fetchAgents();
     } catch (err) {
       console.error("Error approving agent:", err);
     }
@@ -40,20 +56,37 @@ const AgentApprove = () => {
     try {
       await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/SignupRoutes/reject/${id}`);
       alert("Agent rejected successfully!");
-      const updated = agents.map(agent =>
-        agent._id === id ? { ...agent, status: 'rejected' } : agent
-      );
-      setAgents(updated);
+      fetchAgents();
     } catch (err) {
       console.error("Error rejecting agent:", err);
     }
   };
 
-
-
   return (
     <div className="p-6">
       <h2 className="text-2xl font-semibold mb-4 text-center">Agent Approval Panel</h2>
+
+      {/* Date Filter UI */}
+      <div className="flex gap-4 mb-4 items-center">
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="border px-3 py-2 rounded"
+        />
+        <input
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          className="border px-3 py-2 rounded"
+        />
+        <button
+          onClick={handleSearch}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          Search
+        </button>
+      </div>
 
       {loading ? (
         <p className="text-center">Loading agents...</p>
@@ -84,7 +117,6 @@ const AgentApprove = () => {
                     >
                       {agent.status === 'approved' ? "Approved" : "Approve"}
                     </button>
-
                     <button
                       onClick={() => handleReject(agent._id)}
                       className={`bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded ${agent.status === 'rejected' ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -104,6 +136,25 @@ const AgentApprove = () => {
               )}
             </tbody>
           </table>
+
+          {/* Pagination Controls */}
+          <div className="flex justify-center mt-4 space-x-2">
+            <button
+              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+              disabled={page === 1}
+              className="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400"
+            >
+              Previous
+            </button>
+            <span className="px-4 py-1">Page {page} of {totalPages}</span>
+            <button
+              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={page === totalPages}
+              className="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
     </div>
