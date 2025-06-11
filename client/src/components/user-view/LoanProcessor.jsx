@@ -501,7 +501,7 @@ const fetchCibilScore = async () => {
                         onChange={handleChange}
                         required
                         className={inputClass}
-                        readOnly={userType !== null && userType !== "business"}
+                        // readOnly={userType !== null && userType !== "business"}
                       />
                       <label className={labelClass}>
                         Full Name
@@ -517,7 +517,7 @@ const fetchCibilScore = async () => {
                         onChange={handleChange}
                         required
                         className={inputClass}
-                        readOnly={userType !== null && userType !== "business"}
+                        // readOnly={userType !== null && userType !== "business"}
                       />
                       <label className={labelClass}>
                         Email Address
@@ -534,7 +534,7 @@ const fetchCibilScore = async () => {
                         onChange={handleChange}
                         required
                         className={inputClass}
-                        readOnly={userType !== null && userType !== "business"}
+                        // readOnly={userType !== null && userType !== "business"}
                       />
                       <label className={labelClass}>
                         Mobile Number
