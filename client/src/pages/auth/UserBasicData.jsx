@@ -397,7 +397,9 @@ function UserBasicData() {
                     >
                       <option value="1">Salaried</option>
                       <option value="2">Self-Employed</option>
-                      <option value="3">Other</option>
+                      <option value="3">Business Income</option>
+                      <option value="4">Freelancing</option>
+                      <option value="5">Other</option>
                     </select>
                     <label className={isDarkMode
                       ? "absolute left-4 top-0 text-indigo-400 text-xs font-medium"

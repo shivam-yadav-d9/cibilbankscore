@@ -178,13 +178,18 @@ const UserAddress = () => {
         className={selectClass}
       >
         <option value="">{label}</option>
-        {options.map((opt) => (
-          <option key={opt} value={opt}>{opt}</option>
-        ))}
+        {options.map((opt, index) =>
+          typeof opt === 'string' ? (
+            <option key={index} value={opt}>{opt}</option>
+          ) : (
+            <option key={index} value={opt.value}>{opt.label}</option>
+          )
+        )}
       </select>
       <label className={labelClass}>{label}</label>
     </div>
   );
+
 
   return (
     <div className={containerClass}>
@@ -255,8 +260,9 @@ const UserAddress = () => {
                 {renderInput("father_name", "Father's Name", "text", true)}
                 {renderInput("mother_name", "Mother's Name", "text", true)}
                 {renderSelect("marital_status", "Marital Status", ["Single", "Married", "Divorced", "Widowed"], true)}
-                {renderInput("religion", "Religion", "text", true)}
-                {renderInput("qualification", "Qualification", "text", true)}
+                {renderSelect("religion", "Religion", ["Hindu", "Muslim", "Christian", "Sikh", "Other"], true)}
+                {renderSelect("qualification", "Qualification", ["High School(10th)", "intermediate(12th)", "Graduate", "Post-Graduate", "Diploma", "PhD", "Other"], true)}
+
               </div>
             </div>
 
@@ -276,13 +282,29 @@ const UserAddress = () => {
                   : "h-px flex-1 bg-gradient-to-r from-indigo-400 via-blue-400 to-transparent"}></div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {renderInput("current_emp_stability", "Current Employment Stability", "text", true)}
-                {renderInput("total_emp_stability", "Total Employment Stability", "text", true)}
-                {renderInput("industry_working", "Industry Working", "text", true)}
-                {renderInput("employer_name", "Employer Name", "text", true)}
-                {renderInput("designation", "Designation", "text", true)}
-                {renderInput("net_home_salary", "Net Home Salary", "text", true)}
+                {renderSelect("current", "Current Job Duration", [
+                  { label: "Less than 6 months", value: 3 },
+                  { label: "6 months - 1 year", value: 9 },
+                  { label: "1 - 2 years", value: 18 },
+                  { label: "2 - 3 years", value: 30 },
+                  { label: "More than 3 years", value: 48 }
+                ], true)}
+
+                {renderSelect("total_emp_stability", "Total Work Experience", [
+                  { label: "Less than 1 year", value: 9 },
+                  { label: "1 - 2 years", value: 18 },
+                  { label: "2 - 3 years", value: 30 },
+                  { label: "3 - 5 years", value: 48 },
+                  { label: "More than 5 years", value: 72 }
+                ], true)}
+
+                {renderInput("industry_working", "Industry / Sector", "text", true)}
+                {renderInput("employer_name", "Company Name", "text", true)}
+                {renderInput("designation", "Job Title", "text", true)}
+                {renderInput("net_home_salary", "Net Home Salary(Monthly )", "text", true)}
+
               </div>
+
             </div>
 
             {/* Section: Bank Details */}
@@ -301,11 +323,28 @@ const UserAddress = () => {
                   : "h-px flex-1 bg-gradient-to-r from-indigo-400 via-blue-400 to-transparent"}></div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {renderInput("salary_bank_account", "Salary Bank Account", "text", true)}
-                {renderInput("bank_branch", "Bank Branch", "text", true)}
-                {renderInput("account_type", "Account Type", "text", true)}
-                {renderInput("salary_account_no", "Salary Account No", "text", true)}
-                {renderInput("dependent", "Dependent", "text", true)}
+                {renderSelect("salary_bank_account", "Select Salary Bank", [
+                  { label: "State Bank of India (SBI)", value: 1 },
+                  { label: "HDFC Bank", value: 2 },
+                  { label: "ICICI Bank", value: 3 },
+                  { label: "Axis Bank", value: 4 },
+                  { label: "Punjab National Bank", value: 5 },
+                  { label: "Other", value: 6 }
+                ], true)}
+                {renderInput("bank_branch", "Bank Branch Name", "text", true)}
+                {renderSelect("account_type", "Select Account Type", [
+                  { label: "Savings", value: "Savings" },
+                  { label: "Current", value: "Current" },
+                  { label: "Salary", value: "Salary" }
+                ], true)}
+                {renderInput("salary_account_no", "Salary Account Number", "text", true)}
+                {renderSelect("dependent", "Number of Dependents", [
+                  { label: "None", value: "0" },
+                  { label: "1", value: "1" },
+                  { label: "2", value: "2" },
+                  { label: "3", value: "3" },
+                  { label: "4 or more", value: "4" }
+                ], true)}
                 {renderSelect("emi_towards", "EMI Towards", ["Yes", "No"], true)}
               </div>
             </div>
@@ -327,16 +366,24 @@ const UserAddress = () => {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {renderInput("loan_amount", "Loan Amount", "text", true)}
-                {renderInput("tenure", "Tenure", "text", true)}
+                {renderSelect("tenure", "Loan Tenure (in months)", [
+                  "6", "12", "18", "24", "36", "48", "60"
+                ], true)}
                 {renderInput("organization_type", "Organization Type", "text", true)}
-                {renderInput("loan_type", "Loan Type", "text", true)}
+                {renderSelect("loan_type", "Loan Type", [
+                  "HOME LOAN (SALARIED)",
+                  "PERSONAL LOAN",
+                  "VEHICLE LOAN",
+                  "BUSINESS LOAN",
+                  "EDUCATION LOAN",
+                ], true)}
                 {renderInput("driving_licence_no", "Driving Licence No", "text", true)}
                 {renderInput("dl_valid_upto_date", "DL Valid Upto Date", "date", true)}
               </div>
             </div>
 
             {/* Section: Vehicle Details */}
-            <div>
+            {/* <div>
               <div className="flex items-center mb-6 mt-10">
                 <div className={isDarkMode
                   ? "h-px flex-1 bg-gradient-to-r from-transparent via-purple-400 to-transparent"
@@ -361,7 +408,7 @@ const UserAddress = () => {
                 {renderInput("cost_of_insurance", "Cost of Insurance", "text", true)}
                 {renderInput("cost_of_accessories", "Cost of Accessories", "text", true)}
               </div>
-            </div>
+            </div> */}
 
             <div className="pt-8">
               <button
