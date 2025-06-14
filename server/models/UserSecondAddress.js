@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 
-// Define the address schema for reusable parts of the address
 const addressSchema = new mongoose.Schema({
   address_line1: { type: String, default: "" },
   address_line2: { type: String, default: "" },
