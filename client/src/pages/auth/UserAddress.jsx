@@ -307,7 +307,6 @@ const UserAddress = () => {
 
             </div>
 
-            {/* Section: Bank Details */}
             <div>
               <div className="flex items-center mb-6 mt-10">
                 <div className={isDarkMode

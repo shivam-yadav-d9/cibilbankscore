@@ -15,7 +15,6 @@ const addressSchema = new mongoose.Schema({
 { _id: false } 
 );
 
-// Define the main schema for user second address details
 const userSecondAddressSchema = new mongoose.Schema(
   {
     userId: { type: String, required: true },   // New field: userId (can be a string or number, depending on your needs)
