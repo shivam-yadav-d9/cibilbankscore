@@ -538,7 +538,6 @@ function UserSecondAddress() {
               <label className={labelClass}>Years at Current Residence</label>
             </div>
 
-            {/* Monthly Rent (if Rented) */}
             <div className="group relative mb-8">
               <input
                 type="number"
