@@ -282,13 +282,7 @@ const UserAddress = () => {
                   : "h-px flex-1 bg-gradient-to-r from-indigo-400 via-blue-400 to-transparent"}></div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {renderSelect("current", "Current Job Duration", [
-                  { label: "Less than 6 months", value: 3 },
-                  { label: "6 months - 1 year", value: 9 },
-                  { label: "1 - 2 years", value: 18 },
-                  { label: "2 - 3 years", value: 30 },
-                  { label: "More than 3 years", value: 48 }
-                ], true)}
+              {renderInput("current_emp_stability", "Current Job Duration", "text", true)}
 
                 {renderSelect("total_emp_stability", "Total Work Experience", [
                   { label: "Less than 1 year", value: 9 },
