@@ -10,7 +10,6 @@ let nextDocumentId = 1;
 
 const documentModel = {
   /**
-   * Finds documents for a given application ID.
    * In a real app, this would query a database.
    */
   findByApplicationId: (applicationId) => {
